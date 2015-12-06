@@ -46,7 +46,7 @@ You can chose to install them all now or install them as we go on and as you see
 #### Emacs packages to install  
 
 * [flycheck](http://www.flycheck.org/)
-* [haskell-flycheck](https://github.com/chrisdone/haskell-flycheck)
+* [flycheck-haskell](https://github.com/chrisdone/haskell-flycheck)
 * [haskell-mode](https://github.com/haskell/haskell-mode/wiki)
 * [rainbow-delimiters](www.emacswiki.org/emacs/RainbowDelimiters)
 * shm (the emacs package isn't called structured-haskell-mode but shm)
@@ -128,7 +128,7 @@ To use cabal-repl as your GHCi process add the following:
 
 ##### Tags
 You sometimes need to jump to the definition of a function that you are using in the same file. For this we have tags within haskell-mode. It however requires the haskell package hasktags so:
-{% highlight bash %}
+```lisp
 $ cabal install hasktags
 ```
 
@@ -401,3 +401,4 @@ All that init file code in one file that you can conveniently paste in your init
 [rainbow delimiters wiki page]: http://www.emacswiki.org/emacs/RainbowDelimiters
 [debugger in haskell mode]: https://github.com/haskell/haskell-mode/wiki/Haskell-Interactive-Mode-Debugger
 [hasktags]: http://hackage.haskell.org/package/hasktags
+    
