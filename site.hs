@@ -1,5 +1,4 @@
-
-        --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 import           Data.Monoid (mappend)
 import           Hakyll
@@ -52,8 +51,18 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" archiveCtx
                 >>= relativizeUrls
 
-
     match "index.html" $ do
+        route idRoute
+        compile $ do
+         let archiveCtx =
+                 constField "title" "" `mappend`
+                 defaultContext
+         getResourceBody
+             >>= applyAsTemplate archiveCtx
+             >>= loadAndApplyTemplate "templates/default.html" archiveCtx
+             >>= relativizeUrls              
+
+    match "blog.html" $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"

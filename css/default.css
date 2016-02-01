@@ -46,7 +46,7 @@ div#wrapper{
 }
 
 header nav {
-    text-align: right;
+    text-align: center;
 }
 
 header #header-content nav a {
@@ -55,6 +55,7 @@ header #header-content nav a {
     text-decoration: none;
     text-transform: uppercase;
     margin-right: 1%;
+    padding: 2%;
 }
 
 h1 {
