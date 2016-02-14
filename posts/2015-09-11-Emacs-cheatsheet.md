@@ -5,7 +5,11 @@ date: 2015-09-11 01:33:45
 category: Emacs
 ---
 
+<<<<<<< b5c7984a8f7bcafee5331e6b90a7651acc925449
 These bindings should work for emacs from 24 upwards.
+=======
+Assume that these bindings work for emacs from 24 upwards.
+>>>>>>> Started post: Packaging python projects
 My emacs config is in my [dotfiles].
 
 | Key binding |            Name         |                  Purpose               |   Package  | From emacs version |
@@ -26,7 +30,6 @@ My emacs config is in my [dotfiles].
 | C-s M-%     |                         | Queried search and replace             |    None    |         all        |
 
 ### Handy information
-
 - For redo keep repeating C-/ to keep redoing, C-g isn't repeated.
 - If you “visit” a file that is actually a directory, Emacs invokes Dired, the Emacs directory browser. See [Dired]. You can disable this behavior by setting the variable find-file-run-dired to nil; in that case, it is an error to try to visit a directory.
 - When the emacs version is unknown it will most likely work for your version of emacs.
@@ -35,19 +38,19 @@ My emacs config is in my [dotfiles].
 
 
 #### To learn
-
 - General indentation
 - Indenting blocks.
+
 
 #### Handy emacs packages I like
 - ace-jump
 - auto-complete
 
+
 #### Extra
 - **Updating emacs packages**: `M-x package-list-packages U x` then follow the prompts
 - **emacs-nox**: In the arch repos there's emacs-nox described as "The extensible, customizable, self-documenting real-time display editor, without X11 support" Good for SSH.
 - My [emacs config](https://github.com/urbanslug/dotfiles/blob/master/.emacs)
-
 - **Installing packages**: "i" mark for install. "x" to install
 - `M-x` to run any command. e.g `M-x erc` to IRC from emacs.
 
