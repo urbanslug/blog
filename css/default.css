@@ -16,10 +16,12 @@ body {
 }
 
 header {
+    top: 0;
+    position:fixed;
     padding: 12px 0px 12px 0px;
     width: 100%;
     font-size: 18px;
-    background:#2196F3;
+    background:#fff;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0,0,0,0.26);
     font-weight: 100;
@@ -59,7 +61,7 @@ header #header-content nav a {
 }
 
 h1 {
-    font-size: 24px;
+    font-size: 30px;
 }
 
 h2 {
@@ -75,12 +77,12 @@ div.info {
 }
 
 article {
-    margin: 0px auto 0px auto;
+    margin: 0 auto 0 auto;
     width: 650px;
     font-weight: 300;
     font-size: 16px;
     display: block;
-    padding-bottom: 150px;
+    padding: 5em 0 150px 0;
 }
 
 
@@ -174,15 +176,12 @@ td.sourceCode { padding-left: 5px; }
 /* Mobile css.*/
 
 @media only screen and (max-device-width: 480px) {
-
     header #header-content {
         max-width: 90%; /*Same as content width*/
     }
-
     article {
         width: 90%;
-        font-weight: 400;
         font-size: 14px;
     }
 
-	}
+}

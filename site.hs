@@ -6,7 +6,7 @@ import           Hakyll
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
-        
+
     match "img/*" $ do
         route   idRoute
         compile copyFileCompiler
@@ -14,7 +14,7 @@ main = hakyll $ do
     match "img/**/*" $ do
         route   idRoute
         compile copyFileCompiler
-    
+
     match "css/*" $ do
         route   idRoute
         compile compressCssCompiler
@@ -54,17 +54,6 @@ main = hakyll $ do
     match "index.html" $ do
         route idRoute
         compile $ do
-         let archiveCtx =
-                 constField "title" "" `mappend`
-                 defaultContext
-         getResourceBody
-             >>= applyAsTemplate archiveCtx
-             >>= loadAndApplyTemplate "templates/default.html" archiveCtx
-             >>= relativizeUrls              
-
-    match "blog.html" $ do
-        route idRoute
-        compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let indexCtx =
                     listField "posts" postCtx (return posts) `mappend`
@@ -74,8 +63,7 @@ main = hakyll $ do
             getResourceBody
                 >>= applyAsTemplate indexCtx
                 >>= loadAndApplyTemplate "templates/default.html" indexCtx
-                >>= relativizeUrls              
-                
+                >>= relativizeUrls
 
     create ["rss.xml"] $ do
             route idRoute
@@ -96,7 +84,7 @@ main = hakyll $ do
 
 
     match "templates/*" $ compile templateCompiler
-    
+
     create ["sitemap.xml"] $ do
             route idRoute
             compile $ do
@@ -112,10 +100,8 @@ main = hakyll $ do
         compile copyFileCompiler
 
 
-
-staticPages = fromList []
+staticFiles :: Pattern
 staticFiles = fromList ["sitemap.xml", "404.html"]
-
 
 --------------------------------------------------------------------------------
 postCtx :: Context String
@@ -128,12 +114,12 @@ sitemapPostCtx =
     dateField "date" "%Y-%m-%d" `mappend`
     constField "baseUrl" "http://blog.urbanslug.com" `mappend`
     defaultContext
-    
+
 -- Feed configuration
 feedConfigurationRSS :: FeedConfiguration
 feedConfigurationRSS = FeedConfiguration
     { feedTitle       = "urbanslug blog - RSS feed"
-    , feedDescription = "Programming haskell life"
+    , feedDescription = "Programming haskell clojure life"
     , feedAuthorName  = "Njagi Mwaniki"
     , feedAuthorEmail = "njagi@urbanslug.com"
     , feedRoot        = "http://blog.urbanslug.com"
@@ -142,7 +128,7 @@ feedConfigurationRSS = FeedConfiguration
 feedConfigurationAtom :: FeedConfiguration
 feedConfigurationAtom = FeedConfiguration
     { feedTitle       = "urbanslug blog - Atom feed"
-    , feedDescription = "Programming haskell life"
+    , feedDescription = "Programming haskell clojure life"
     , feedAuthorName  = "Njagi Mwaniki"
     , feedAuthorEmail = "njagi@urbanslug.com"
     , feedRoot        = "http://blog.urbanslug.com"
