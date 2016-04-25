@@ -3,7 +3,7 @@ layout: post
 title: Back to chess.
 date: 2014-12-08 16:33:15
 categories: Chess
-feature-img: "img/Content/Chess/Chess.png"
+feature-img: "images/Content/Chess/Chess.png"
 ---
 
 This is not a post about any chess strategies but about me playing chess again after a not playing for a while. This post makes me wish my blog had comments. You could tweet me at [@urbanslug] if it's not too much work.

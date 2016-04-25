@@ -3,7 +3,7 @@ layout: post
 title: Black boy fly scaring himself.
 date: 2015-08-09 10:44:34
 categories: General Life Programming
-feature-img: "img/Content/Inspiration/black-boy-fly.png"
+feature-img: "images/Content/Inspiration/black-boy-fly.png"
 ---
 
 This post is inspired by a rap song Black Boy Fly by Kendrick Lamar and a podcast episode from [Thoughtbot].

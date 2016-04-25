@@ -12,7 +12,7 @@ There are people who believe that being black is abominable.
 Those people will never think you are worth much no matter what you do.
 And there are tons of them in many parts of this world.
 
-![Obamas_racist_picture](/img/Content/Racism/Obamas_racist_picture.png "Obamas_racist_picture")
+![Obamas_racist_picture](/images/Content/Racism/Obamas_racist_picture.png "Obamas_racist_picture")
 
 It affects your chances of success in life, how much you earn, where you can comfortably go or not go e.t.c. So it fucking matters.
 
@@ -27,7 +27,7 @@ It's sad. It's fucking wrong.
 Something else:
 
 
-![Obamas_looking_at_banana_racist.png](/img/Content/Racism/Obamas_looking_at_banana_racist.png "Obamas_racist_picture")
+![Obamas_looking_at_banana_racist.png](/images/Content/Racism/Obamas_looking_at_banana_racist.png "Obamas_racist_picture")
 
 Former Russian figure skater Irina Rodnina posted a photo of Mr and Mrs Obama looking at someone who was holding up a banana, which has racist implications.
 

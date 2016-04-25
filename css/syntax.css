@@ -5,7 +5,6 @@
  * @author Lea Verou
  */
 
-
 pre[class],
 code {
 	color: black;
@@ -17,7 +16,7 @@ code {
 	word-spacing: normal;
 	word-break: normal;
 	line-height: 1.5;
-  font-size: 90%;
+        font-size: 90%;
 
 	-moz-tab-size: 4;
 	-o-tab-size: 4;
@@ -66,6 +65,10 @@ code {
 code {
 	margin: .5em 0;
 	overflow: auto;
+}
+
+pre {
+    background: #f5f2f0;
 }
 
 /* End of for `` code highlighting.*/
@@ -167,9 +170,9 @@ pre[data-line] {
 	background: -webkit-linear-gradient(left, hsla(24, 20%, 50%,.1) 70%, hsla(24, 20%, 50%,0));
 	background: -o-linear-gradient(left, hsla(24, 20%, 50%,.1) 70%, hsla(24, 20%, 50%,0));
 	background: linear-gradient(left, hsla(24, 20%, 50%,.1) 70%, hsla(24, 20%, 50%,0));
-	
+
 	pointer-events: none;
-	
+
 	line-height: inherit;
 	white-space: pre;
 }
@@ -191,7 +194,7 @@ pre[data-line] {
 		text-shadow: none;
 		box-shadow: 0 1px white;
 	}
-	
+
 	.line-highlight[data-end]:after {
 		content: attr(data-end);
 		top: auto;

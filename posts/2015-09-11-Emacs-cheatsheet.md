@@ -5,11 +5,7 @@ date: 2015-09-11 01:33:45
 category: Emacs
 ---
 
-<<<<<<< b5c7984a8f7bcafee5331e6b90a7651acc925449
-These bindings should work for emacs from 24 upwards.
-=======
-Assume that these bindings work for emacs from 24 upwards.
->>>>>>> Started post: Packaging python projects
+These bindings should work for emacs from 24 upwards.  
 My emacs config is in my [dotfiles].
 
 | Key binding |            Name         |                  Purpose               |   Package  | From emacs version |

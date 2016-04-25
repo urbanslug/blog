@@ -3,7 +3,7 @@ layout: post
 title: The Man in the Arena.
 date: 2014-04-05 14:11:21
 categories: Inspiration
-feature-img: "img/Content/Inspiration/man_in_the_arena_feature_image.png"
+feature-img: "images/Content/Inspiration/man_in_the_arena_feature_image.png"
 ---
 
 I was on you tube when I watched [Brené Brown: Why Your Critics Aren't The Ones Who Count]. You should watch it.
