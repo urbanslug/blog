@@ -1,5 +1,5 @@
 /* Fonts */
-@import url(http://fonts.googleapis.com/css?family=Roboto:100,300,300italic,400,700,700italic);
+@import url(https://fonts.googleapis.com/css?family=Roboto:100,300,300italic,400,700,700italic);
 html,
 body {
     color: black;
@@ -24,7 +24,7 @@ header {
     background:#fff;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0,0,0,0.26);
-    font-weight: 100;
+
     margin-bottom: 30px;
 }
 
@@ -40,6 +40,13 @@ header #header-content div#logo p{
     float: left;
     font-weight: bold;
     text-decoration: none;
+}
+
+div#blog-title {
+    font-weight: 300;
+    font-size: 50px;
+    margin: auto;
+    text-align: center;
 }
 
 div#wrapper{
@@ -66,8 +73,17 @@ h1 {
 
 h2 {
     font-size: 20px;
+    margin-top: 3em;
 }
 
+h3 {
+    margin-top: 3em;
+    font-size: 18px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 400;
+}
 
 div.info {
     color: #555;
@@ -144,6 +160,7 @@ footer {
 	  bottom:0;
     z-index: 1;
     font-weight: 300;
+    font-size: small;
 }
 
 li.carnival-comment.carnival-branding a {color: #E74C3D; box-sizing: inherit;}

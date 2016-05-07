@@ -58,7 +58,7 @@ The directory structure for this is as follows:
 [WaterInfrastructure] is the other project I wrote following the above guidelines.
 This was as an interview question (this is a form of attribution :D).
 
-*Question: I have a problem, do python projects have to have pyc files in
+*Question: I have a problem, do python projects have to have .pyc files in
 the same directory as the source file?*
 
 There really isn't much to say here you can learn more by browsing through
