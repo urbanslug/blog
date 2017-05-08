@@ -24,7 +24,7 @@ header {
     font-size: 18px;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0,0,0,0.26);
-    background: rgb(35,35,35);
+    background: #24292e;
     margin-bottom: 30px;
 }
 
@@ -155,7 +155,7 @@ footer {
     width: 100%;
     position: absolute;
     border-top: 1px solid #ccc;
-    padding: 12px 0px 12px 0px;
+    padding: 12px 0px 36px 0px;
     height:20px;
     bottom:0;
     z-index: 1;
