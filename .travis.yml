@@ -1,14 +1,17 @@
-sudo: true
+sudo: required
 language: nix
 branches:
   only:
   - master
-before_script:
-- git config --global user.email "$GIT_EMAIL"
-- git config --global user.name  "$GIT_NAME"
 addons:
   ssh_known_hosts:
   - 207.154.220.102
+before_script:
+- git config --global user.email "$GIT_EMAIL"
+- git config --global user.name  "$GIT_NAME"
+- chmod 600 travis-ci
+- mv travis-ci ~/.ssh/id_ed25519
+- sudo cp ~/.ssh/known_hosts /root/.ssh/known_hosts
 script:
 - ./site.hs build
 after_script:
@@ -18,7 +21,7 @@ after_script:
 - git add --all
 - git status
 - git commit -m "Built by Travis ( build $TRAVIS_BUILD_NUMBER )"
-- git push --force --quiet deploy master:master > /dev/null
+- sudo git push --force --quiet deploy master:master > /dev/null
 env:
   global:
   - NIX_PATH: nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/b7e4857dd906022e4f996ae13ccb2988f2782de0.tar.gz
