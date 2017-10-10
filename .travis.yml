@@ -8,6 +8,8 @@ addons:
 before_script:
 - git config --global user.email "$GIT_EMAIL"
 - git config --global user.name  "$GIT_NAME"
+- chmod 600 travis-ci
+- mv travis-ci ~/.ssh/id_ed25519
 script:
 - ./site.hs build
 after_success:
@@ -18,9 +20,8 @@ after_success:
 - git status
 - git commit -m "Built by Travis ( build $TRAVIS_BUILD_NUMBER )"
 - eval "$(ssh-agent -s)"
-- chmod 600 travis-ci
-- ssh-add travis-ci
-- git push --force -v deploy master:master > /dev/null
+- ssh-add ~/.ssh/id_ed25519
+- git push --force -v deploy master:master
 env:
   global:
   - NIX_PATH: nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/b7e4857dd906022e4f996ae13ccb2988f2782de0.tar.gz
