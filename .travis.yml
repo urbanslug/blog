@@ -8,13 +8,13 @@ before_script:
 - git config --global user.name  "$GIT_NAME"
 addons:
   ssh_known_hosts:
-  - 138.68.103.183
+  - 207.154.220.102
 script:
 - ./site.hs build
 after_script:
 - cd _site
 - git init
-- git remote add deploy "deploy@138.68.103.12:~/blog"
+- git remote add deploy "deploy@207.154.220.102:~/blog"
 - git add --all
 - git status
 - git commit -m "Built by Travis ( build $TRAVIS_BUILD_NUMBER )"
