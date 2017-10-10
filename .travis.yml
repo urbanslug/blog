@@ -5,7 +5,9 @@ branches:
 before_script:
 - git config --global user.email "$GIT_EMAIL"
 - git config --global user.name  "$GIT_NAME"
-
+addons:
+  ssh_known_hosts:
+  - 138.68.103.12
 script:
 - ./site.hs build
 after_script:
