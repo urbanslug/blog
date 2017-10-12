@@ -1,28 +1,15 @@
-sudo: false
-language: c
-cache:
-  directories:
-    - ~/.stack
+language: nix
 
 branches:
   only:
-    - master
+  - master
 
 addons:
   ssh_known_hosts:
     - git.urbanslug.com
 
-before_install:
-  - mkdir -p ~/.local/bin
-  - export PATH=~/.local/bin:$PATH
-  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar -xzO --wildcards '*/stack' > ~/.local/bin/stack
-  - chmod a+x ~/.local/bin/stack
-
-install:
-  - stack -j 2 setup --no-terminal
-
 script:
-  - stack -j 2 --no-terminal --skip-ghc-check build
+  - ./site.hs build
 
 after_success:
   - eval "$(ssh-agent -s)" #start the ssh agent
@@ -40,6 +27,7 @@ after_success:
 
 env:
   global:
+    - NIX_PATH: nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/b7e4857dd906022e4f996ae13ccb2988f2782de0.tar.gz
     - GIT_EMAIL: travis@travis-ci.org
     - GIT_NAME: Travis CI
 
