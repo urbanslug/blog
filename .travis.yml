@@ -16,7 +16,7 @@ addons:
   ssh_known_hosts:
     - git.urbanslug.com
 
-before_install:
+install:
   - mkdir -p ~/.local/bin
   - export PATH=~/.local/bin:$PATH
   - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar -xzO --wildcards '*/stack' > ~/.local/bin/stack
