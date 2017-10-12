@@ -1,12 +1,4 @@
-language: generic
-
-sudo: false
-
-cache:
-  directories:
-    - $HOME/.stack/
-    - $HOME/.local/bin/
-    - .stack-work/
+language: nix
 
 branches:
   only:
@@ -16,18 +8,8 @@ addons:
   ssh_known_hosts:
     - git.urbanslug.com
 
-install:
-  - mkdir -p ~/.local/bin
-  - export PATH=~/.local/bin:$PATH
-  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar -xzO --wildcards '*/stack' > ~/.local/bin/stack
-  - chmod a+x ~/.local/bin/stack
-
-#install:
-
 script:
-  - stack -j 2 setup --no-terminal
-  - stack -j 2 build --only-snapshot --no-terminal
-  - stack exec site build
+  - ./site.hs build
 
 after_success:
   - eval "$(ssh-agent -s)" #start the ssh agent
