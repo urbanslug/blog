@@ -1,7 +1,5 @@
-language: c
-
 sudo: false
-
+language: c
 cache:
   directories:
     - ~/.stack
