@@ -32,4 +32,4 @@ after_success:
   - git add --all
   - git status
   - git commit -m "Built by Travis ( build $TRAVIS_BUILD_NUMBER )"
-  - git push --force -v deploy master:master
+  - git push -q --force deploy master:master
