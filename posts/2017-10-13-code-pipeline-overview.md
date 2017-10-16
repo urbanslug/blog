@@ -95,10 +95,13 @@ Running tests, style checks and catching errors in the code.
 > Tools: travis ci, circle ci, gitlab ci
 
 ### Continuous deployment
-Once the tests run and pass, have a tool compile a binary or create a commit,
-push it to a deploy environment and make sure it's running.
+Once the continuous integration tests run and pass, have a tool compile a binary
+or create a commit, push it to a deploy environment and make sure it's running.
 
-> Tools: travis-ecs-deploy, deploy scripts
+This is comparable to continuous delivery which accordingo to Wikipedia:
+["Continuous Delivery means that the team ensures every change can be deployed to production but may choose not to do it, usually due to business reasons"](https://en.wikipedia.org/wiki/Continuous_delivery)
+
+> Tools: travis-ecs-deploy, deploy scripts, terraformy
 
 &nbsp;
 

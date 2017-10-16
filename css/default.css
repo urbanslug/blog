@@ -408,5 +408,6 @@ pre[data-line] {
 }
 
 blockquote {
-    font-style: italic;
+    color: #6a737d;
+
 }
