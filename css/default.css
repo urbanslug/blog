@@ -104,12 +104,10 @@ article {
 
 article div.sourceCode {
     margin: 20px auto 20px auto;
-    box-shadow: 0 2px 5px rgba(151, 151, 151, 0.58);
     font-size: 90%;
 }
 
 article pre {
-    box-shadow: 0 2px 5px rgba(151, 151, 151, 0.58);
     font-size: 90%;
 }
 
@@ -255,27 +253,28 @@ code{
 :not(pre) >
     pre[class],
 code{
-    background: #f5f2f0;
+    background: #fdf6e3;
 }
 
 /*For `` code highlighting.*/
 :not(pre) >
     pre[class*=""],
 code {
-  padding: .1em;
+    padding: 1px;
     border-radius: .3em;
-    background: #f5f2f0;
-  font-size: 90%;
+    background: #fdf6e3;
+    font-size: 90%;
 }
 
-    pre[class*=""],
+pre[class*=""],
 code {
+    padding: 0 0 0 5px;
     margin: .5em 0;
     overflow: auto;
 }
 
 pre {
-    background: #f5f2f0;
+    background: #fdf6e3;
 }
 
 /* End of for `` code highlighting.*/
