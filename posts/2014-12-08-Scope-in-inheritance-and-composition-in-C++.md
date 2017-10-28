@@ -30,7 +30,7 @@ public:
   }
   ~parent() {
     cout << "Parent object destoyed." << endl;
-  } 
+  }
 };
 
 class child: public parent {
@@ -65,13 +65,14 @@ int main () {
 
 Output:
 
-    Composing object created
-    Parent object created.
-    Child object created.
-    Child object destoyed.
-    Parent object destoyed.
-    Composed oject destroyed.
-
+```
+Composing object created
+Parent object created.
+Child object created.
+Child object destoyed.
+Parent object destoyed.
+Composed oject destroyed.
+```
 
 So what do we see here:
 
