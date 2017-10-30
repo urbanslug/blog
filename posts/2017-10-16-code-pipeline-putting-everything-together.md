@@ -2,7 +2,7 @@
 layout: post
 title: Pipeline as Code - putting everything together
 date:  2017-10-16 20:10:18
-category: Devops CI CD
+category: Devops Travis CI CD
 ---
 
 In this post we shall implement a continuous deployment pipeline using
