@@ -39,7 +39,9 @@ gh pages blog's production environment.
 > Exposes: git branches and git tags
 
 ## Ansible (Provisioning and Configuration Management)
-We want an ansible play that creates a deploy user with SSH authentication.
+Assuming you have a fresh server such as the one Digital Ocean would offer
+or a fresh EC2 instance. We want an ansible play that creates an unprivileged
+user with SSH authentication.
 So we have to:
 
  - generate an SSH key pair without a passphrase locally
@@ -47,8 +49,8 @@ So we have to:
  - push the private key to travis ci so that it can autheniticate as that user.
 
 #### Generate an SSH keypair
-Locally generate an SSH key that has no passphrase for the travis user and add
-the public key to the deploy user's known_hosts
+Locally generate an SSH key that has **no passphrase** for the travis user and
+add the public key to the deploy user's known_hosts
 ```
 $ ssh-keygen -t ed25519 -C "travis@travis-ci.org"
 ```
@@ -56,51 +58,64 @@ Under "Enter file in which to save the key..." enter `travis-ci`
 This will create two files `travis-ci` and `travis-ci.pub`.
 
 #### Add the public key to the deploy user's known_hosts
+Write a play to prepare the deploy environment.
+
 Copy the contents of `travis-ci.pub` file to the playbooks so that it's added to
 that user's known_hosts every time.
 For example [here's my public key in my playbooks](https://github.com/urbanslug/playbooks/blob/master/roles/base/vars/vars.yml#L1)
 
-Write a play to prepare the deploy environment we want to create a deploy/devops
-user with minimal privileges.
-In the case of this blog I run
+Here's a vars file
+```yml
+travis_ci_pubkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINFzeaPrMXDVS1/+V4hKsgC+Pzoa9tnGGP+VCPT21QXP travis@travis-ci.org"
 ```
-ansible-playbook base.yml --ask-sudo-pass --ask-vault-pass
+
+and here's the play that creates the user and adds the key
+```yml
+- include_vars: vars.yml
+
+- name: Create deploy user
+  user: name=deploy
+        group=www
+
+- name: copy travis-ci public ssh key to deploy user
+  authorized_key: key="{{ travis_ci_pubkey }}"
+        path=/home/deploy/.ssh/authorized_keys
+  user=deploy
 ```
-from my devops server. This creates the deploy user and adds the travis-ci.pub
-to the deploy user's `~/.ssh/known_hosts`. It also creates this user amongst
-other functions.
+
+This creates the deploy user and adds the travis-ci.pub
+to the deploy user's `~/.ssh/known_hosts`.
+
+In the case of this blog I run the below command from my devops server.
+```bash
+$ ansible-playbook base.yml --ask-sudo-pass --ask-vault-pass
+```
 
 
 #### Push the private key to travis ci
 Install the [travis cli tool](https://docs.travis-ci.com/user/encryption-keys/#Usage)
-```
-gem install travis
+```bash
+$ gem install travis
 ```
 
 Encrypt your private key and add the decryption command to your .travis.yml file
-using the travis cli tool
-```
-travis encrypt-file travis-ci --add
+using the travis cli tool and also push your public key to travis-ci with:
+```bash
+$ travis encrypt-file travis-ci --add
 ```
 
-Thanks to the `--add` flag your .travis.yml should a `before_install` phase that
-resembles the following:
-```
+The `--add` flag  should add a  `before_install` phase to your .travis.yml file
+that resembles the following:
+```yml
  - openssl aes-256-cbc -K $encrypted_7f9f7befb56d_key -iv $encrypted_7f9f7befb56d_iv -in travis-ci.enc -out travis-ci -d
 ```
 That line decrypts your travis-ci private key in the travis container at runtime
-and creates a ~/travis-ci which is the private key.
+and creates a `~/travis-ci` which is the private key.
 
-> Exposes: travis encrypt-file, ssh-keygen, ansible-playbook
+> Exposes: travis encrypt-file, ssh-keygen, ansible-playbook, ansible vars
 
 
 ## Travis CI (Continuous Integration and Continuous Deployment)
-This is meant to run tests and/or build our application on every branch or
-specific branches based on rules you have set.
-
-We then build on this functionality to deploy to a target based on various
-rules. The obvious one being when our tests pass.
-
 Travis CI is a mix of open source and some propertary tools.
 To quote them "Travis CI is run as a hosted service, free for Open Source, a
 paid product for private code, and it’s available as an on-premises version
@@ -111,25 +126,35 @@ To learn how to get started with travis in your project you can read
 [get started doc](https://docs.travis-ci.com/user/getting-started/).
 Moving on, I assume you have (gained) enough experience with travis to go on.
 
+Travis will run tests and/or build our application on every branch or
+specific branches based on rules that we set. We then build on this
+functionality to deploy to a target based on various
+rules. The obvious one being when our tests pass.
+
 In our case: we want to run tests then after that deploy to the relevant target.
 In your .travis.yml file you can use one of the following
 [travis ci build phases] `after_success` or `deploy` steps.
 I prefer to use `after_success` when I want to run a deploy scipt and `deploy`
-for already supported deploy environments because deploy script feature is
+for already supported deploy environments because the script feature is
 experimental at the time of writing this.
 
 > Exposes: .travis.yml
 
-
 ### Deploying to a host
-We want to have push code from our travis container to our server or target.
+We want to have push code from our travis container to our server.
 
-#### Digital ocean
-```
+#### Digital ocean/script using after_success
+The `branches` section is essential in this case because it ensures that this
+.travis.yml file is only ran on the master branch.
+```yaml
+branches:
+  only:
+    - master
+
 after_success:
   - eval "$(ssh-agent -s)" #start the ssh agent
   - chmod 600 travis-ci
-  - ssh-add travis-ci
+  - ssh-add  travis-ci # add travis-ci priv key to the ssh agent
   - cd _site
   - git init
   - git config --global user.email "$GIT_EMAIL"
@@ -142,7 +167,7 @@ after_success:
 ```
 
 #### Github pages
-```
+```yaml
 deploy:
   skip_cleanup: true
   provider: pages
@@ -154,7 +179,7 @@ deploy:
 
 
 #### AWS ECS
-```
+```yaml
 deploy:
   # deploy to staging environment
   skip_cleanup: true
@@ -176,6 +201,10 @@ deploy:
   on:
     tags: true
 ```
+
+With this initial setup, we should have the CI tool handle all deploys going
+forward. If anything goes wrong we can go into the devops server and then run
+the ansible script and have it deploy a specific tag/branch.
 
 [travis ci build phases]: https://docs.travis-ci.com/user/customizing-the-build/#The-Build-Lifecycle
 [travis ci]: https://travis-ci.org/
