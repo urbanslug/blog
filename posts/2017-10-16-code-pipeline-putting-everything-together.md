@@ -16,6 +16,13 @@ that exposes an API.
 
 ![](/images/Content/Flowcharts/CD\ flowchart\ 0.svg)
 
+## Ansible server
+In the diagram above we introduce an ansible server as a "place". This is the
+host from which you can access your other servers such production, staging etsc.
+
+> Exposes: ansible, ssh
+
+
 ## Git (Version Control)
 We want to have playbooks, deploy scripts and code in version control.
 
