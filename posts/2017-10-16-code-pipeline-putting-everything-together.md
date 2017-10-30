@@ -14,10 +14,10 @@ conceptual. The flowchart below represents the actual places that our software
 should live at all times. Think of each component in the flowchart as a service
 that exposes an API.
 
-![](/images/Content/Flowcharts/CD\ flowchart\ 0.svg)
+![](/images/Content/Flowcharts/Pipeline_as_code_putting.svg)
 
 ## Ansible server
-In the diagram above we introduce an ansible server as a "place". This is the
+In the diagram above we introduce an ansible server. This is the
 host from which you can access your other servers such production, staging etsc.
 
 > Exposes: ansible, ssh
