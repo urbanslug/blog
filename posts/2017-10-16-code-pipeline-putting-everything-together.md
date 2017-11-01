@@ -16,8 +16,8 @@ that exposes an API.
 
 ![](/images/Content/Flowcharts/Pipeline_as_code_putting.svg)
 
-## Ansible server
-In the diagram above we introduce an ansible server. This is the
+## Deploy server
+In the diagram above we introduce an deploy server. This is the
 host from which you can access your other servers such production, staging etsc.
 
 > Exposes: ansible, ssh
@@ -48,7 +48,7 @@ github pages blog's production environment.
 Assuming you have a fresh server such as the one Digital Ocean would offer
 or a fresh EC2 instance. We want an ansible play that creates an unprivileged
 user with SSH authentication.
-So we have to do the following locally or on our devops server:
+So we have to do the following locally or on our deploy server:
 
  - generate an SSH key pair **without a passphrase**
  - add the public key of the generated key to the deploy user's known_hosts file
@@ -136,7 +136,7 @@ $ git clone deploy@git.urbanslug.com:blog.git
 I hope you can draw some interesting parallels there.
 Here's my [blog's play] for reference.
 
-In the case of this blog I run the below command from my devops server.
+In the case of this blog I run the below command from my deploy server.
 ```bash
 $ ansible-playbook base.yml --ask-sudo-pass --ask-vault-pass
 ```
@@ -272,7 +272,7 @@ deploy:
 
 I just explained how we can set up a project so that the CI tool handles all
 deploys going forward after the inital setting up. If anything goes wrong we can
-go into the devops server and then run an ansible script and have it roll back
+go into the deploy server and then run an ansible script and have it roll back
 to a specific tag/branch.
 
 In the next post we shall talk about continuous deployment in a microservice
