@@ -104,11 +104,7 @@ article {
 
 article div.sourceCode {
     margin: 20px auto 20px auto;
-    font-size: 90%;
-}
 
-article pre {
-    font-size: 90%;
 }
 
 article ul#post-list {
@@ -123,7 +119,8 @@ p {
 
 p code {
     background: #e8edf2;
-    color: #bd4147
+    color: #bd4147;
+    padding: 0;
 }
 body a {
     text-decoration: none;
@@ -270,7 +267,6 @@ code {
     padding: 1px;
     border-radius: .3em;
     background: #fdf6e3;
-    font-size: 90%;
 }
 
 pre[class*=""],
