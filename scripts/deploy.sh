@@ -1,5 +1,6 @@
 #!/bin/sh
 
+cd ~
 eval "$(ssh-agent -s)" #start the ssh agent
 chmod 600 travis-ci
 ssh-add travis-ci
