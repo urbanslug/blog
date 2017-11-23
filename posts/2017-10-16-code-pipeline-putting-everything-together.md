@@ -24,8 +24,7 @@ host from which you can access your other servers such production, staging etsc.
 
 
 ## Git (Version Control)
-We want to have playbooks, deploy scripts and code in version control.
-
+We want to have playbooks, deploy scripts and code in version control.  
 What we get from version control that is necessary for continuous deployment is:
 
  - tags get deployed to the main production environment
@@ -55,7 +54,7 @@ So we have to do the following locally or on our deploy server:
  - push the private key of the generated key to travis ci so that the travis
  container can autheniticate as that user.
 
-#### Generate an SSH keypair without a passphrase
+### Generate an SSH keypair without a passphrase
 Under `Enter file in which to save the key...` type in `travis-ci`.  
 Under `Enter passphrase (empty for no passphrase):` just press enter
 ```
@@ -63,9 +62,8 @@ $ ssh-keygen -t ed25519 -C "travis@travis-ci.org"
 ```
 This will create two files `travis-ci` and `travis-ci.pub`.
 
-#### Add the public key to the deploy user's known_hosts
-Write a play to prepare the deploy environment.
-
+### Add the public key to the deploy user's known_hosts
+Write a play to prepare the deploy environment.  
 Copy the contents of `travis-ci.pub` file to a vars file in your the playbooks
 For example [here's my vars file].
 
@@ -89,7 +87,7 @@ deploy user's known_hosts.
 This creates the deploy user and adds the travis-ci.pub
 to the deploy user's `~/.ssh/known_hosts`.
 
-#### Make your target a git server
+### Make your target a git server
 For commands like `git push` to work from travis-ci to your deploy user
 you have to have your server be ready to receive git push commands.
 I will explain this later in a different post but for now what you need is a
@@ -141,7 +139,7 @@ In the case of this blog I run the below command from my deploy server.
 $ ansible-playbook base.yml --ask-sudo-pass --ask-vault-pass
 ```
 
-#### Push the private key to travis ci
+### Push the private key to travis ci
 Install the [travis cli tool](https://docs.travis-ci.com/user/encryption-keys/#Usage)
 ```bash
 $ gem install travis
@@ -198,7 +196,7 @@ We want to push code from our travis container to our server.
 Here are some essesntials that would guide you in creating a .travis.yml file
 that would deploy to your target.
 
-#### Using after_success
+### Using after_success
 The `branches` section is essential in this case because it ensures that the
 .travis.yml file will only be ran for the master branch.
 ```yaml
@@ -242,7 +240,7 @@ after_success:
   - git push -q --force deploy master:master
 ```
 
-#### Github pages
+### Github pages
 Here's the way [borq, a library from goodbot.ai,] has its docs deployed to
 github pages every time a tag is created and here's the
 [complete travis.yml file for borq].
