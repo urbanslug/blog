@@ -1,10 +1,10 @@
 /* Fonts */
-@import url(https://fonts.googleapis.com/css?family=Roboto:100,300,300italic,400,400italic,700,700italic);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:100,300,300italic,400,400italic,600,700,700italic);
 html,
 body {
-    color: black;
+    color: rgba(0,0,0,0.87);
     font-size: 100%;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     margin: 0px;
     padding:0;
     height: 100%;
@@ -30,7 +30,7 @@ header {
 
 
 header #header-content {
-    max-width: 650px; /*Same as content width*/
+    max-width: 800px; /*Same as content width*/
     margin: auto;
 }
 
@@ -43,8 +43,8 @@ header #header-content div#logo p{
 }
 
 div#blog-title {
-    font-weight: 300;
-    font-size: 50px;
+    font-weight: 600;
+    font-size: 75px;
     margin: auto;
     text-align: center;
 }
@@ -68,21 +68,21 @@ header #header-content nav a {
 }
 
 h1 {
-    font-size: 30px;
+    font-size: 35px;
 }
 
 h2 {
-    font-size: 20px;
+    font-size: 25px;
     margin-top: 3em;
 }
 
 h3 {
-    margin-top: 3em;
-    font-size: 18px;
+    margin: 3em 0 0 20px;
+    font-size: 20px;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-weight: 400;
+    font-weight: 600;
 }
 
 div.info {
@@ -94,8 +94,8 @@ div.info {
 
 article {
     margin: 0 auto 0 auto;
-    width: 650px;
-    font-weight: 300;
+    width: 800px;
+    font-weight: 400;
     font-size: 16px;
     display: block;
     padding: 5em 0 150px 0;
@@ -117,7 +117,10 @@ article ul#post-list {
     margin: 0;
 }
 
-
+p code {
+    background: #e8edf2;
+    color: #bd4147
+}
 body a {
     text-decoration: none;
 }
@@ -212,7 +215,7 @@ td.sourceCode { padding-left: 5px; }
 
 pre[class],
 code {
-    color: black;
+    color: #57484d;
     text-shadow: 0 1px white;
     font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     direction: ltr;
@@ -221,7 +224,7 @@ code {
     word-spacing: normal;
     word-break: normal;
     line-height: 1.5;
-    font-size: 90%;
+    font-size: 14px;
 
     -moz-tab-size: 4;
     -o-tab-size: 4;
