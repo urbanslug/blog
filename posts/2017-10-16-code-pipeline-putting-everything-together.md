@@ -24,8 +24,7 @@ host from which you can access your other servers such production, staging etsc.
 
 
 ## Git (Version Control)
-We want to have playbooks, deploy scripts and code in version control.
-
+We want to have playbooks, deploy scripts and code in version control.  
 What we get from version control that is necessary for continuous deployment is:
 
  - tags get deployed to the main production environment
@@ -64,8 +63,7 @@ $ ssh-keygen -t ed25519 -C "travis@travis-ci.org"
 This will create two files `travis-ci` and `travis-ci.pub`.
 
 ### Add the public key to the deploy user's known_hosts
-Write a play to prepare the deploy environment.
-
+Write a play to prepare the deploy environment.  
 Copy the contents of `travis-ci.pub` file to a vars file in your the playbooks
 For example [here's my vars file].
 
