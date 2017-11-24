@@ -273,7 +273,7 @@ deploys going forward after the inital setting up. If anything goes wrong we can
 go into the deploy server and then run an ansible script and have it roll back
 to a specific tag/branch.
 
-In the next post we shall talk about continuous deployment in a microservice
+In the [next post] we'll talk about continuous deployment in a microservice
 architechture using the same tools but deploying to AWS ECS.
 
 [here's my vars file]: https://github.com/urbanslug/playbooks/blob/master/roles/base/vars/vars.yml#L1
@@ -285,3 +285,4 @@ architechture using the same tools but deploying to AWS ECS.
 [blog's play]: https://github.com/urbanslug/playbooks/blob/master/roles/blog/tasks/main.yml
 [complete travis.yml file for borq]: https://github.com/goodbotai/borq/blob/master/.travis.yml
 [borq, a library from goodbot.ai,]: https://github.com/goodbotai/borq
+[next post]: 2017-10-30-code-pipeline-microservices.html
