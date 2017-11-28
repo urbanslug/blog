@@ -81,7 +81,7 @@ Below is a high overview diagram of how a mail server works with the IMAP server
 
 *Created with GIMP and my mad graphics skills lulz*
 
-![mail image](/images/Content/Educate/mail.png "mail image overview")
+![](/images/Content/Educate/mail.png "mail image overview")
 
 [IPL (IBM Public Licence)]: https://en.wikipedia.org/wiki/IBM_Public_License
 [free]: http://en.wikipedia.org/wiki/Free_software
