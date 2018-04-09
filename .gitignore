@@ -6,4 +6,5 @@ site
 .stack-work/
 _cache/
 _site/
+result
 !favicon.ico

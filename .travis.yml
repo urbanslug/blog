@@ -18,7 +18,8 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_7f9f7befb56d_key -iv $encrypted_7f9f7befb56d_iv -in travis-ci.enc -out travis-ci -d
 
 script:
-  - ./site.hs build
+  - nix-build release.nix 
+  - ./result/bin/blog build 
 
 deploy:
   skip_cleanup: true
