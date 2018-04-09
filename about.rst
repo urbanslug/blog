@@ -2,10 +2,12 @@
 title: About
 ---
 
-This blog is an all Haskell, markdown generated  static site.
-View the source_ .
+I'm a programmer who prefers to write code using: pure functions, immutable data structures and type systems with type inference.
+I really love it when systems I build are reliable and currently lean towards tools such as nix, Kubernetes and docker.
 
-Topics comprise:
+Other fun things I've gotten into include: logic, philosophy and psychology.
+
+Topics I write about include but are not limited to:
 
 - Computer science
 - Linux
@@ -14,8 +16,8 @@ Topics comprise:
 - Programming
 - Cryptography
 - Personal development
-- Afrocentricism
-- African development and whatever else I deem fit.
+- The development of Africa
 
 
 .. _source: https://github.com/urbanslug/blog
+.. _Hakyll: https://jaspervdj.be/hakyll/

@@ -13,3 +13,7 @@ Gitlab:    [https://gitlab.com/u/urbanslug](https://gitlab.com/u/urbanslug)
 Bitbucket: [https://bitbucket.org/urbanslug](https://twitter.com/urbanslug)
 
 Twitter:   [\@urbanslug](https://twitter.com/urbanslug)
+
+Goodreads: [https://www.goodreads.com/urbanslug](https://www.goodreads.com/urbanslug)
+
+LinkedIn: [https://www.linkedin.com/in/urbanslug/](https://www.linkedin.com/in/urbanslug/)
