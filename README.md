@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/urbanslug/blog.svg?branch=master)](https://travis-ci.org/urbanslug/blog)
+
 # blog.urbanslug.com
 My personal blog
 
