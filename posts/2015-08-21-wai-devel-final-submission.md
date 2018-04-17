@@ -1,7 +1,7 @@
 ---
 title: wai-devel final submission.
 date: 2015-08-21 19:14:34
-categories: Programming Haskell GSoC WAI wai-devel
+tags: Programming, Haskell, GSoC, WAI, wai-devel
 ---
 
 This is the final day of code submissions to Google for Google Summer of Code.

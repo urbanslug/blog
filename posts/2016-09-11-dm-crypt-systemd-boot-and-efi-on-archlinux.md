@@ -2,7 +2,7 @@
 layout: post
 title: dm-crypt, luks, systemd-boot and UEFI on Archlinux.
 date:  2016-09-11 17:45:13
-category: ArchLinux SystemdBoot EFI dm-crypt
+tags: ArchLinux, SystemdBoot, EFI, dm-crypt
 ---
 
 Here I provide a little help for setting up an archlinux system with full disk

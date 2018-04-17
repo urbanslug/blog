@@ -2,7 +2,7 @@
 layout: post
 title: Scope in inheritance and composition in C++.
 date: 2014-12-08 18:00:33
-categories: Programming OOP C++
+tags: Programming, OOP, C++
 ---
 
 I hope you read my previous post before looking at this one if you don't know much about OOP in C++. The previous post explains various things like naming of stuff in C++ which is different from naming conventions in other languages.

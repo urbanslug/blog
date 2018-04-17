@@ -2,7 +2,7 @@
 layout: post
 title: Back to chess.
 date: 2014-12-08 16:33:15
-categories: Chess
+tags: Chess
 feature-img: "images/Content/Chess/Chess.png"
 ---
 

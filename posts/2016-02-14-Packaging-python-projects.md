@@ -2,7 +2,7 @@
 layout: post
 title: Packaging python projects.
 date: 2016-02-14 17:45:13
-category: Python packaging
+tags: Python, packaging
 ---
 
 A while ago I had quite a problem figuring out how to package a python project.

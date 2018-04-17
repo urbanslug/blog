@@ -2,7 +2,7 @@
 layout: post
 title: Yesod-devel
 date: 2015-07-19 15:35:14
-categories: Programming GSoC Yesod Yesod-Devel
+tags: Programming, GSoC, Yesod, Yesod-Devel
 ---
 
 A new development server is upon us. It's name is yesod-devel.  

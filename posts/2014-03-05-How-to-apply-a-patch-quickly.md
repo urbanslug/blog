@@ -2,7 +2,7 @@
 layout: post
 title:  How to quickly apply a patch.
 date: 2014-03-05 15:34:45
-categories: Programming General
+tags: Programming, General
 ---
 
 So you really should read more on this but of you are in a hurry.

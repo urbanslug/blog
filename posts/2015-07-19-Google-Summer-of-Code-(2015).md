@@ -2,7 +2,7 @@
 layout: post
 title: Google Summer of Code (2015).
 date: 2015-07-19 13:30:44
-categories: Programming GSoC Yesod Yesod-Devel
+tags: Programming, GSoC, Yesod, Yesod-Devel
 ---
 
 This post is long overdue and I should've started writing on this a while ago but oh well I will write as much in the remaining time and try to make up for lost time.

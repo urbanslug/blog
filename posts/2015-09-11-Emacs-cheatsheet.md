@@ -2,7 +2,7 @@
 layout: post
 title: Emacs cheatsheet
 date: 2015-09-11 01:33:45
-category: Emacs
+tags: Emacs
 ---
 
 These bindings should work for emacs from 24 upwards.  

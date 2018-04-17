@@ -2,7 +2,7 @@
 layout: post
 title: Solar power in Africa.
 date: 2014-03-18 17:34:23
-categories: Energy Africa
+tags: Energy, Africa
 ---
 
 I have an opinion on a topic (renewable energy) I hardly understand but I wish the world would get right, who doesn't?

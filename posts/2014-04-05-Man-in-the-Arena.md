@@ -2,7 +2,7 @@
 layout: post
 title: The Man in the Arena.
 date: 2014-04-05 14:11:21
-categories: Inspiration
+tags: Inspiration
 feature-img: "images/Content/Inspiration/man_in_the_arena_feature_image.png"
 ---
 

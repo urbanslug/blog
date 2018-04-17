@@ -2,7 +2,7 @@
 layout: post
 title: Pipeline as Code - overview
 date:  2017-10-13 14:23:19
-category: Devops CI CD
+tags: Devops, CI, CD
 ---
 
 Pipeline in this context refers to the collection of steps software goes through

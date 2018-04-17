@@ -2,7 +2,7 @@
 layout: post
 title: Pulseaudio mute on boot.
 date: 2014-12-02 04:38:32
-categories: Linux Pulseaudio
+tags: Linux, Pulseaudio
 ---
 
 This might work for you or fail to. Doesn't hurt to try.

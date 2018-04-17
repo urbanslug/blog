@@ -2,7 +2,7 @@
 layout: post
 title: Progress with wai-devel
 date: 2015-08-13 15:58:24
-categories: Programming Haskell WAI wai-devel
+tags: Programming, Haskell, WAI, wai-devel
 ---
 
 wai-devel is a  development server for wai compliant haskell web applications.  

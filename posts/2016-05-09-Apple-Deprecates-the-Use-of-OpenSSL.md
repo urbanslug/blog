@@ -2,7 +2,7 @@
 layout: post
 title: Apple Deprecates the Use of OpenSSL.
 date: 2016-05-09 13:33:13
-category: OpenSSL Apple OSX
+tags: OpenSSL, Apple, OSX
 ---
 
 During a brew upgrade I noticed that apple has deprecated the use of OpenSSL.

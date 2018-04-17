@@ -2,7 +2,7 @@
 layout: post
 title:  ThreadScope patch.
 date: 2014-03-05 22:45:12
-categories: Programming Haskell
+tags: Programming, Haskell
 ---
 
 So I had some issues installing threadscope earlier.
