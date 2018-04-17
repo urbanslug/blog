@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 import           Data.Monoid ((<>))
 import           Hakyll
+import           Hakyll.Core.Identifier.Pattern (fromRegex)
 
 --------------------------------------------------------------------------------
 main :: IO ()
@@ -34,8 +35,7 @@ main = hakyll $ do
             >>= relativizeUrls
 
     -- build up tags
-    tags <- buildTags "posts/*" (fromCapture "tags/*.html")
-
+    tags <- buildTags (fromRegex "(posts/*)|(notes/*)") (fromCapture "tags/*.html")
     match "posts/*" $ do
         route $ setExtension "html"
         compile $ pandocCompiler
@@ -44,27 +44,6 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html"  (postCtxWithTags tags)
             >>= relativizeUrls
 
-    tagsRules tags $ \tag pattern' -> do
-        let title = "Posts tagged \"" ++ tag ++ "\""
-        route idRoute
-        compile $ do
-            posts <- recentFirst =<< loadAll pattern'
-            let ctx = constField "title" title
-                      `mappend` listField "posts" postCtx (return posts)
-                      `mappend` defaultContext
-
-            makeItem ""
-                >>= loadAndApplyTemplate "templates/tag.html" ctx
-                >>= loadAndApplyTemplate "templates/default.html" ctx
-                >>= relativizeUrls
-
-    match "notes/*" $ do
-        route $ setExtension "html"
-        compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/notes.html"    postCtx
-            >>= saveSnapshot "content"
-            >>= loadAndApplyTemplate "templates/default.html" postCtx
-            >>= relativizeUrls
 
     match "index.html" $ do
         route idRoute
@@ -80,6 +59,14 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" indexCtx
                 >>= relativizeUrls
 
+    match "notes/*" $ do
+        route $ setExtension "html"
+        compile $ pandocCompiler
+            >>= loadAndApplyTemplate "templates/post.html"   (postCtxWithTags tags)
+            >>= saveSnapshot "content"
+            >>= loadAndApplyTemplate "templates/default.html"  (postCtxWithTags tags)
+            >>= relativizeUrls
+
     match "notes.html" $ do
         route idRoute
         compile $ do
@@ -93,7 +80,6 @@ main = hakyll $ do
                 >>= applyAsTemplate indexCtx
                 >>= loadAndApplyTemplate "templates/default.html" indexCtx
                 >>= relativizeUrls
-
 
     create ["rss.xml"] $ do
             route idRoute
@@ -129,6 +115,20 @@ main = hakyll $ do
         route idRoute
         compile copyFileCompiler
 
+    tagsRules tags $ \tag pattern' -> do
+        let title = "Posts tagged \"" ++ tag ++ "\""
+        route idRoute
+        compile $ do
+            posts <- recentFirst =<< loadAll pattern'
+            let ctx = constField "title" title
+                      `mappend` listField "posts" postCtx (return posts)
+                      `mappend` defaultContext
+
+            makeItem ""
+                >>= loadAndApplyTemplate "templates/tag.html" ctx
+                >>= loadAndApplyTemplate "templates/default.html" ctx
+                >>= relativizeUrls
+
 staticFiles :: Pattern
 staticFiles = fromList ["sitemap.xml", "404.html"]
 
@@ -138,7 +138,7 @@ postCtx =
     dateField "date" "%B %e, %Y" <> defaultContext
 
 postCtxWithTags :: Tags -> Context String
-postCtxWithTags tags = tagsField "tags" tags `mappend` postCtx
+postCtxWithTags tags = tagsField "tags" tags <> postCtx
 
 sitemapPostCtx :: Context String
 sitemapPostCtx =
