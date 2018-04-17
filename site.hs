@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
-import           Data.Monoid (mappend)
+import           Data.Monoid ((<>))
 import           Hakyll
 
 --------------------------------------------------------------------------------
@@ -41,38 +41,47 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html" postCtx
             >>= relativizeUrls
 
-    create ["archive.html"] $ do
-        route idRoute
-        compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
-            let archiveCtx =
-                    listField "posts" postCtx (return posts) `mappend`
-                    constField "title" "Archive"             `mappend`
-                    defaultContext
-
-            makeItem ""
-                >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
-                >>= loadAndApplyTemplate "templates/default.html" archiveCtx
-                >>= relativizeUrls
+    match "notes/*" $ do
+        route $ setExtension "html"
+        compile $ pandocCompiler
+            >>= loadAndApplyTemplate "templates/notes.html"    postCtx
+            >>= saveSnapshot "content"
+            >>= loadAndApplyTemplate "templates/default.html" postCtx
+            >>= relativizeUrls
 
     match "index.html" $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let indexCtx =
-                    listField "posts" postCtx (return posts) `mappend`
-                    constField "title" ""                `mappend`
-                    defaultContext
+                    listField "posts" postCtx (return posts)
+                    <> constField "title" ""
+                    <> defaultContext
 
             getResourceBody
                 >>= applyAsTemplate indexCtx
                 >>= loadAndApplyTemplate "templates/default.html" indexCtx
                 >>= relativizeUrls
 
+    match "notes.html" $ do
+        route idRoute
+        compile $ do
+            posts <- recentFirst =<< loadAll "notes/*"
+            let indexCtx =
+                    listField "posts" postCtx (return posts)
+                    <> constField "title" ""
+                    <> defaultContext
+
+            getResourceBody
+                >>= applyAsTemplate indexCtx
+                >>= loadAndApplyTemplate "templates/default.html" indexCtx
+                >>= relativizeUrls
+
+
     create ["rss.xml"] $ do
             route idRoute
             compile $ do
-                let feedCtx = postCtx `mappend` bodyField "description"
+                let feedCtx = postCtx <> bodyField "description"
                 loadAllSnapshots "posts/*" "content"
                     >>= recentFirst
                     >>= renderRss feedConfigurationRSS feedCtx
@@ -81,7 +90,7 @@ main = hakyll $ do
     create ["atom.xml"] $ do
         route idRoute
         compile $ do
-            let feedCtx = postCtx `mappend` bodyField "description"
+            let feedCtx = postCtx <> bodyField "description"
             posts <- fmap (take 10) . recentFirst =<<
                 loadAllSnapshots "posts/*" "content"
             renderAtom feedConfigurationAtom feedCtx posts
@@ -95,7 +104,7 @@ main = hakyll $ do
                 posts <- recentFirst =<< loadAll "posts/*"
                 let sitemapCtx =
                       listField "posts" sitemapPostCtx (return posts)
-                makeItem ""
+                makeItem ("" :: String)
                     >>= loadAndApplyTemplate "templates/sitemap.xml" sitemapCtx
 
 
@@ -110,14 +119,13 @@ staticFiles = fromList ["sitemap.xml", "404.html"]
 --------------------------------------------------------------------------------
 postCtx :: Context String
 postCtx =
-    dateField "date" "%B %e, %Y" `mappend`
-    defaultContext
+    dateField "date" "%B %e, %Y" <> defaultContext
 
 sitemapPostCtx :: Context String
 sitemapPostCtx =
-    dateField "date" "%Y-%m-%d" `mappend`
-    constField "baseUrl" "http://blog.urbanslug.com" `mappend`
-    defaultContext
+    dateField "date" "%Y-%m-%d"
+    <> constField "baseUrl" "http://blog.urbanslug.com"
+    <> defaultContext
 
 -- Feed configuration
 feedConfigurationRSS :: FeedConfiguration
