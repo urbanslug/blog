@@ -19,7 +19,6 @@ Haven't looked much into:
   - [Christos H. Papadimitriou]
 
 # Plot
-
 Autobiography of **[Bertrand Russell]** as a comic book.
 
 It's not entirely factual because it is meant to both captivate the reader
@@ -61,11 +60,9 @@ Logic is using combinations of the known to reach the unknown
 
 
 ## 3. Wanderjahre
-
 Bertrand went to Paris because he learned that since math rests on arithmetic they must first make arithmetic solid
 
 ## 4. Paradoxes
-
 After returning from Paris Bertrand wanted to write a book that would solve all
 foundational problems this was [The Principles of Mathematics] published 1903.
 He was to use a notation invented by [Giuseppe Peano]
@@ -106,15 +103,13 @@ this was the [Tractatus Logico-Philosophicus] (TLP) published in 1922.
 [G. E. Moore] really liked it. Bertrand Russel didn't. I haven't yet read it to give an opinion on it.
 
 ## 6. Incompleteness
-
 Some proofs can't be proven according to [Kurt Gödel].
 
 ## 7. Finale
-
 I don't have much to say here.
 
-# Ideas
 
+# Ideas
 Reason is in its highest form, logic.
 
 High rate of psychosis amongst founders of logic.
@@ -146,7 +141,6 @@ Wittgenstein ideas:
 Vienna circle's rationalistic world view has desecrated hallowed Germanic values and for that Schlick was killed by Hitler.
 
 # Vocabulary
-
 stukas  
 panzers tank  
 acropolis  
@@ -178,8 +172,7 @@ diatribe
 tragedian  
 
 
-## definitions
-
+## Definitions
 **tautology:** a statement that is true by virtue of its logical form e.g all red ants are red.
 
 **logic:**
@@ -244,7 +237,6 @@ Already well known
 Killed by hitler
 
 #### Bertand Russel
-
 Pacifist activist
 Wrote a diary in Greek called, **greek execises**.
 Dreamt of a logical calculus
@@ -253,7 +245,6 @@ granddaughter committed suicide
 
 
 #### George Boole
-
 Wrote [The Laws of Thought].
 
 Developed the idea that logical propositions can be expressed in purely symbolic lang which allows them to be manipulated by operations similar to arithmetic
@@ -262,7 +253,6 @@ Only had or and and not this meant it couldn't express semantic connections betw
 
 
 #### Gottlob Frege
-
 Wrote the **concept script**
 The point of logic is not calculation but to **model** reality.
 Ordinary language is not suited to science. A language that is completely logical, only such a language can deal with the foundations of mathematics.
@@ -303,7 +293,6 @@ Started becoming a mystic and wrote [Philosophical Investigations](https://en.wi
 
 
 #### Aeshylus
-
 One of the great Greek tragedians
 Creator of tragedy as we know it.
 invented dramatic dialogue
