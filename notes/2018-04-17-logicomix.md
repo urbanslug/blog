@@ -333,6 +333,8 @@ Creation of a formal system for math, also containing a proof that this axiomati
   - [Stanford Encyclopedia of Philosophy]
 
 ## IRC
+A rough and English interpretation of what was going on in the Vienna Circle, which was HUGELY influenced/inspired by the early Wittgenstein.
+
 <script src="https://gist.github.com/urbanslug/ece1bb042501dc870deb3e6926ed19a6.js"></script>
 
 
