@@ -114,7 +114,7 @@ article ul#post-list {
 }
 
 p {
-    margin: 0 0 20px 0;
+    #f6f8fa#f6f8fa   margin: 0 0 20px 0;
 }
 
 p code {
@@ -131,7 +131,7 @@ body a:link {
 }
 
 body a:visited {
-    color: #5E5E8E;
+    color: #0366d6;
 }
 
 article ul#post-list li.individual-post {
@@ -218,7 +218,7 @@ pre[class],
 code {
     color: #57484d;
     text-shadow: 0 1px white;
-    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-family: SFMono-Regular, Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     direction: ltr;
     text-align: left;
     white-space: pre;
@@ -257,7 +257,7 @@ code{
 :not(pre) >
     pre[class],
 code{
-    background: #fdf6e3;
+    background: #f6f8fa;
 }
 
 /*For `` code highlighting.*/
@@ -266,18 +266,18 @@ code{
 code {
     padding: 1px;
     border-radius: .3em;
-    background: #fdf6e3;
+    background: #f6f8fa;
 }
 
 pre[class*=""],
 code {
-    padding: 0 0 0 5px;
     margin: .5em 0;
     overflow: auto;
 }
 
 pre {
-    background: #fdf6e3;
+    padding: 16px;
+    background: #f6f8fa;
 }
 
 /* End of for `` code highlighting.*/
@@ -411,5 +411,6 @@ pre[data-line] {
 
 blockquote {
     color: #6a737d;
-
+    border-left: .25em solid #dfe2e5;
+    padding: 0 1em
 }
