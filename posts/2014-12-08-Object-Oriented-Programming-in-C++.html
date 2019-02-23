@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Object Oriented Programming in C++. urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Object Oriented Programming in C++.</h1>
+          <div class="info">
+    Posted on December  8, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/Programming.html">Programming</a>, <a href="../tags/C%2B%2B.html">C++</a>, <a href="../tags/OOP.html">OOP</a>
+    
+</div>
+
+<p>These are more like private paraphrased notes. If you wanted to really learn these things a C++ text book or <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Classes">this wikibooks article</a> would be better. These things can’t be learned in a hurry. Naming conventions are surprisingly different in C++ than they are in other languages. This post assumes you’re familiar with what functions, classes, inheritance, objects and so forth are. If you’re taking <a href="http://www.mu.ac.ke/informationscience/index.php/academic-prorammes/bachelor-programmes/bachelor-of-science-in-informatics#second-semester">INF 332</a> this would be good to read while studying for your exam.</p>
+<p>The method through which I will do this is by using a lot of working example code so that it becomes easy for you to follow along and play with the code yourself.</p>
+<p>So we’ll define a few things we need:</p>
+<h2 id="definitions">Definitions</h2>
+<p><strong>Data member</strong>: This is basically an attribute. A variable accessible from within the class or global within the class.</p>
+<p><strong>Member function</strong>: A function that is within a class. Known as methods in other langauges.</p>
+<p><strong>Abstract class</strong>: A class that contains at least one pure virtual function is considered an abstract class.</p>
+<p><strong>Getter</strong>: Also called accessor. A function used to access or get the value held by a private data member. These variable names often start with get</p>
+<p><strong>Setter</strong>: Also called Modifier. A function used to modify or set the value held by a private data member. These variable names often start with set.</p>
+<p><strong>Struct vs Class</strong>: There are two ways to define a class in C++. Using class and using struct. When using class all that is within the braces is private by default unless otherwise specified. When using struct all that is within the braces is public unless otherwise specified.</p>
+<p><strong>this</strong> It’s a special pointer in C++ used to refer to the current object at the time. To use it you often have to use <code>this -&gt; memFunction()</code> or <code>(*this).memFunction()</code> syntax to call member functions of the object itself.<br />
+In a human analogy it’s a pronoun the object can use to refer to itself; among people this would be “me”.</p>
+<p><strong>Base class</strong>: A base class is a class that is created with the intention of deriving other classes from it.<br />
+<strong>Child class</strong>: A child class is a class that was derived from another, that will now be the parent class to it.<br />
+<strong>Parent class</strong>: A parent class is the closest class that we derived from to create the one we are referencing as the child class. The one right above in the inheritance heirachy.</p>
+<h3 id="access-labels"><u>Access Labels</u></h3>
+<p>These are private, public and protected. They are used within classes to set access permissions for the members in that section of the class. They are also used for base classes to specify how you want the base class inherited as shown in the table below.</p>
+<p><strong>public</strong>: This label indicates any members within the ‘public’ section can be accessed freely anywhere a declared object is in scope.</p>
+<p><strong>private</strong>: Members defined as private are only accessible within the class defining them, or friend classes. Usually the domain of member variables and helper functions. It’s often useful to begin putting functions here and then moving them to the higher access levels as needed so to reduce complexity.</p>
+<p><strong>protected</strong>: The protected label has a special meaning to inheritance, protected members are accessible in the class that defines them and in classes that inherit from that base class, or friends of it.</p>
+<p>During inheritance things may change slightly as shown in this table. How things were in the parent class in terms of access lables may not be so in the child class.<br />
+By type of inheritance I mean:</p>
+<blockquote>
+<p><em>class childClass: private parentClass</em> is private inheritance<br />
+<em>class childClass: protected parentClass</em> is protected inheritance<br />
+<em>class childClass: public parentClass</em> is public inheritance</p>
+</blockquote>
+<p>The following table indicates how the attributes are inherited in the three different types of inheritance:</p>
+<table>
+<colgroup>
+<col width="22%" />
+<col width="28%" />
+<col width="25%" />
+<col width="22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>type of inheritance</th>
+<th>private</th>
+<th>protected</th>
+<th>public</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Private inheritance</td>
+<td>The member is inaccessible.</td>
+<td>The member is private.</td>
+<td>The member is private.</td>
+</tr>
+<tr class="even">
+<td>Protected inheritance</td>
+<td>The member is inaccessible.</td>
+<td>The member is protected</td>
+<td>The member is protected</td>
+</tr>
+<tr class="odd">
+<td>Public inheritance</td>
+<td>The member is inaccessible.</td>
+<td>The member is protected</td>
+<td>The member is public</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><em>Table copied entirely from the <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Classes">wikibooks</a> article</em></p>
+</blockquote>
+<h2 id="constructors">Constructors</h2>
+<p>A constructor is a special member function that is called <em>whenever</em> a new instance of a class is created. The compiler calls the constructor <em>after</em> the new object has been allocated in memory, and converts that “raw” memory into a proper, typed object (typed here means the class becomes a type of the same level with int, string and so forth).</p>
+<p>A constructor is used to assign values to the data members that the creator of the class choses. If you don’t declare a constructor the compiler will impicitly make one for you.</p>
+<p>The constructor is declared much like a normal member function but it:</p>
+<ul>
+<li>Doesn’t have a type annotation meaning it doesn’t start with the name of a type such as int or string.</li>
+<li>Has to have the same name as the class.</li>
+<li>Has no return value (Meaning it also has no return statement).</li>
+</ul>
+<p>The constructor may or may not have arguments. A constructor that does not take arguments is called a <strong>default constructor</strong>, while a constructor that takes argument(s) is a <strong>non-default constructor</strong>.</p>
+<p><strong>Overloading</strong>: This is the ability to create multiple methods of the same name but with different implementations. Calls to an overloaded function will run a specific implementation of that function appropriate to the context of the call, allowing one function call to perform different tasks depending on context.</p>
+<p>So let’s rewrite this in a way that combines constructors and contructor overloading. Don’t focus on what the code in the constructors does since I haven’t yet covered it. However, take note that the constructors were called depending on the arguments that the objects passed to them.</p>
+<script src="http://ideone.com/e.js/kXUWU4" type="text/javascript"></script>
+<p>Note: the constructor has the same name as the class. Also it doesn’t begin with a type annotation and it returns nothing.</p>
+<h4 id="default-parameters">Default parameters</h4>
+<p>It’s a good idea to read on the below constructor initialization lists first then read this before looking at the example code.<br />
+Sometimes we may want to have a default value initialised to a data member in case the creator of an object doesn’t give it a value. I such situations we have default parameters.<br />
+In the code below (the one under constructor initialization lists) we see that the constructor assumes that any phone that hasn’t had a parameter passed to it is a Phablet. Note that we have applied overloading to the constructor.</p>
+<h4 id="constructor-initalization-lists">Constructor initalization lists</h4>
+<p>These are also called <em>member initialization lists</em>. They are used to initialize data members and base classes in the cases of non-default constructors.</p>
+<p>Why do we need constructor initialization lists?</p>
+<ul>
+<li>We save by not having to do an assignment.</li>
+<li>The compiler knows to construct the object with that value in memory.</li>
+</ul>
+<p>It would otherwise construct the object in memory and then start assigning values to it’s member functions. This would lead be bad for performance.</p>
+<p>Explained further: the difference between using constructor initialization list and custom constructors through assignment is run-time speed. If you have a class with a few large data members, assignment construction (or constructing by assignment) can create a lot of extra overhead.</p>
+<p>Constructors are used to assign values to data members however the initialization isn’t done within the body of constructors; such kind of initialization would actually be <em>assignment</em> and not initialization and would have the drawbacks stated above. Keep in mind that data members are initialized in the order they are <em>declared</em>, not the order they appear in the constructor initialisation list.It is therefore good practice to add the data members to the initializer list in the same order they’re declared.</p>
+<p>To quote the wikibook on C++ classes under constructor initialization lists: <em>The C++ standard defines that all initialization of data members are done before entering the body of constructors. This is the reason why certain types (const types and references) cannot be assigned to and must be initialized in the constructor initialization list.</em></p>
+<p>Note: <em>we didn’t assign. The values look like paramters being passed to data members.</em></p>
+<script src="http://ideone.com/e.js/FsrsAf" type="text/javascript"></script>
+<p>We’ve overloaded the constructor but used constructor initialization lists instead of assigning values. We also passed a default parameter “phablet” to the class phones.</p>
+<h3 id="destructors">Destructors</h3>
+<p>The Destructor is a special function that is invoked AFTER an object has been destroyed to restore the system to a desired state.</p>
+<p>Destructors, like constructors, are declared like any normal member function but will share the same name as the class and also lack a type annotation and a return value. What distinguishes them from constructors is that the Destructor’s name is preceded by a “~”.</p>
+<p>A destructor also can not have arguments and therefore doesn’t require brackets after the destructor name. It also can’t be overloaded.</p>
+<p>Destructors are called whenever an object of the class it belongs to is destroyed. Destructors are crucial in avoiding resource leaks (by deallocating memory) and in implementing the <a href="https://en.wikipedia.org/wiki/Resource_Acquisition_Is_Initialization">RAII idiom</a>.</p>
+<p>Sadly in this section there are some concepts of memory management that you may not be familiar with. You can ignore them and just focus on how to declare a destructor but it might be better if you read this <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Memory_Management">wikibooks page on memory management in C++</a>.</p>
+<script src="http://ideone.com/e.js/u7FUAH" type="text/javascript"></script>
+<blockquote>
+<p>We created the object firstObj on the heap and therefore had to destroy it in class composition’s destructor (~composition () ). If the line delete firstObj was ommited that would lead to a memory leak (memory is held by the program that it shouldn’t hold). You can try it out yourself.</p>
+</blockquote>
+<h3 id="static">Static</h3>
+<p>The static keyword can be used to:</p>
+<ul>
+<li>Create permanent storage for local variables in a function.</li>
+<li>Specify internal linkage.</li>
+<li>Declare member functions that act like non-member functions.</li>
+<li>Create a single copy of a data member.</li>
+</ul>
+<p><strong>Static member functions</strong></p>
+<p>Member functions or variables declared static are shared between all instances of an object type. Meaning that only one copy of the member function or variable exists for any object type</p>
+<p><strong>Member functions callable without an object</strong> These member functions are callable even without an object. This means that static member functions can be called without creating instances of the class. Normally member functions seem to take an implicit <em>this</em> parameter. However, in the case of static member functions this isn’t the case, since they behave as some sort of free (not tied to a class) function.</p>
+<p>To initialize an a static data member you initialize it in the scope right outside of the class and refer to it using double semi colons. In the below code we see the static data member, citizens::citizenship, being initialized in line 19.<br />
+We use the double colon :: to show [scope] that is, the level of abstraction that a part of our program (class, function, variable) belongs to. In this case citizenship and functions inside citizens are declared in a different level of abstraction (in class citizens) than where they are being called in the case of funtions or initialized in the case of data members (citizenship).</p>
+<script src="http://ideone.com/e.js/OPbecb" type="text/javascript"></script>
+<blockquote>
+<p>We are interacting with citizenship without having created a citizen. Note that the constructor for citizenship never ran or else we would’ve seen the output “New citizen created.”</p>
+</blockquote>
+<p><strong>Named constructors</strong></p>
+<p>Named constructors are functions used to create an object of a class without (directly) using it’s constructors. Going by how we said that static member functions can be called without belonging to an object it means we can use static member functions to make a call to a named constructor.This can be translated to manually calling the constructor. Consequently, we chose the contructor we want to call.</p>
+<p>Other reasons we may want to use named constructors:</p>
+<ul>
+<li>To circumvent the restriction that constructors can be overloaded only if their signatures differ.</li>
+<li>Making the class non-inheritable by making the constructors private.</li>
+<li>Preventing stack allocation by making constructors private</li>
+</ul>
+<p>In the code below we’re taking different doubles but we are passing them differently to the constructor of the class Temperature. If this was part of an API it would give the programmer more freedom since the internal representation of temparature would be the same but they can think of temperature in the way they are most comfortable.</p>
+<script src="http://ideone.com/e.js/bm5rAA" type="text/javascript"></script>
+<blockquote>
+<p>One cannot define a static function ( or a member function) that refers to non-static data. We are initializing the objects created here via functions Kelvin(), Celsius() and Fahrenheit() to objects kelvin, celsius and fahrenheit so these objects will be created holding these objects. The static functions in this code example return a temporary object of type Temperature each.</p>
+</blockquote>
+<h3 id="composition">Composition</h3>
+<p>A composition is a class which has at least one of it’s data members being an object of another class. For example below the class composition is a composition.</p>
+<script src="http://ideone.com/e.js/1EKGU3" type="text/javascript"></script>
+<h3 id="inheritance">Inheritance</h3>
+<p>So inheritance is a rather huge topic for me to explain here. It’s best you read it elsewhere. I shall just explain how to do inheritance in C++. Multiple inheritance to be specific.</p>
+<p>In the below case we shall have 3 classes two base classes baseClassA and baseClassB; one child class that will inherit from both classes childClass. We shall see the use of constructor initialization lists with multiple inheritance and regarding constructors of parent classes.</p>
+<script src="http://ideone.com/e.js/4BGyrL" type="text/javascript"></script>
+<h3 id="dynamic-polymorphism">Dynamic Polymorphism</h3>
+<p>It would do you better to read this <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Classes#Dynamic_polymorphism_.28Overrides.29">Dynamic polymorphism</a> but since I already read it I’ll just give you the part that I feel is most relevant.</p>
+<p>Suppose that we have two classes, A and B. B derives from A and redefines the implementation of a method c() that resides in class A. Now suppose that we have an object b of class B. How should the instruction b.c() be interpreted?</p>
+<p>If b is declared in the stack (not declared as a pointer or a reference) the compiler applies <strong>static binding</strong>, this means it interprets (at compile time) that we refer to the implementation of c() that resides in B. y However, if we declare b as a pointer or a reference of class A, the compiler could not know which method to call at compile time, because b can be of type A or B. If this is resolved at run time, the method that resides in B will be called. This is called <strong>dynamic binding</strong>. If this is resolved at compile time, the method that resides in A will be called. This is again, <strong>static binding</strong>.</p>
+<h3 id="virtual-member-funtions">Virtual Member Funtions</h3>
+<p>Virtual member functions are member functions, that can be overridden in any class derived from the one where they were declared. Sort of like you can “overwrite” the funtion in the derived class. This is done by placing the keyword virtual before the method declaration. For example</p>
+<p>{% highlight c++ %} virtual memberFunc() { /<em>Member function code</em>/ } {% endhighlight %}</p>
+<p>The point is that when the compiler has to decide between applying static binding or dynamic binding it will apply dynamic binding. Otherwise, static binding will be applied. If the base class function is virtual all subclass overrides of it will also be virtual. However it is still good practice to add the virtual keyword before function definitions in subclasses, clarity and all.</p>
+<p>In this case assume we were simulating marketing companies in the world so. The new one will redefine marketing. (There’s a mutifaceted joke here btw :’-D )</p>
+<script src="http://ideone.com/e.js/ynqkYc" type="text/javascript"></script>
+<h4 id="pure-virtual-member-functions">Pure Virtual Member Functions</h4>
+<p>Sometimes we don’t want to provide an implementation of our function at all, but want to <strong>force</strong> people sub-classing our class to provide an implementation on their own.</p>
+<p>To create a pure virtual function:</p>
+<ul>
+<li>Include the keyword “virtual” before the “void” type annotation for the pure virtual member function.</li>
+<li>Don’t write the function code (not even the braces {} however, just add ‘= 0’ after function declaration.</li>
+</ul>
+<p>For example: <em>virtual void pureFunc() = 0;</em></p>
+<p>In the code below the pure virtual function “divorce ()” makes “person” an abstact class. This way anyone deriving from class person will have to implement <em>divorce ()</em> or their code won’t compile.<br />
+Assumption: This is by assumption that a person without a gender can’t undergo divorce. If that is offensive to anyone I’m sorry and I believe anyone should be able to marry anyone and divorce them if they want.</p>
+<script src="http://ideone.com/e.js/jJGZRN" type="text/javascript"></script>
+<p><strong>References:</strong> Basically every link here is a reference but the main ones are: &gt; Wikibooks classes: <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Classes">Wikibooks</a> &gt; Wikibooks memory management in C++: <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Memory_Management">wikibooks page on memory management in C++</a></p>
+<p>Hail Stallman and may the FOSS be with you.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

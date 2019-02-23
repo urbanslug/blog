@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>mail at urbanslug urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>mail at urbanslug</h1>
+          <div class="info">
+    Posted on March 26, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/Email.html">Email</a>
+    
+</div>
+
+<p>So uh since I am not allowed by society to wear a tinfoil hat and I believe that the we are under attack I have decided to leave gmail and set up my own mail server. Futile efforts but at least I shall have a fighting chance.</p>
+<p>FYI I heard not to wear a tinfoil hat because amplify the waves instead wear a wet towel on your head but you might get a cold or worse.</p>
+<h3 id="hosting.">Hosting.</h3>
+<p>I will get hosting from <span class="citation">[@computionist]</span> on twitter. I don’t know him personally but I know him from #nothaskell on freenode and twitter. A great guy to say the least.</p>
+<p>He is passionate about a ton of things.</p>
+<p>He gave me <strong>free</strong> hosting.</p>
+<p>He’s got free hosting for minorities, LGBT, newbies, <a href="http://www.haskellnow.org/CodeOfConduct">haskell-now</a> members and #nothaskell members. I don’t know under which criteria I qualified but I thank him.</p>
+<h3 id="the-stack.">The Stack.</h3>
+<p>The plan was for a full FOSS stack and if possible GPL compatibilty and copyleft.</p>
+<p><strong>Operating System</strong></p>
+<p>Linux CentOS because systemd baybie :) and my redhat fanboyism.</p>
+<p><strong>Mail Server</strong></p>
+<p>I decided to go with IMAP and SMTP because well it is the most flexible as far as I can tell.</p>
+<p><strong><em>SMTP</em></strong></p>
+<p>The <a href="https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol">SMTP</a> server I have decided to use will be <strong><a href="http://www.postfix.org/">Postfix</a></strong>. I had issues with the choice because it is <a href="https://en.wikipedia.org/wiki/IBM_Public_License">IPL (IBM Public Licence)</a> . It’s <a href="http://en.wikipedia.org/wiki/Free_software">free</a> and <a href="http://en.wikipedia.org/wiki/Copyleft">copyleft</a> but not <a href="http://en.wikipedia.org/wiki/GNU_General_Public_License">GPL</a> compatible. A moral conundrum ey? Anyway it has a community around it and having read on it’s incompatibility with the GPL I decided to go with it. This is the cause iof incompatibility: “The IPL differs from the GPL in the handling of patents, as IPL terminates the license upon patent disputes.”</p>
+<p><strong><em>IMAP</em></strong></p>
+<p>The <a href="https://en.wikipedia.org/wiki/Transport_Layer_Security">IMAP</a> server I will use will be <strong><a href="https://en.wikipedia.org/wiki/Cyrus_IMAP_server">Cyrus</a></strong>. This was a hard choice due to it’s <a href="https://en.wikipedia.org/wiki/BSD_licenses#4-clause_license_.28original_.22BSD_License.22.29">original BSD license</a>. I honestly don’t like anything BSD licensed let alone an older one with an advertising clause that I just learned about.</p>
+<p>However I was consoled by this statement. “the Free Software Foundation, recommends developers not use the license, though it states there is no reason not to use software already using it.”</p>
+<p>Worth noting that the choice in Cyrus and Postfix was mostly because <span class="citation">[@computionist]</span> already uses them and recommended them. I just wanted to make sure I was using FOSS and my choices were well documented plus had communities around them.</p>
+<h3 id="security.">Security.</h3>
+<p>Well I will be hosting in the USA so I have to try extra hard to make sure the NSA doesn’t listen in. The can break my encryption in 5 years after they have quantum computers strong enough. I don’t care.</p>
+<p>What I know I want:</p>
+<ul>
+<li>Ensure the server hardware and software are secure.</li>
+<li>Reduce to a minimum and if possible eliminate any chances of mail being in plaintext whilst in the server.</li>
+<li>TLS connection to the server.</li>
+<li>Outgoing mail to be encrypted opportunistically i.e where the remote end supports it.</li>
+<li>Hopefully encrypt mail while it is on the server.</li>
+<li>Key pair per user and when they get a message, generate a random symmetric key and encrypt their email with it. Then encrypt that symmetric key to the users public key and store that with the encrypted message. This way even I can’t decrypt it. Only the user with the secret key can.</li>
+</ul>
+<p>How to achieve all this I am not yet sure since it might get tricky but not much worry since most of the time I, and any other users if there will be, will be using end to end encyption for my mail.</p>
+<h3 id="visual-representation.">Visual Representation.</h3>
+<p>Below is a high overview diagram of how a mail server works with the IMAP server routing local mail to the IMAP server and foward the rest to another SMTP server. This may change depending on one’s configuration of course. I left out the crypto bits.</p>
+<p><em>Created with GIMP and my mad graphics skills lulz</em></p>
+<div class="figure">
+<img src="../images/Content/Educate/mail.png" title="mail image overview" alt="mail image" />
+<p class="caption">mail image</p>
+</div>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

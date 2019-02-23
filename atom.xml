@@ -1,0 +1,1129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>urbanslug blog - Atom feed</title>
+    <link href="http://blog.urbanslug.com/atom.xml" rel="self" />
+    <link href="http://blog.urbanslug.com" />
+    <id>http://blog.urbanslug.com/atom.xml</id>
+    <author>
+        <name>Njagi Mwaniki</name>
+        <email>njagi@urbanslug.com</email>
+    </author>
+    <updated>2019-01-07T20:48:34Z</updated>
+    <entry>
+    <title>Pass for iOS</title>
+    <link href="http://blog.urbanslug.com/posts/2019-01-07-pass-for-ios.html" />
+    <id>http://blog.urbanslug.com/posts/2019-01-07-pass-for-ios.html</id>
+    <published>2019-01-07T20:48:34Z</published>
+    <updated>2019-01-07T20:48:34Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on January  7, 2019
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/passwords.html">passwords</a>, <a href="/tags/pass.html">pass</a>, <a href="/tags/iOS.html">iOS</a>, <a href="/tags/password%20management.html">password management</a>
+    
+</div>
+
+<p>If you have a GPG keypair, believe in using strong passwords and are paranoid (don’t trust password management tools), then <a href="https://www.passwordstore.org/">pass</a> is the tool for you. I’ve been using it for so long that I can’t remember when I started using it and I have to say, I really like it.</p>
+<p>Pass is a FOSS tool that lets you roll your own password management tool-chain and if that sounds hard, it’s not. It works by storing your password, security questions etc in version controlled plain text files and encrypting them using your keys. You then clone your passwords repo and copy your GPG keys to the devices which you would like to access your passwords on.</p>
+<blockquote>
+<p>Pass is a FOSS that lets you roll your own password management tool-chain.</p>
+</blockquote>
+<p>A known downside of pass is that it <strong>leaks metadata</strong>. The workaround to this is storing all your passwords in a single file. Guys in the ##crypto on Freenode also recommend <a href="https://keepassxc.org/">keepassxc</a>.</p>
+<p>A short overview of pass:</p>
+<ol style="list-style-type: decimal">
+<li>Have a GPG keypair and (not required but a really good idea) a hosted version control system.</li>
+<li>Set up pass so that it knows which keypair to use.</li>
+<li>Create a git repo (password-store) which will hold your encrypted passwords.</li>
+<li>Start generating and version controlling your passwords.</li>
+</ol>
+<p>However, this isn’t a post about pass; it’s about how to use pass on iOS and there’s a tool, <a href="https://github.com/mssun/passforios">pass for iOS</a>, that does that. Assuming you’re already a pass user the question is how to get pass working on your iPad, iPhone or whatever.</p>
+<h1 id="how-do-we-transfer-our-ssh-and-gpg-keys">How do we transfer our SSH and GPG keys?</h1>
+<p>I think the easiest way would be via iTunes but that doesn’t feel right at all. Why would I trust a 3rd party server with my private key?</p>
+<p>What I decided to go with is a tool, <a href="https://github.com/yishilin14/asc-key-to-qr-code-gif">asc-key-to-qr-code-gif</a>, that converts converts ASCII (amored for GPG) keys to QR codes and then I scan those QR codes on <a href="https://github.com/mssun/passforios">Pass for iOS</a>. It’s all open source tools and no 3rd party servers involved. Tell me what you think about this “convert your keys to QR code” business <a href="https://twitter.com/urbanslug">via a tweet</a>.</p>
+<blockquote>
+<p>It’s all open source tools and no 3rd party servers involved.</p>
+</blockquote>
+<h2 id="setup-and-installing-dependencies">Setup and installing dependencies</h2>
+<p>First, I had to install some dependencies via homebrew. I felt it important to install zbar in case there were any errors during QR code generation.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">brew</span> install libqrencode imagemagick zbar</code></pre></div>
+<p><br/>Clone the <a href="https://github.com/yishilin14/asc-key-to-qr-code-gif">asc-key-to-qr-code-gif</a> repo to get the QR code generation script, asc-to-gif.sh.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">git</span> clone git@github.com:yishilin14/asc-key-to-qr-code-gif.git</code></pre></div>
+<h2 id="gpg">GPG</h2>
+<h3 id="export-your-gpg-keys-into-ascii-armored-files">Export your GPG keys into ASCII armored files</h3>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">gpg</span> --export --armor <span class="op">&lt;</span>key id<span class="op">&gt;</span> <span class="op">&gt;</span> public.asc
+<span class="ex">gpg</span> --export-secret-keys --armor <span class="op">&lt;</span>key id<span class="op">&gt;</span> <span class="op">&gt;</span> private.asc</code></pre></div>
+<h3 id="generate-and-scan-the-gpg-gifs">Generate and scan the GPG gifs:</h3>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">asc-to-gif.sh</span> public.asc public.gif
+<span class="ex">asc-to-gif.sh</span> private.asc private.gif</code></pre></div>
+<h2 id="ssh">SSH</h2>
+<p>I prefer to have different SSH keys for different devices that way it’s easy to revoke access for different devices. Moreover, using ed25519 keys on phones often fails because of the versions of OpenSSH they ship with so I just go with RSA which is the default anyway. In this case it even had to be PEM due to the version of GitSSH on iOS. Based on the <a href="https://github.com/mssun/passforios/wiki/Supported-Unsupported-Key-Algorithms">Supported Unsupported Key Algorithms wiki page</a> and <a href="https://github.com/mssun/passforios/issues/218">issue 218</a>, generate device keys with:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">ssh-keygen</span> -t rsa -b 4096 -m PEM -f ~/.ssh/id_rsa_<span class="op">&lt;</span>device<span class="op">&gt;</span> -C <span class="st">&quot;&lt;user&gt;@&lt;device&gt;&quot;</span></code></pre></div>
+<p>Then copy the pubkey to the version control tool of your choice.</p>
+<h3 id="generate-and-scan-the-ssh-gif">Generate and scan the SSH gif:</h3>
+<p>Generate a GIF for it.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">asc-to-gif.sh</span> ~/.ssh/id_rsa_<span class="op">&lt;</span>device<span class="op">&gt;</span> ssh.gif</code></pre></div>
+<h4 id="cloning-your-password-store-repo-into-your-device">Cloning your password-store repo into your device</h4>
+<p>Set the URL in this format:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">ssh</span>://git@gitlab.com/<span class="op">&lt;</span>gitlab username<span class="op">&gt;</span>/<span class="op">&lt;</span>password store repo<span class="op">&gt;</span>.git</code></pre></div>
+<p>and set your username to <code>git</code> according to <a href="https://github.com/mssun/passforios/issues/112#issuecomment-318342043">issue 112</a>.</p>
+<p>I’ll assume you can do the rest, like cloning the password store repository into your device and decrypting your password files, by yourself ;).</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Pipeline as Code - putting everything together</title>
+    <link href="http://blog.urbanslug.com/posts/2017-10-16-code-pipeline-putting-everything-together.html" />
+    <id>http://blog.urbanslug.com/posts/2017-10-16-code-pipeline-putting-everything-together.html</id>
+    <published>2017-10-16T20:10:18Z</published>
+    <updated>2017-10-16T20:10:18Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on October 16, 2017
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Devops.html">Devops</a>, <a href="/tags/CI.html">CI</a>, <a href="/tags/CD.html">CD</a>
+    
+</div>
+
+<p>In this post we shall implement a continuous deployment pipeline using <a href="https://www.ansible.com/">ansible</a>, <a href="https://travis-ci.org/">travis ci</a> and <a href="https://git-scm.com/">git</a>.</p>
+<p>During implementation we don’t have steps such as planning, provisioning, configuration management etc that we mentioned in the <a href="/posts/2017-10-13-code-pipeline-overview.html">previous post</a>; those are conceptual. The flowchart below represents the actual places that our software should live at all times. Think of each component in the flowchart as a service that exposes an API.</p>
+<div class="figure">
+<img src="/images/Content/Flowcharts/Pipeline_as_code_putting.svg" />
+
+</div>
+<h2 id="deploy-server">Deploy server</h2>
+<p>In the diagram above we introduce an deploy server. This is the host from which you can access your other servers such production, staging etsc.</p>
+<blockquote>
+<p>Exposes: ansible, ssh</p>
+</blockquote>
+<h2 id="git-version-control">Git (Version Control)</h2>
+<p>We want to have playbooks, deploy scripts and code in version control.<br />
+What we get from version control that is necessary for continuous deployment is:</p>
+<ul>
+<li>tags get deployed to the main production environment</li>
+<li>master branch gets deployed to the main staging environment</li>
+<li>other major branches get deployed to other staging environments of our choosing</li>
+</ul>
+<p>Not all these steps need to be done for it to be a continuous deployment pipeline. For example: for this blog, changes that get merged into master go straight into production. This is because the application is really small and simple so before anything goes into master I know it’s error free. Moreover, even if the blog were to experience downtime I have very little to lose compared to a business. This is the same model that github pages uses; what is in master is pushed into the <code>gh-pages</code> branch which is basically a github pages blog’s production environment.</p>
+<blockquote>
+<p>Exposes: git branches and git tags</p>
+</blockquote>
+<h2 id="ansible-provisioning-and-configuration-management">Ansible (Provisioning and Configuration Management)</h2>
+<p>Assuming you have a fresh server such as the one Digital Ocean would offer or a fresh EC2 instance. We want an ansible play that creates an unprivileged user with SSH authentication. So we have to do the following locally or on our deploy server:</p>
+<ul>
+<li>generate an SSH key pair <strong>without a passphrase</strong></li>
+<li>add the public key of the generated key to the deploy user’s known_hosts file</li>
+<li>push the private key of the generated key to travis ci so that the travis container can autheniticate as that user.</li>
+</ul>
+<h3 id="generate-an-ssh-keypair-without-a-passphrase">Generate an SSH keypair without a passphrase</h3>
+<p>Under <code>Enter file in which to save the key...</code> type in <code>travis-ci</code>.<br />
+Under <code>Enter passphrase (empty for no passphrase):</code> just press enter</p>
+<pre><code>$ ssh-keygen -t ed25519 -C &quot;travis@travis-ci.org&quot;</code></pre>
+<p>This will create two files <code>travis-ci</code> and <code>travis-ci.pub</code>.</p>
+<h3 id="add-the-public-key-to-the-deploy-users-known_hosts">Add the public key to the deploy user’s known_hosts</h3>
+<p>Write a play to prepare the deploy environment.<br />
+Copy the contents of <code>travis-ci.pub</code> file to a vars file in your the playbooks For example <a href="https://github.com/urbanslug/playbooks/blob/master/roles/base/vars/vars.yml#L1">here’s my vars file</a>.</p>
+<div class="sourceCode"><pre class="sourceCode yml"><code class="sourceCode yaml"><span class="fu">travis_ci_pubkey:</span><span class="at"> </span><span class="st">&quot;ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINFzeaPrMXDVS1/+V4hKsgC+Pzoa9tnGGP+VCPT21QXP travis@travis-ci.org&quot;</span></code></pre></div>
+<p>Add a section in a play of your choosing that copies the public key to the deploy user’s known_hosts.</p>
+<div class="sourceCode"><pre class="sourceCode yml"><code class="sourceCode yaml"><span class="kw">-</span> <span class="fu">include_vars:</span><span class="at"> vars.yml</span>
+
+<span class="kw">-</span> <span class="fu">name:</span><span class="at"> Create deploy user</span>
+  <span class="fu">user:</span><span class="at"> name=deploy</span>
+        group=www
+
+<span class="kw">-</span> <span class="fu">name:</span><span class="at"> copy travis-ci public ssh key to deploy user</span>
+  <span class="fu">authorized_key:</span><span class="at"> key=&quot;{{ travis_ci_pubkey }}&quot;</span>
+                  path=/home/deploy/.ssh/authorized_keys
+                  user=deploy</code></pre></div>
+<p>This creates the deploy user and adds the travis-ci.pub to the deploy user’s <code>~/.ssh/known_hosts</code>.</p>
+<h3 id="make-your-target-a-git-server">Make your target a git server</h3>
+<p>For commands like <code>git push</code> to work from travis-ci to your deploy user you have to have your server be ready to receive git push commands. I will explain this later in a different post but for now what you need is a play that:</p>
+<ul>
+<li>Installs git</li>
+<li>Creates a target git repo which we shall push to</li>
+<li>Is able to overwrite the current contents of the repo when a change occurs.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="co"># creates a blog.git dir which is a bare git repo</span>
+<span class="kw">-</span> <span class="fu">name:</span><span class="at">    Create a bare blog.git repo</span>
+  <span class="fu">command:</span><span class="at"> </span><span class="st">&quot;git init --bare blog.git&quot;</span>
+
+<span class="kw">-</span> <span class="fu">name:</span><span class="at"> Add a post-receive hook to update blog</span>
+  <span class="fu">copy:</span><span class="at"> src=../files/git/hooks/post-receive</span>
+        dest=blog.git/hooks/post-receive
+        owner=deploy
+        group=www
+        mode=0550
+        backup=yes</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#! /bin/bash</span>
+
+<span class="co"># post-recieve hook to handle updates</span>
+<span class="co"># delete the current blog</span>
+<span class="fu">rm</span> -rf ~/blog
+<span class="bu">cd</span> ~/
+<span class="co"># clone from the blog.git bare repo into a blog dir</span>
+<span class="fu">git</span> clone blog.git blog</code></pre></div>
+<p>If you take notice this is similar to the bare git repo that github provides. For example: to clone this blog from github via ssh we would run:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">git</span> clone git@github.com:urbanslug/blog.git</code></pre></div>
+<p>and if you had ssh access to the server hosting this blog you would run:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">git</span> clone deploy@git.urbanslug.com:blog.git</code></pre></div>
+<p>I hope you can draw some interesting parallels there. Here’s my <a href="https://github.com/urbanslug/playbooks/blob/master/roles/blog/tasks/main.yml">blog’s play</a> for reference.</p>
+<p>In the case of this blog I run the below command from my deploy server.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">ansible-playbook</span> base.yml --ask-sudo-pass --ask-vault-pass</code></pre></div>
+<h3 id="push-the-private-key-to-travis-ci">Push the private key to travis ci</h3>
+<p>Install the <a href="https://docs.travis-ci.com/user/encryption-keys/#Usage">travis cli tool</a></p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">gem</span> install travis</code></pre></div>
+<p>Encrypt your private key and add the decryption command to your .travis.yml file using the travis cli tool and also push your public key to travis-ci with:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">travis</span> encrypt-file travis-ci --add</code></pre></div>
+<p>The <code>--add</code> flag should add a <code>before_install</code> phase to your .travis.yml file that resembles the following:</p>
+<div class="sourceCode"><pre class="sourceCode yml"><code class="sourceCode yaml"><span class="fu">before_install:</span>
+ <span class="kw">-</span> openssl aes-256-cbc -K $encrypted_7f9f7befb56d_key -iv $encrypted_7f9f7befb56d_iv -in travis-ci.enc -out travis-ci -d</code></pre></div>
+<p>That line decrypts your travis-ci private key in the travis container at runtime and creates a <code>~/travis-ci</code> which is the private key. Make sure not to have multiple before-install phases.</p>
+<blockquote>
+<p>Exposes: travis encrypt-file, ssh-keygen, ansible-playbook, ansible vars</p>
+</blockquote>
+<h2 id="travis-ci-continuous-integration-and-continuous-deployment">Travis CI (Continuous Integration and Continuous Deployment)</h2>
+<p>Travis CI is a mix of open source and some proprietary tools.<br />
+To quote them “Travis CI is run as a hosted service, free for Open Source, a paid product for private code, and it’s available as an on-premises version (Travis CI Enterprise).”</p>
+<p>Here’s their <a href="https://github.com/travis-ci">github page</a> and <a href="https://github.com/travis-ci/travis-ci">info page</a>. To learn how to get started with travis in your project you can read <a href="https://docs.travis-ci.com/user/getting-started/">get started doc</a>. Moving on, I assume you have (gained) enough experience with travis to go on.</p>
+<p>Travis will run tests and/or build our application on every branch or specific branches based on rules that we set. We then build on this functionality to deploy to a target based on various rules. The obvious one being when our tests pass.</p>
+<p>In our case: we want to run tests then after that deploy to the relevant target. In your .travis.yml file you can use one of the following <a href="https://docs.travis-ci.com/user/customizing-the-build/#The-Build-Lifecycle">travis ci build phases</a> <code>after_success</code> or <code>deploy</code> steps. I prefer to use <code>after_success</code> when I want to run a deploy script and then list all the commands that my script would run and <code>deploy</code> for already supported deploy environments. This is because the script feature is experimental at the time of writing this.</p>
+<blockquote>
+<p>Exposes: .travis.yml</p>
+</blockquote>
+<h3 id="continuously-deploying-to-a-host">Continuously deploying to a host</h3>
+<p>We want to push code from our travis container to our server. Here are some essesntials that would guide you in creating a .travis.yml file that would deploy to your target.</p>
+<h3 id="using-after_success">Using after_success</h3>
+<p>The <code>branches</code> section is essential in this case because it ensures that the .travis.yml file will only be ran for the master branch.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">branches:</span>
+  <span class="fu">only:</span>
+    <span class="kw">-</span> master
+
+<span class="fu">addons:</span>
+  <span class="co"># add the target server to the containers known_hosts</span>
+  <span class="co"># this prevents a blocking prompt to add the server to travis-ci&#39;s</span>
+  <span class="co"># known_hosts when attempting to git push</span>
+  <span class="fu">ssh_known_hosts:</span>
+    <span class="kw">-</span> git.urbanslug.com
+
+<span class="co"># decrypt our public key</span>
+<span class="fu">before_install:</span>
+  <span class="kw">-</span> openssl aes-256-cbc -K $encrypted_7f9f7befb56d_key -iv $encrypted_7f9f7befb56d_iv -in travis-ci.enc -out travis-ci -d
+
+<span class="fu">env:</span>
+  <span class="fu">global:</span>
+    <span class="kw">-</span> <span class="fu">GIT_EMAIL:</span><span class="at"> travis@travis-ci.org</span>
+    <span class="kw">-</span> <span class="fu">GIT_NAME:</span><span class="at"> Travis CI</span>
+
+
+<span class="fu">script:</span>
+  <span class="kw">-</span> ./site.hs build
+
+<span class="co"># run the following commends after the script phase is successful</span>
+<span class="fu">after_success:</span>
+  <span class="kw">-</span> eval <span class="st">&quot;$(ssh-agent -s)&quot;</span> <span class="co"># start the ssh agent</span>
+  <span class="kw">-</span> chmod 600 travis-ci
+  <span class="kw">-</span> ssh-add  travis-ci <span class="co"># add travis-ci private key to the ssh agent</span>
+  <span class="kw">-</span> cd _site
+  <span class="kw">-</span> git init
+  <span class="kw">-</span> git config --global user.email <span class="st">&quot;$GIT_EMAIL&quot;</span>
+  <span class="kw">-</span> git config --global user.name  <span class="st">&quot;$GIT_NAME&quot;</span>
+  <span class="kw">-</span> <span class="fu">git remote add deploy &quot;deploy@git.urbanslug.com:</span><span class="at">blog.git&quot;</span>
+  <span class="kw">-</span> git add --all
+  <span class="kw">-</span> git status
+  <span class="kw">-</span> git commit -m <span class="st">&quot;Built by Travis ( build $TRAVIS_BUILD_NUMBER )&quot;</span>
+  <span class="kw">-</span> <span class="fu">git push -q --force deploy master:</span><span class="at">master</span></code></pre></div>
+<h3 id="github-pages">Github pages</h3>
+<p>Here’s the way <a href="https://github.com/goodbotai/borq">borq, a library from goodbot.ai,</a> has its docs deployed to github pages every time a tag is created and here’s the <a href="https://github.com/goodbotai/borq/blob/master/.travis.yml">complete travis.yml file for borq</a>.</p>
+<p>In the above case <code>travis-encrypt</code> is used to encrypt the github token like so</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">travis</span> encrypt GH_TOKEN=super_secret_token --add</code></pre></div>
+<p>The essentials of our .travis.yml file</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">env:</span>
+  <span class="fu">global:</span>
+    <span class="kw">-</span> <span class="fu">GH_REF:</span><span class="at"> github.com/goodbotai/borq.git</span>
+    <span class="kw">-</span> <span class="fu">secure:</span><span class="at"> S567U/zOMKOddrGtQBmFyA6ROzinMgheQ7rGoyVbw9i43hBzvKVgk+C77+cVCLPr8ps6qwqhV9Ex5ehM3ic9gXDJt9ZlpzlevP+epKxG11WL3S3RwAOGlp/wOkSM+KhEqYqNOSzjA5WLttzg5GFSqs+T3l7HelQfZk55t2O4HSmmKUKPbFfDZ/84suvPSf1pm+d8f99k5KQFnTO3JHbIkbdx76Hsa8KRsZFJ2oA3DgQOXPOf+W3AdlG5zT5t1hAv0wg1O1Q45zB1MDcMfAUYcJOk72eajWTx9E0jreAgEVNUG2oyBG+GNdN2eMtbO4hANcdbBAH6wQq797OK76YVN6MM2HiMMZ1W7emNmo5wP6nc23w7YXJ88a1Ysffxxi4aLOMD1rBlVT5/cjcjvRUeR/OHx+9fOLPo/G6KioC5oz0iXwNPSYkZBHQ3nKf4uribXAPV/8f+n9HzjSQTnILWXiYaaGqIJAjEzL8WL5dBBGhngkILzCX/Ur4LeYJkhLnrVTg089X8urjtWnBpZKMKAwhPfV768prfKurmRbirIlgJfw5WfRoiV34Bl3O7bcNQMQ0nIobgaNhF8JZRq6adp0K8ChVnfNl3oplXN1kiVr9YJRRb4ErLzRSJZqkP/TNUqOs5wFeiSoFGgCUvAyjQZN5IkKIr4VrdKcnbEgj/3Co=</span>
+
+<span class="fu">deploy:</span>
+  <span class="fu">skip_cleanup:</span><span class="at"> true</span>
+  <span class="fu">provider:</span><span class="at"> pages</span>
+  <span class="fu">local_dir:</span><span class="at"> out</span>
+  <span class="fu">github_token:</span><span class="at"> $GH_TOKEN</span>
+  <span class="fu">on:</span>
+    <span class="fu">tags:</span><span class="at"> true</span></code></pre></div>
+<p>I just explained how we can set up a project so that the CI tool handles all deploys going forward after the inital setting up. If anything goes wrong we can go into the deploy server and then run an ansible script and have it roll back to a specific tag/branch.</p>
+<p>In the next post we shall talk about continuous deployment in a microservice architechture using the same tools but deploying to AWS ECS.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Pipeline as Code - overview</title>
+    <link href="http://blog.urbanslug.com/posts/2017-10-13-code-pipeline-overview.html" />
+    <id>http://blog.urbanslug.com/posts/2017-10-13-code-pipeline-overview.html</id>
+    <published>2017-10-13T14:23:19Z</published>
+    <updated>2017-10-13T14:23:19Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on October 13, 2017
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Devops.html">Devops</a>, <a href="/tags/CI.html">CI</a>, <a href="/tags/CD.html">CD</a>
+    
+</div>
+
+<p>Pipeline in this context refers to the collection of steps software goes through from planning to deployment. Pipeline as code is having this pipeline be stored in an executable or/and a version controllable way.</p>
+<p>Why does this matter? A code pipeline that is executable and/or version controllable:</p>
+<ul>
+<li>is easy to keep tracking of as changes occur</li>
+<li>makes it possible to keep track of the actual and all possible agents of change (people and/or hosts)</li>
+<li>reduces repitition and consequently saves time</li>
+<li>is easy to delegate parts of to tools or completely automate</li>
+<li>has clear and consistent history</li>
+<li>has immutable code pipeline history meaning we can revert to previous stable state</li>
+<li>in case of failure, the broken state can be reproduced and post moterms performed</li>
+<li>is much it easier to maintain and keep track of its components in complex architechtures such as microservices</li>
+<li>makes it much easier to build tools that lower the bar of entry into ops such as running ansible plays and chatops bots</li>
+</ul>
+<p>Pipeline as code is the next step in planning, provisioning, configuration management and application deployment, continuous integration and continuous deployment.</p>
+<p>It’s also a great way to manage growing complexity in terms of both the architechture and teams involved. I just threw a number of buzzwords around so let me explain each of them and why they matter.</p>
+<blockquote>
+<p>It’s important to note that the tools used in each step have a lot of overlap between them and a tool is likely to show up in multple sections.</p>
+</blockquote>
+<h3 id="planning">Planning</h3>
+<p>Since we can’t execute plans as code, yet; we have to settle for version controlling them. Save your execution plans as documentation in a <code>docs/</code> directory or a git submodule (or any other format) files and put them in version control.</p>
+<p>You can also commit <code>.org</code> files you created during meetings, export them into <code>.md</code> and add them as docs.</p>
+<blockquote>
+<p>Tools: version control systems</p>
+</blockquote>
+<h3 id="provisioning">Provisioning</h3>
+<p>Provision is the past participle of provide, in this context it means providing everything that your application will need to run.</p>
+<p>It is an implementation of the infrastructure diagram/plan; it involves the to run the software. That is: where to host it, how many servers, OS versions, server requirements, dependencies, file system, directory structure. The answer to whether to use a vendor solution like AWS Lamda, or ECS would lie here.</p>
+<p>You probably need to do this once or at most 3 times <strong>ever</strong> unless you keep changing core infrastructure. You could put this in an ansible script, ECS task definitions, docker images, Amazon Machine Images, virtual machine images et cetera.</p>
+<blockquote>
+<p>Tools: Packer, Terraform, Ansible, Kubernetes pods, ECS clusters.</p>
+</blockquote>
+<h3 id="configuration-management">Configuration management</h3>
+<div class="figure">
+<img src="https://i.giphy.com/media/3oz8xOOWHS2MYEJXXO/giphy.gif" />
+
+</div>
+<p>Applications today are a collection of tools combined to solve a need. In the example of a simple web application we have a database, an app, an app server and a webserver. Configuration management is basically managing the glue that binds these tools together; which commands to run, which services to start and stop and when, arguments, environment variables, order of running them and so forth.</p>
+<blockquote>
+<p>Tools: ansible vars/vault, ansible plays</p>
+</blockquote>
+<h3 id="application-deployment">Application deployment</h3>
+<p>This is putting all the parts of the application that need to run on their respective servers, starting them and making sure they’re all working together and correctly. In this case you have vendor tools such as Identity and Access Management from AWS which you can build on top of. This will mean having the following in an executable and version controllable form: the deploy server, their user, deploy scripts avaible to them, actual deploy commands to run and the order in which to run them. You will only need to this during the first deployment or when something goes terribly wrong and you have to rollback but even then it’s still going to be a few commands or just one. You can also use other tools for deployment such as bots.</p>
+<blockquote>
+<p>Tools: ansible, puppet, chef</p>
+</blockquote>
+<h3 id="continuous-integration">Continuous integration</h3>
+<p>This is running tests and building the application to catch errors either in the code or the way parts of it integrate with each other. Running tests, style checks and catching errors in the code.</p>
+<blockquote>
+<p>Tools: travis ci, circle ci, gitlab ci</p>
+</blockquote>
+<h3 id="continuous-deployment">Continuous deployment</h3>
+<p>Once the continuous integration tests run and pass, have a tool compile a binary or create a commit, push it to a deploy environment and make sure it’s running.</p>
+<p>This is comparable to continuous delivery which accordingo to Wikipedia: <a href="https://en.wikipedia.org/wiki/Continuous_delivery">“Continuous Delivery means that the team ensures every change can be deployed to production but may choose not to do it, usually due to business reasons”</a></p>
+<blockquote>
+<p>Tools: travis-ecs-deploy, deploy scripts, terraformy</p>
+</blockquote>
+<p> </p>
+<p> </p>
+<p>In this post I’ve explained how the pipeline can be presented as code but only as seperate components not how these components can be combined to work as one.</p>
+<p>In the next post I’ll explain how you can use free tools and some open source tools to create a code pipeline that runs from provisioning, configuration management, version control, continuous integration and continuous deployment requiring very little input from devops and with as little complexity as possible.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>dm-crypt, luks, systemd-boot and UEFI on Archlinux.</title>
+    <link href="http://blog.urbanslug.com/posts/2016-09-11-dm-crypt-systemd-boot-and-efi-on-archlinux.html" />
+    <id>http://blog.urbanslug.com/posts/2016-09-11-dm-crypt-systemd-boot-and-efi-on-archlinux.html</id>
+    <published>2016-09-11T17:45:13Z</published>
+    <updated>2016-09-11T17:45:13Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on September 11, 2016
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/ArchLinux.html">ArchLinux</a>, <a href="/tags/SystemdBoot.html">SystemdBoot</a>, <a href="/tags/EFI.html">EFI</a>, <a href="/tags/dm-crypt.html">dm-crypt</a>
+    
+</div>
+
+<p>Here I provide a little help for setting up an archlinux system with full disk encryption, efi and using systemd-boot as the boot loader. This is really just what I learned from the <a href="https://wiki.archlinux.org/">arch wiki</a>, <a href="https://gist.github.com/mattiaslundberg/8620837">Mattias Lundberg’s gist</a> and <a href="http://www.brandonkester.com/tech/2014/03/16/full-disk-encryption-in-arch-linux-with-uefi.html">Brandon Kester’s post</a>. I’ll assume you have installed arch before and just need a little help getting everything up and running.</p>
+<p>Desired setup:</p>
+<pre><code>100M /boot
+100G /root
+8G swap
+the rest for /home</code></pre>
+<p><em>Unlike <a href="https://github.com/mattiaslundberg">Mattias Lundberg</a> I see no reason for separate <code>boot</code> and <code>efi</code> patitions.</em> Although some people have a problem with having their /boot in fat32 due to permissions reasons.</p>
+<p>This will be in 3 parts:</p>
+<ul>
+<li>Partitioning, encrypting and repartitioning.</li>
+<li>Installing the base system(arch).</li>
+<li>Configuring the bootloader.</li>
+</ul>
+<h2 id="partitioning-encrypting-and-repartitioning.">Partitioning, encrypting and repartitioning.</h2>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># I like gdisk.</span>
+<span class="ex">gdisk</span> /dev/sdX
+
+<span class="co"># Clear everything</span>
+<span class="ex">-</span><span class="op">&gt;</span> o
+
+<span class="co"># The first 100M efi partition</span>
+<span class="ex">-</span><span class="op">&gt;</span> n -<span class="op">&gt;</span> ... -<span class="op">&gt;</span> +100M -<span class="op">&gt;</span> ... -<span class="op">&gt;</span> EF00
+
+<span class="co"># power through this by always pressing enter.</span>
+<span class="co"># default hex code is 8E00</span>
+<span class="ex">-</span><span class="op">&gt;</span> n -<span class="op">&gt;</span> ...  -<span class="op">&gt;</span> 8E00</code></pre></div>
+<p>Expected gdisk output should be 2 partitions, something along the lines of:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># In the end `p` in gdisk or `gdisk -l` should give you two partitions along the lines of:</span>
+
+<span class="co"># Device      Start       End   Sectors   Size Type</span>
+<span class="co"># /dev/sda1    2048    514047    512000   250M EFI System</span>
+<span class="co"># /dev/sda2  514048 976773134 976259087 465.5G Linux filesystem</span></code></pre></div>
+<h4 id="format-encrypt-repartition-and-format-respectively.">Format, encrypt, repartition and format respectively.</h4>
+<p>The steps would be as follows:</p>
+<ul>
+<li>Format sdX1 in fat32</li>
+<li>Encrypt sdX2
+<ul>
+<li>Decrypt and repartition</li>
+<li>format the partitions in ext4</li>
+</ul></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># EFI only works with FAT32 so we format the 100M patition with FAT 32</span>
+<span class="ex">mkfs.vfat</span> -F32 /dev/sdX1
+
+<span class="co"># Let&#39;s encrypt the other partition.</span>
+<span class="ex">cryptsetup</span> -c aes-xts-plain64 -y --use-random luksFormat /dev/sdX2
+
+<span class="co"># Let&#39;s access our encrypted partition.</span>
+<span class="ex">cryptsetup</span> luksOpen /dev/sdX2 luks
+
+<span class="co"># Now to create partitions inside the encrypted partition. /root /home and /swap</span>
+<span class="ex">pvcreate</span> /dev/mapper/luks
+<span class="ex">vgcreate</span> vg0 /dev/mapper/luks
+<span class="ex">lvcreate</span> --size 8G vg0 --name swap
+<span class="ex">lvcreate</span> --size 100G vg0 --name root
+<span class="ex">lvcreate</span> -l +100%FREE vg0 --name home
+
+<span class="co"># Your /dev/mapper should now have:</span>
+<span class="co">#   /dev/mapper/vg0-home</span>
+<span class="co">#   /dev/mapper/vg0-root</span>
+<span class="co">#   /dev/mapper/vg0-swap</span>
+
+
+<span class="co"># Create file systems on the encrypted partitions.</span>
+<span class="co"># I don&#39;t know much about file systems so I just go with ext4.</span>
+<span class="ex">mkfs.ext4</span> /dev/mapper/vg0-root
+<span class="ex">mkfs.ext4</span> /dev/mapper/vg0-home
+<span class="ex">mkswap</span> /dev/mapper/vg0-swap
+
+
+<span class="co"># Mount the partitions.</span>
+<span class="co"># Make sure to start with the root.</span>
+<span class="fu">mount</span> /dev/mapper/vg0-root /mnt
+<span class="ex">swapon</span> /dev/mapper/vg0-swap    # Not needed but a good thing to test
+
+
+<span class="fu">mkdir</span> /mnt/boot
+<span class="fu">mount</span> /dev/sdX1 /mnt/boot
+
+
+<span class="fu">mkdir</span> /mnt/home
+<span class="fu">mount</span> /dev/mapper/vg0-home /mnt/home</code></pre></div>
+<h2 id="install-arch">Install arch</h2>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Install the base system</span>
+<span class="ex">pacstrap</span> /mnt base base-devel</code></pre></div>
+<h4 id="generate-fstab">Generate fstab</h4>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">genfstab</span> -pU /mnt <span class="op">&gt;&gt;</span> /mnt/etc/fstab
+
+
+<span class="co"># Make /tmp a ramdisk (add the following line to /mnt/etc/fstab)</span>
+<span class="ex">tmpfs</span>	/tmp	tmpfs	defaults,noatime,mode=1777	0	0</code></pre></div>
+<p>Verify that your fstab makes sense.</p>
+<blockquote>
+<p><em>Change relatime on all non-boot partitions to noatime (reduces wear if using an SSD)</em></p>
+</blockquote>
+<p>For example:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#</span>
+<span class="co"># /etc/fstab: static file system information</span>
+<span class="co">#</span>
+<span class="co"># &lt;file system&gt; &lt;dir&gt;   &lt;type&gt;  &lt;options&gt;       &lt;dump&gt;  &lt;pass&gt;</span>
+<span class="co"># /dev/mapper/vg0-root</span>
+<span class="va">UUID=</span>9a180980-d2bf-40d6-a09a-7a95a378f5e3       <span class="ex">/</span>               ext4            rw,relatime,data=ordered        0 1
+
+<span class="co"># /dev/mapper/vg0-home</span>
+<span class="va">UUID=</span>01e98383-e71a-4319-a70c-348783b1fc4c       <span class="ex">/home</span>           ext4            rw,relatime,data=ordered        0 2
+
+<span class="co"># /dev/sda1</span>
+<span class="va">UUID=</span>F679-59DA          <span class="ex">/boot</span>           vfat            rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro    0 2
+
+<span class="co"># make /tmp a ramdisk</span>
+<span class="ex">tmpfs</span>                   /tmp            tmpfs           defaults,noatime,mode=1777                              0 0</code></pre></div>
+<h4 id="chroot">chroot</h4>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># chroot into the new system</span>
+<span class="ex">arch-chroot</span> /mnt
+
+<span class="co"># Setup system clock</span>
+<span class="fu">ln</span> -s /usr/share/zoneinfo/Africa/Nairobi /etc/localtime
+<span class="ex">hwclock</span> --systohc --utc
+
+<span class="co"># Set the hostname</span>
+<span class="bu">echo</span> <span class="op">&lt;</span>cool-comp-name<span class="op">&gt;</span> <span class="op">&gt;</span> /etc/hostname
+
+<span class="co"># Update locale</span>
+<span class="bu">echo</span> LANG=en_US.UTF-8 <span class="op">&gt;&gt;</span> /etc/locale.conf
+
+<span class="co"># set password for root</span>
+<span class="fu">passwd</span>
+
+<span class="co"># add a sudo group because that&#39;s cool</span>
+<span class="ex">groupadd</span> sudo
+
+<span class="co"># Add a user</span>
+<span class="ex">useradd</span> -m -g sudo -s /bin/zsh <span class="op">&lt;</span>username<span class="op">&gt;</span>
+<span class="fu">passwd</span> <span class="op">&lt;</span>username<span class="op">&gt;</span>
+
+<span class="co"># add your user to sudoers</span>
+<span class="ex">visudo</span></code></pre></div>
+<h4 id="mkinitcpio">mkinitcpio</h4>
+<p>Configure mkinitcpio with modules needed for the initrd image.</p>
+<p>Add ‘ext4’ to MODULES (or whatever fs you use)</p>
+<p>Add ‘encrypt’, ‘lvm2’ and ‘resume’ to HOOKS before filesystems</p>
+<p><code>MODULES</code> and <code>HOOKS</code> should be something along the following lines:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">less</span> /etc/mkinitcpio.con
+  <span class="va">MODULES=</span><span class="st">&quot;ext4&quot;</span>
+  <span class="ex">.</span>
+  <span class="ex">.</span>
+  <span class="ex">.</span>
+  <span class="va">HOOKS=</span><span class="st">&quot;base udev autodetect modconf block keymap encrypt lvm2 resume filesystems keyboard fsck&quot;</span></code></pre></div>
+<h2 id="configure-the-bootloader.">Configure the bootloader.</h2>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Given you mounted /dev/sdX1 on /mnt/boot</span>
+<span class="ex">bootctl</span> --path=/boot install
+
+
+<span class="co"># Populate the systemd-boot configs</span>
+<span class="ex">blkid</span> /dev/sda2 <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{print $2}&#39;</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&#39;s/&quot;//g&#39;</span> <span class="op">&gt;</span> /boot/loader/entries/arch.conf</code></pre></div>
+<p>Edit the config generated above. Use <code>allow-discards</code> when using an SSD</p>
+<p>To quote <a href="http://www.brandonkester.com/tech/2014/03/16/full-disk-encryption-in-arch-linux-with-uefi.html">Brandon Kester’s post</a>:</p>
+<p><em>“The resume= option will enable hibernation on the device. The nice thing about having an encrypted swap partition is that your hibernation data will be encrypted just like the rest of the at-rest data. This makes hibernation a very secure alternative to leaving your machine in stand-by mode, which is vulnerable to the cold boot attack.”</em></p>
+<p>Your /boot/loader/entries/arch.conf should be along the lines of:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">title</span>   Arch Linux
+<span class="ex">linux</span>   /vmlinuz-linux
+<span class="ex">initrd</span>  /initramfs-linux.img
+<span class="ex">options</span> cryptdevice=UUID=53f48717-2f23-466d-aad8-ce513286af42:lvm:allow-discards resume=/dev/mapper/vg0-swap root=/dev/mapper/vg0-root home=/dev/mapper/vg0-home rw quiet</code></pre></div>
+<p>/boot/loader/loader.conf should be along the lines of: note default arch refers to the entries/arch.conf from above I like 0 timeout because speed /boot/loader/loader.conf</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">timeout</span> 0
+<span class="ex">default</span> arch
+<span class="ex">editor</span> 0</code></pre></div>
+<p>Finishing up.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># generate the ramdisk</span>
+<span class="ex">mkinitcpio</span> -p linux
+
+<span class="co"># I hope your /boot is sane.</span>
+<span class="co"># Mine is along the lines of:</span>
+$ <span class="ex">tree</span> /boot
+<span class="ex">/boot</span>
+├── <span class="ex">EFI</span>
+│   ├── <span class="ex">BOOT</span>
+│   │   └── <span class="ex">BOOTX64.EFI</span>
+│   └── <span class="ex">systemd</span>
+│       └── <span class="ex">systemd-bootx64.efi</span>
+├── <span class="ex">initramfs-linux-fallback.img</span>
+├── <span class="ex">initramfs-linux.img</span>
+├── <span class="ex">loader</span>
+│   ├── <span class="ex">entries</span>
+│   │   └── <span class="ex">arch.conf</span>
+│   └── <span class="ex">loader.conf</span>
+└── <span class="ex">vmlinuz-linux</span>
+
+<span class="ex">5</span> directories, 7 files
+
+<span class="co"># exit the chroot</span>
+<span class="bu">exit</span>
+
+<span class="co"># unmount the drives</span>
+<span class="fu">umount</span> /mnt/home
+<span class="fu">umount</span> /mnt/boot
+<span class="fu">umount</span> /mnt
+
+<span class="co"># yaaay</span>
+<span class="ex">reboot</span></code></pre></div>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Apple Deprecates the Use of OpenSSL.</title>
+    <link href="http://blog.urbanslug.com/posts/2016-05-09-Apple-Deprecates-the-Use-of-OpenSSL.html" />
+    <id>http://blog.urbanslug.com/posts/2016-05-09-Apple-Deprecates-the-Use-of-OpenSSL.html</id>
+    <published>2016-05-09T13:33:13Z</published>
+    <updated>2016-05-09T13:33:13Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on May  9, 2016
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/OpenSSL.html">OpenSSL</a>, <a href="/tags/Apple.html">Apple</a>, <a href="/tags/OSX.html">OSX</a>
+    
+</div>
+
+<p>During a brew upgrade I noticed that apple has deprecated the use of OpenSSL.</p>
+<p>Apple has deprecated use of OpenSSL in favour of its own TLS and crypto libraries</p>
+<pre><code>==&gt; Downloading https://homebrew.bintray.com/bottles/openssl-1.0.2h.el_capitan.bottle.tar.gz
+######################################################################## 100.0%
+==&gt; Pouring openssl-1.0.2h.el_capitan.bottle.tar.gz
+==&gt; Caveats
+A CA file has been bootstrapped using certificates from the system
+keychain. To add additional certificates, place .pem files in
+  /usr/local/etc/openssl/certs
+
+and run
+  /usr/local/opt/openssl/bin/c_rehash
+
+This formula is keg-only, which means it was not symlinked into /usr/local.
+
+Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries
+
+Generally there are no consequences of this for you. If you build your
+own software and it requires this formula, you&#39;ll need to add to your
+build variables:
+
+    LDFLAGS:  -L/usr/local/opt/openssl/lib
+    CPPFLAGS: -I/usr/local/opt/openssl/include</code></pre>
+<p>I know people are getting tired of all openSSL holes but this sounds like PR or overkill. Why not use something that exists? Why not name the lib they are favouring over openSSL? Is this security by obscurity or do they assume their users won’t understand it? Notice this: <em>“Generally there are no consequences of this for you.”</em></p>
+<p>I’ve heard good things about libreSSL which I would assume is what they’d use. Since it’s a BSD thing and OSX is BSD.</p>
+<p>I wonder what the future of OpenSSL is though this has been a long time coming. I also wonder whether we’ll start seeing more of this in the Linux server world.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Packaging python projects.</title>
+    <link href="http://blog.urbanslug.com/posts/2016-02-14-Packaging-python-projects.html" />
+    <id>http://blog.urbanslug.com/posts/2016-02-14-Packaging-python-projects.html</id>
+    <published>2016-02-14T17:45:13Z</published>
+    <updated>2016-02-14T17:45:13Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on February 14, 2016
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Python.html">Python</a>, <a href="/tags/packaging.html">packaging</a>
+    
+</div>
+
+<p>A while ago I had quite a problem figuring out how to package a python project. This is because the python community has no set standard on how to package python projects.</p>
+<p>So I decided to fix this for those who shall come after me and wish to make something quick in python. As an example project I came up with <a href="https://github.com/urbanslug/Arithmetic">Arithmetic</a> and had to come up with <a href="https://github.com/urbanslug/WaterInfrastructure">WaterInfrastructure</a>.</p>
+<p>It is something close to a python project quickstart.<br />
+Incidentally, it also happens to be an example of <strong>functional programming in python</strong>.</p>
+<p>The point is to show you how to structure:</p>
+<ul>
+<li>your tests (which testing framework might be good)</li>
+<li>code</li>
+<li>package it for distribution via a tool like pip or pypy and so forth</li>
+<li>(all these in functional style)</li>
+</ul>
+<blockquote>
+<p><em>I use Python 3.</em></p>
+</blockquote>
+<h3 id="arithmetic">Arithmetic</h3>
+<p>The directory structure for this is as follows:</p>
+<pre><code>.
+├── README.md
+├── arithmetic
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── division
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── divide.py
+│   ├── multiplication
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── multiply.py
+│   └── tests
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── division
+│       │   └── test_divide.py
+│       └── multiplication
+│           └── test_multiply.py
+└── setup.py</code></pre>
+<h3 id="waterinfrastructure">WaterInfrastructure</h3>
+<p><a href="https://github.com/urbanslug/WaterInfrastructure">WaterInfrastructure</a> is the other project I wrote following the above guidelines. This was as an interview question (this is a form of attribution :D).</p>
+<p><em>Question: I have a problem, do python projects have to have .pyc files in the same directory as the source file?</em></p>
+<p>There really isn’t much to say here you can learn more by browsing through the code.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Emacs cheatsheet</title>
+    <link href="http://blog.urbanslug.com/posts/2015-09-11-Emacs-cheatsheet.html" />
+    <id>http://blog.urbanslug.com/posts/2015-09-11-Emacs-cheatsheet.html</id>
+    <published>2015-09-11T01:33:45Z</published>
+    <updated>2015-09-11T01:33:45Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on September 11, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Emacs.html">Emacs</a>
+    
+</div>
+
+<p>These bindings should work for emacs from 24 upwards.<br />
+My emacs config is in my <a href="https://github.com/urbanslug/dotfiles/blob/master/.emacs">dotfiles</a>.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Key binding</th>
+<th align="center">Name</th>
+<th align="center">Purpose</th>
+<th align="center">Package</th>
+<th align="center">From emacs version</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">C-x SPC</td>
+<td align="center">(rectangle-mark-mode)</td>
+<td align="center">Select a rectangular region.</td>
+<td align="center">None</td>
+<td align="center">24.4</td>
+</tr>
+<tr class="even">
+<td align="center">C-c SPC</td>
+<td align="center">(ace-jump mode)</td>
+<td align="center">Jump to a letter at start of a word.</td>
+<td align="center">ace-jump</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-s C-w</td>
+<td align="center">(write-file)</td>
+<td align="center">Save current file as a different file</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-g C-/</td>
+<td align="center">Redo</td>
+<td align="center">Redo something you’ve undone.</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-/</td>
+<td align="center">Undo</td>
+<td align="center">Undo something you’ve done.</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-x k</td>
+<td align="center">(kill-buffer)</td>
+<td align="center">Close the current buffer.</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-x C-f</td>
+<td align="center">(find-file)</td>
+<td align="center">Visit a file</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-x C-v</td>
+<td align="center">(find-alternate-file)</td>
+<td align="center">Visit a different file</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-x C-r</td>
+<td align="center">(find-file-read-only)</td>
+<td align="center">Visit a file as read-only</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-x 4 f</td>
+<td align="center">(find-file-other-window)</td>
+<td align="center">Visit a file in another window/buffer</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-x 5 f</td>
+<td align="center">(find-file-other-frame)</td>
+<td align="center">Visit a file in a new frame</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-a</td>
+<td align="center">Jump to start of line</td>
+<td align="center">Not emacs specific but IBM home</td>
+<td align="center">None</td>
+<td align="center">all</td>
+</tr>
+<tr class="odd">
+<td align="center">C-e</td>
+<td align="center">Jump to end of line</td>
+<td align="center">Not emacs specific but IBM end</td>
+<td align="center">None</td>
+<td align="center">all</td>
+</tr>
+<tr class="even">
+<td align="center">C-s M-%</td>
+<td align="center"></td>
+<td align="center">Queried search and replace</td>
+<td align="center">None</td>
+<td align="center">all</td>
+</tr>
+</tbody>
+</table>
+<h3 id="handy-information">Handy information</h3>
+<ul>
+<li>For redo keep repeating C-/ to keep redoing, C-g isn’t repeated.</li>
+<li>If you “visit” a file that is actually a directory, Emacs invokes Dired, the Emacs directory browser. See <a href="http://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html#Dired">Dired</a>. You can disable this behavior by setting the variable find-file-run-dired to nil; in that case, it is an error to try to visit a directory.</li>
+<li>When the emacs version is unknown it will most likely work for your version of emacs.</li>
+<li>Here’s an awesome <a href="http://www.gnu.org/software/emacs/manual/html_node/emacs/index.html#SEC_Content">emacs manual</a></li>
+<li>Update emacs packages with M-x package-list-packages RET U x then follow the prompts as you wish.</li>
+</ul>
+<h4 id="to-learn">To learn</h4>
+<ul>
+<li>General indentation</li>
+<li>Indenting blocks.</li>
+</ul>
+<h4 id="handy-emacs-packages-i-like">Handy emacs packages I like</h4>
+<ul>
+<li>ace-jump</li>
+<li>auto-complete</li>
+</ul>
+<h4 id="extra">Extra</h4>
+<ul>
+<li><strong>Updating emacs packages</strong>: <code>M-x package-list-packages U x</code> then follow the prompts</li>
+<li><strong>emacs-nox</strong>: In the arch repos there’s emacs-nox described as “The extensible, customizable, self-documenting real-time display editor, without X11 support” Good for SSH.</li>
+<li>My <a href="https://github.com/urbanslug/dotfiles/blob/master/.emacs">emacs config</a></li>
+<li><strong>Installing packages</strong>: “i” mark for install. “x” to install</li>
+<li><code>M-x</code> to run any command. e.g <code>M-x erc</code> to IRC from emacs.</li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Imports and exports as documentation.</title>
+    <link href="http://blog.urbanslug.com/posts/2015-08-22-Imports-and-exports-as-documentation.html" />
+    <id>http://blog.urbanslug.com/posts/2015-08-22-Imports-and-exports-as-documentation.html</id>
+    <published>2015-08-22T20:16:12Z</published>
+    <updated>2015-08-22T20:16:12Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on August 22, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/Haskell.html">Haskell</a>
+    
+</div>
+
+<p>Lately I’ve been reading huge haskell code bases quite a lot. One thing that I have noted to be helpful when documentated has been the imports section as well as the code having a list of the code it exports.</p>
+<p>I don’t know whether this is just a non-experienced programmer issue or it cuts across the board.</p>
+<p>Documenting imports can happen:</p>
+<ul>
+<li>explicitly through:
+<ul>
+<li>comments</li>
+</ul></li>
+<li>implicity through:
+<ul>
+<li><p>uniquely qualified imports.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">A</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span>
+<span class="kw">import </span><span class="dt">B</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">Y</span></code></pre></div>
+<p>over</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">A</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span>
+<span class="kw">import </span><span class="dt">B</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span></code></pre></div></li>
+<li><p>importing of specific instances (i.e using brackets to specify what one wants to import)</p></li>
+</ul></li>
+</ul>
+<p>Basically anything that saves the programmer effort or time in:</p>
+<ul>
+<li>Understanding what you’re importing</li>
+<li>Why you’re importing it</li>
+<li>See the usage of a function and quickly know where it’s from</li>
+</ul>
+<p>I can’t quantify or explain exactly how this helps me understand the code but it really does. Especially when I can’t hoogle a function name (the internet connections aren’t too fast in these parts). It saves me the time of have to go through several modules trying to figure out where this import is from.</p>
+<p>Most of time we are in just too much of a hurry to do this I understand. I’m a victim of some terrible coding practices but I think it’s a good habit to adopt.</p>
+<p>Well, the user can use tools like the repl to query where these imports are from but again when you can save the user time and effort of querying for meta information please do so. I know it’s not possible to do it all the time and everywhere but please do it when and where you can.</p>
+<p>Let me illustrate this in some example code:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-|</span>
+<span class="co">Module      : Devel.Build</span>
+<span class="co">Description : Attempts to compile the WAI application.</span>
+<span class="co">Copyright   : (c)</span>
+<span class="co">License     : GPL-3</span>
+<span class="co">Maintainer  : njagi@urbanslug.com</span>
+<span class="co">Stability   : experimental</span>
+<span class="co">Portability : POSIX</span>
+
+<span class="co">compile compiles the app to give:</span>
+<span class="co">Either a list of source errors or an ide-backend session.</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE PackageImports, OverloadedStrings #-}</span>
+
+<span class="kw">module</span> <span class="dt">Devel.Compile</span> (compile) <span class="kw">where</span>
+
+<span class="co">-- Almost everything is dependent on ide-backend.</span>
+<span class="kw">import </span><span class="dt">IdeSession</span>
+
+<span class="co">-- From Cabal-ide-backend</span>
+<span class="co">-- for parsing the cabal file and extracting lang extensions used.</span>
+<span class="kw">import </span><span class="dt">Distribution.PackageDescription</span>
+<span class="kw">import </span><span class="dt">Distribution.PackageDescription.Parse</span>
+<span class="kw">import </span><span class="dt">Distribution.PackageDescription.Configuration</span>
+<span class="kw">import </span><span class="dt">Language.Haskell.Extension</span>
+
+<span class="co">-- Used internally for showing errors.</span>
+<span class="kw">import </span><span class="dt">Data.Text</span> (unpack)
+
+<span class="co">-- Utility functions</span>
+<span class="kw">import </span><span class="dt">Data.Monoid</span> ((&lt;&gt;))
+<span class="kw">import </span><span class="dt">System.Directory</span> (createDirectoryIfMissing, getCurrentDirectory)
+
+<span class="co">-- Local imports</span>
+<span class="kw">import </span><span class="dt">Devel.Paths</span>
+<span class="kw">import </span><span class="dt">Devel.Types</span></code></pre></div>
+<p>Compare with this which I wrote in a hurry.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-|</span>
+<span class="co">Module      : Devel.Paths</span>
+<span class="co">Description : For filepath related matters.</span>
+<span class="co">Copyright   : (c)</span>
+<span class="co">License     : GPL-3</span>
+<span class="co">Maintainer  : njagi@urbanslug.com</span>
+<span class="co">Stability   : experimental</span>
+<span class="co">Portability : POSIX</span>
+
+<span class="co">Uses the GHC package to parse .hi files.</span>
+<span class="co">Will hopefully be moved upstream to ide-backend.</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">module</span> <span class="dt">Devel.Paths</span> <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">System.Directory</span> (getCurrentDirectory, doesDirectoryExist, getDirectoryContents)
+<span class="kw">import </span><span class="dt">Control.Monad</span> (forM)
+<span class="kw">import </span><span class="dt">Control.Concurrent</span> (forkIO)
+<span class="kw">import </span><span class="dt">System.FilePath.Glob</span>
+<span class="kw">import </span><span class="dt">System.FilePath</span> ((&lt;/&gt;))
+<span class="kw">import </span><span class="dt">Data.List</span>
+<span class="kw">import </span><span class="dt">IdeSession</span>
+<span class="kw">import </span><span class="dt">Devel.Modules</span>
+<span class="kw">import </span><span class="dt">System.FilePath.Posix</span> (replaceExtension, dropExtension, takeExtensions)
+<span class="kw">import qualified</span> <span class="dt">Data.ByteString.Char8</span> <span class="kw">as</span> <span class="dt">C8</span>
+<span class="kw">import </span><span class="dt">Control.Monad.IO.Class</span>
+<span class="kw">import </span><span class="dt">System.FilePath</span> (pathSeparator)
+<span class="kw">import </span><span class="dt">System.Directory</span> (removeFile)</code></pre></div>
+<p>As you can see one can learn quite a bit just from looking at the imports and module documentation alone.</p>
+<p>The issue is that it sometimes takes a while for one to clean up their code like this so it’s okay if your imports aren’t legible before refactoring.</p>
+<p>Another thing, I don’t know if it’s just an emacs thing but I can just to my imports and jump between sections of imports with f12. This is both advantageous to both the one writing the code and the one reading it.<br />
+The point of all of this is that well structured and well documented imports and exports are a win for both the programmer and the one reading the code.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>wai-devel final submission.</title>
+    <link href="http://blog.urbanslug.com/posts/2015-08-21-wai-devel-final-submission.html" />
+    <id>http://blog.urbanslug.com/posts/2015-08-21-wai-devel-final-submission.html</id>
+    <published>2015-08-21T19:14:34Z</published>
+    <updated>2015-08-21T19:14:34Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on August 21, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/Haskell.html">Haskell</a>, <a href="/tags/GSoC.html">GSoC</a>, <a href="/tags/WAI.html">WAI</a>, <a href="/tags/wai-devel.html">wai-devel</a>
+    
+</div>
+
+<p>This is the final day of code submissions to Google for Google Summer of Code. So it’s only fair that I give the community a report on the current state of affairs regarding wai-devel.<br />
+This is more of a very detailed changelog than a blog post about wai-devel.</p>
+<h2 id="what-wai-devel-expects-from-your-application.">What wai-devel expects from your application.</h2>
+<p><strong>NOTHING</strong><br />
+Yes, wai-devel expects nothing from your application. However, your application shall receive a port number through the environment variable <code>PORT</code>.</p>
+<p><em>UPDATE:</em> Due to it’s reliance on ide-backend you also have to set the environment variable <code>GHC_PACKAGE_PATH</code></p>
+<h3 id="what-port-is-used-for">What PORT is used for:</h3>
+<p>Your application shall listen for connections on <code>localhost:&lt;PORT&gt;</code> wai-devel by default creates a reverse proxy from port number 3000 to your application which is listening in on PORT.<br />
+You can change the port from the default port 3000 by setting the environment variable PORT yourself.</p>
+<p>wai-devel takes PORT and then cycles through various port numbers adding 1 to PORT to find a port that is free, sets that as the destination port and changes the PORT environment variable to that destination port. Therefore we can reverse proxy from PORT to a random port.</p>
+<p>Reverse proxying is important for error reporting, future proofing and other ways of abstracting away the services wai-devel provides to your application.</p>
+<h2 id="more-reliable-dirtiness-checking.">More reliable dirtiness checking.</h2>
+<p>wai-devel will use the the module you have chosen to find the files to watch for changes in. It watches the files it imports and their Template Haskell dependencies as well as the cabal file.</p>
+<h2 id="compatibility-with-haskell-wai-applications.">Compatibility with Haskell wai-applications.</h2>
+<p>wai-devel works with your usual yesod scaffold from yesod-bin out of the box and should work with other haskell wai apps as long as they use the PORT environment variable.</p>
+<p>You can pass the filepath and function to run via command line arguments <code>--path</code> or <code>-p</code> and function <code>--function</code> or <code>-f</code>. When these aren’t passed it assumes Application.develMain (borrowed from yesod).</p>
+<h2 id="yet-to-come.">Yet to come.</h2>
+<p>I will be actively developing wai-devel well after Google Summer of Code is over (that is today).</p>
+<p>The following are coming next:</p>
+<ul>
+<li>Show build progress in the browser.</li>
+<li>Provide a dashboard page with compilation status, garbage collection statistics, and other useful meta-information.</li>
+<li>Port to Windows. (This depends on ide-backend getting ported to Windows.)</li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Progress with wai-devel</title>
+    <link href="http://blog.urbanslug.com/posts/2015-08-13-Progress-with-wai-devel.html" />
+    <id>http://blog.urbanslug.com/posts/2015-08-13-Progress-with-wai-devel.html</id>
+    <published>2015-08-13T15:58:24Z</published>
+    <updated>2015-08-13T15:58:24Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on August 13, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/Haskell.html">Haskell</a>, <a href="/tags/WAI.html">WAI</a>, <a href="/tags/wai-devel.html">wai-devel</a>
+    
+</div>
+
+<p>wai-devel is a development server for wai compliant haskell web applications.</p>
+<p>Its name changed from yesod-devel (the haskell reddit community suggested this). You can find it at: <a href="https://github.com/urbanslug/wai-devel" class="uri">https://github.com/urbanslug/wai-devel</a></p>
+<h2 id="what-wai-devel-expects-from-your-application">What wai-devel expects from your application</h2>
+<p>Since wai-devel is very loosely coupled to your application it expects mainly two things from your application: a <strong>host:port</strong> pair and a function, <strong>Application.develMain</strong>.</p>
+<p>Due to it’s dependence on ide-backend it also expects you to set the environment variable <code>GHC_PACKAGE_PATH</code>.</p>
+<p>Mine for example is: <code>export GHC_PACKAGE_PATH=~/.stack/snapshots/x86_64-linux/lts-2.22/7.8.4/pkgdb:</code></p>
+<p>The host:port pair is expected to be passed in as two environment variables: wai_host and wai_port for example:</p>
+<ul>
+<li>export wai_host=127.0.0.1</li>
+<li>export wai_port=3001</li>
+</ul>
+<p>Better yet, the application itself should set the environment variables as in the example code below.</p>
+<p>wai-devel looks for a function Application.develMain I have a <a href="https://github.com/urbanslug/yesod">fork of yesod</a>, that builds a yesod binary which generates a scaffold with this function implemented. I recommend using it to generate the scaffold with which to try out wai-devel with.</p>
+<p>The specifics of how to set the port and host within yesod applications will obviously change. The point of this fork is to generate a scaffold that works with wai-devel out of the box.</p>
+<p>Here is a snippet develMain function from my yesod fork.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- | main function for use by yesod devel</span>
+<span class="ot">develMain ::</span> <span class="dt">IO</span> ()
+develMain <span class="fu">=</span> develMainHelper&#39; getApplicationDev
+
+<span class="ot">develMainHelper&#39; ::</span> <span class="dt">IO</span> (<span class="dt">Settings</span>, <span class="dt">Application</span>) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+develMainHelper&#39; getSettingsApp <span class="fu">=</span> <span class="kw">do</span>
+    (settings, app) <span class="ot">&lt;-</span> getSettingsApp
+
+    _ <span class="ot">&lt;-</span> unsetEnv <span class="st">&quot;wai_port&quot;</span> <span class="fu">&gt;&gt;</span> setEnv <span class="st">&quot;wai_port&quot;</span> <span class="st">&quot;3001&quot;</span>
+    _ <span class="ot">&lt;-</span> unsetEnv <span class="st">&quot;wai_host&quot;</span> <span class="fu">&gt;&gt;</span> setEnv <span class="st">&quot;wai_host&quot;</span> <span class="st">&quot;127.0.0.1&quot;</span>
+
+    <span class="kw">let</span> settings&#39;  <span class="fu">=</span> setPort (<span class="dv">3001</span><span class="ot"> ::</span> <span class="dt">Port</span>) settings
+        settings&#39;&#39; <span class="fu">=</span> setHost ((read <span class="st">&quot;127.0.0.1&quot;</span>)<span class="ot"> ::</span> <span class="dt">HostPreference</span>) settings\<span class="ch">&#39;</span>
+
+    sock <span class="ot">&lt;-</span> createSocket
+
+    runSettingsSocket settings&#39;&#39; sock app
+
+    <span class="kw">where</span> <span class="co">-- | Create the socket that we will use to communicate with</span>
+          <span class="co">-- localhost:3001 here.</span>
+<span class="ot">          createSocket ::</span> <span class="dt">IO</span> <span class="dt">Socket</span>
+          createSocket <span class="fu">=</span> <span class="kw">do</span>
+
+            sock <span class="ot">&lt;-</span> socket <span class="dt">AF_INET</span> <span class="dt">Stream</span> defaultProtocol
+
+            <span class="co">-- Tell the OS *not* to reserve the socket after your program exits.</span>
+            setSocketOption sock <span class="dt">ReuseAddr</span> <span class="dv">1</span>
+
+            <span class="co">-- Bind the socket to localhost:3000 and listen.</span>
+            <span class="co">-- I wonder why I can&#39;t specify localhost instead of iNADDR_ANY</span>
+            bindSocket sock (<span class="dt">SockAddrInet</span> <span class="dv">3001</span> iNADDR_ANY)
+            listen sock <span class="dv">2</span>
+            return sock</code></pre></div>
+<blockquote>
+<p>During socket creation I made sure that the socket option ReuseAddr has been set to 1.<br />
+This way the operating system doesn’t hold on to the socket after the program exits. This is important for when wai-devel takes note of file changes and the development server is restarted.</p>
+</blockquote>
+<h2 id="ignoring-files-and-directories">Ignoring files and directories</h2>
+<p>wai-devel expects that there will be a single <code>Main.main</code> function. In the case of having more than one, for example with yesod, we ignore all but one. Specifically, we ignore the file app/DevelMain.hs. There is no need for app/devel.hs so it has been removed in my fork.</p>
+<p>Moreover, wai-devel ignores files in your <code>test/</code> directory.<br />
+This is because wai-devel depends on ide-backend which will attempt to build all files in the current working diretory, including your test directory. This leads to a world of hurt because the test/ directory also has a <code>Main.main</code> function.</p>
+<p><em>Please report an issue if you would like any file ignored during builds.</em></p>
+<h1 id="moved-to-stack">Moved to stack</h1>
+<p>Since the Haskell community has moved in this direction, so has wai-devel.<br />
+wai-devel only depends on cabal in that stack and ide-backend depend on Cabal the library. Otherwise, the cabal binary is not used and hasn’t been tested to work with wai-devel.</p>
+<h2 id="compatible-versions-of-ghc">Compatible versions of GHC</h2>
+<p>Currently wai-devel is built and tested against:</p>
+<ul>
+<li>GHC-7.8</li>
+<li>GHC-7.10</li>
+</ul>
+<h2 id="regarding-file-watching">Regarding file watching</h2>
+<p>wai-devel watches for file changes on files with the following extensions:</p>
+<ul>
+<li>hamlet</li>
+<li>shamlet</li>
+<li>julius</li>
+<li>lucius</li>
+<li>hs</li>
+<li>yaml</li>
+</ul>
+<p>When a change takes place wai-devel will recompile and re-run your application on localhost:3001 or display an error if any on the browser at localhost:3000</p>
+<p><em>If you would want another extension added to the list of file extensions to watch for please report it as an issue.</em></p>
+<h2 id="command-line-arguments">Command line arguments</h2>
+<p>Currently wai-devel takes only these two arguments and the two are optional. If you feel the need for more arguments please report it as an issue on github.</p>
+<ul>
+<li><p>-r <em>to turn off reverse proxying</em> If this is turned on you will access your application at an address that is specific to your web application or web framework.</p></li>
+<li><p>–show-iface [hi file] <em>passes this command to ghc</em> Same as ghc –show-iface</p></li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+
+</feed>

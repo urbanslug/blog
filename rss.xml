@@ -1,0 +1,2465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>urbanslug blog - RSS feed</title>
+        <link>http://blog.urbanslug.com</link>
+        <description><![CDATA[Programming haskell clojure life]]></description>
+        <atom:link href="http://blog.urbanslug.com/rss.xml" rel="self"
+                   type="application/rss+xml" />
+        <lastBuildDate>Mon, 07 Jan 2019 20:48:34 UT</lastBuildDate>
+        <item>
+    <title>Pass for iOS</title>
+    <link>http://blog.urbanslug.com/posts/2019-01-07-pass-for-ios.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on January  7, 2019
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/passwords.html">passwords</a>, <a href="/tags/pass.html">pass</a>, <a href="/tags/iOS.html">iOS</a>, <a href="/tags/password%20management.html">password management</a>
+    
+</div>
+
+<p>If you have a GPG keypair, believe in using strong passwords and are paranoid (don’t trust password management tools), then <a href="https://www.passwordstore.org/">pass</a> is the tool for you. I’ve been using it for so long that I can’t remember when I started using it and I have to say, I really like it.</p>
+<p>Pass is a FOSS tool that lets you roll your own password management tool-chain and if that sounds hard, it’s not. It works by storing your password, security questions etc in version controlled plain text files and encrypting them using your keys. You then clone your passwords repo and copy your GPG keys to the devices which you would like to access your passwords on.</p>
+<blockquote>
+<p>Pass is a FOSS that lets you roll your own password management tool-chain.</p>
+</blockquote>
+<p>A known downside of pass is that it <strong>leaks metadata</strong>. The workaround to this is storing all your passwords in a single file. Guys in the ##crypto on Freenode also recommend <a href="https://keepassxc.org/">keepassxc</a>.</p>
+<p>A short overview of pass:</p>
+<ol style="list-style-type: decimal">
+<li>Have a GPG keypair and (not required but a really good idea) a hosted version control system.</li>
+<li>Set up pass so that it knows which keypair to use.</li>
+<li>Create a git repo (password-store) which will hold your encrypted passwords.</li>
+<li>Start generating and version controlling your passwords.</li>
+</ol>
+<p>However, this isn’t a post about pass; it’s about how to use pass on iOS and there’s a tool, <a href="https://github.com/mssun/passforios">pass for iOS</a>, that does that. Assuming you’re already a pass user the question is how to get pass working on your iPad, iPhone or whatever.</p>
+<h1 id="how-do-we-transfer-our-ssh-and-gpg-keys">How do we transfer our SSH and GPG keys?</h1>
+<p>I think the easiest way would be via iTunes but that doesn’t feel right at all. Why would I trust a 3rd party server with my private key?</p>
+<p>What I decided to go with is a tool, <a href="https://github.com/yishilin14/asc-key-to-qr-code-gif">asc-key-to-qr-code-gif</a>, that converts converts ASCII (amored for GPG) keys to QR codes and then I scan those QR codes on <a href="https://github.com/mssun/passforios">Pass for iOS</a>. It’s all open source tools and no 3rd party servers involved. Tell me what you think about this “convert your keys to QR code” business <a href="https://twitter.com/urbanslug">via a tweet</a>.</p>
+<blockquote>
+<p>It’s all open source tools and no 3rd party servers involved.</p>
+</blockquote>
+<h2 id="setup-and-installing-dependencies">Setup and installing dependencies</h2>
+<p>First, I had to install some dependencies via homebrew. I felt it important to install zbar in case there were any errors during QR code generation.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">brew</span> install libqrencode imagemagick zbar</code></pre></div>
+<p><br/>Clone the <a href="https://github.com/yishilin14/asc-key-to-qr-code-gif">asc-key-to-qr-code-gif</a> repo to get the QR code generation script, asc-to-gif.sh.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">git</span> clone git@github.com:yishilin14/asc-key-to-qr-code-gif.git</code></pre></div>
+<h2 id="gpg">GPG</h2>
+<h3 id="export-your-gpg-keys-into-ascii-armored-files">Export your GPG keys into ASCII armored files</h3>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">gpg</span> --export --armor <span class="op">&lt;</span>key id<span class="op">&gt;</span> <span class="op">&gt;</span> public.asc
+<span class="ex">gpg</span> --export-secret-keys --armor <span class="op">&lt;</span>key id<span class="op">&gt;</span> <span class="op">&gt;</span> private.asc</code></pre></div>
+<h3 id="generate-and-scan-the-gpg-gifs">Generate and scan the GPG gifs:</h3>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">asc-to-gif.sh</span> public.asc public.gif
+<span class="ex">asc-to-gif.sh</span> private.asc private.gif</code></pre></div>
+<h2 id="ssh">SSH</h2>
+<p>I prefer to have different SSH keys for different devices that way it’s easy to revoke access for different devices. Moreover, using ed25519 keys on phones often fails because of the versions of OpenSSH they ship with so I just go with RSA which is the default anyway. In this case it even had to be PEM due to the version of GitSSH on iOS. Based on the <a href="https://github.com/mssun/passforios/wiki/Supported-Unsupported-Key-Algorithms">Supported Unsupported Key Algorithms wiki page</a> and <a href="https://github.com/mssun/passforios/issues/218">issue 218</a>, generate device keys with:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">ssh-keygen</span> -t rsa -b 4096 -m PEM -f ~/.ssh/id_rsa_<span class="op">&lt;</span>device<span class="op">&gt;</span> -C <span class="st">&quot;&lt;user&gt;@&lt;device&gt;&quot;</span></code></pre></div>
+<p>Then copy the pubkey to the version control tool of your choice.</p>
+<h3 id="generate-and-scan-the-ssh-gif">Generate and scan the SSH gif:</h3>
+<p>Generate a GIF for it.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">asc-to-gif.sh</span> ~/.ssh/id_rsa_<span class="op">&lt;</span>device<span class="op">&gt;</span> ssh.gif</code></pre></div>
+<h4 id="cloning-your-password-store-repo-into-your-device">Cloning your password-store repo into your device</h4>
+<p>Set the URL in this format:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">ssh</span>://git@gitlab.com/<span class="op">&lt;</span>gitlab username<span class="op">&gt;</span>/<span class="op">&lt;</span>password store repo<span class="op">&gt;</span>.git</code></pre></div>
+<p>and set your username to <code>git</code> according to <a href="https://github.com/mssun/passforios/issues/112#issuecomment-318342043">issue 112</a>.</p>
+<p>I’ll assume you can do the rest, like cloning the password store repository into your device and decrypting your password files, by yourself ;).</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Mon, 07 Jan 2019 20:48:34 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2019-01-07-pass-for-ios.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Pipeline as Code - putting everything together</title>
+    <link>http://blog.urbanslug.com/posts/2017-10-16-code-pipeline-putting-everything-together.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on October 16, 2017
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Devops.html">Devops</a>, <a href="/tags/CI.html">CI</a>, <a href="/tags/CD.html">CD</a>
+    
+</div>
+
+<p>In this post we shall implement a continuous deployment pipeline using <a href="https://www.ansible.com/">ansible</a>, <a href="https://travis-ci.org/">travis ci</a> and <a href="https://git-scm.com/">git</a>.</p>
+<p>During implementation we don’t have steps such as planning, provisioning, configuration management etc that we mentioned in the <a href="/posts/2017-10-13-code-pipeline-overview.html">previous post</a>; those are conceptual. The flowchart below represents the actual places that our software should live at all times. Think of each component in the flowchart as a service that exposes an API.</p>
+<div class="figure">
+<img src="/images/Content/Flowcharts/Pipeline_as_code_putting.svg" />
+
+</div>
+<h2 id="deploy-server">Deploy server</h2>
+<p>In the diagram above we introduce an deploy server. This is the host from which you can access your other servers such production, staging etsc.</p>
+<blockquote>
+<p>Exposes: ansible, ssh</p>
+</blockquote>
+<h2 id="git-version-control">Git (Version Control)</h2>
+<p>We want to have playbooks, deploy scripts and code in version control.<br />
+What we get from version control that is necessary for continuous deployment is:</p>
+<ul>
+<li>tags get deployed to the main production environment</li>
+<li>master branch gets deployed to the main staging environment</li>
+<li>other major branches get deployed to other staging environments of our choosing</li>
+</ul>
+<p>Not all these steps need to be done for it to be a continuous deployment pipeline. For example: for this blog, changes that get merged into master go straight into production. This is because the application is really small and simple so before anything goes into master I know it’s error free. Moreover, even if the blog were to experience downtime I have very little to lose compared to a business. This is the same model that github pages uses; what is in master is pushed into the <code>gh-pages</code> branch which is basically a github pages blog’s production environment.</p>
+<blockquote>
+<p>Exposes: git branches and git tags</p>
+</blockquote>
+<h2 id="ansible-provisioning-and-configuration-management">Ansible (Provisioning and Configuration Management)</h2>
+<p>Assuming you have a fresh server such as the one Digital Ocean would offer or a fresh EC2 instance. We want an ansible play that creates an unprivileged user with SSH authentication. So we have to do the following locally or on our deploy server:</p>
+<ul>
+<li>generate an SSH key pair <strong>without a passphrase</strong></li>
+<li>add the public key of the generated key to the deploy user’s known_hosts file</li>
+<li>push the private key of the generated key to travis ci so that the travis container can autheniticate as that user.</li>
+</ul>
+<h3 id="generate-an-ssh-keypair-without-a-passphrase">Generate an SSH keypair without a passphrase</h3>
+<p>Under <code>Enter file in which to save the key...</code> type in <code>travis-ci</code>.<br />
+Under <code>Enter passphrase (empty for no passphrase):</code> just press enter</p>
+<pre><code>$ ssh-keygen -t ed25519 -C &quot;travis@travis-ci.org&quot;</code></pre>
+<p>This will create two files <code>travis-ci</code> and <code>travis-ci.pub</code>.</p>
+<h3 id="add-the-public-key-to-the-deploy-users-known_hosts">Add the public key to the deploy user’s known_hosts</h3>
+<p>Write a play to prepare the deploy environment.<br />
+Copy the contents of <code>travis-ci.pub</code> file to a vars file in your the playbooks For example <a href="https://github.com/urbanslug/playbooks/blob/master/roles/base/vars/vars.yml#L1">here’s my vars file</a>.</p>
+<div class="sourceCode"><pre class="sourceCode yml"><code class="sourceCode yaml"><span class="fu">travis_ci_pubkey:</span><span class="at"> </span><span class="st">&quot;ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINFzeaPrMXDVS1/+V4hKsgC+Pzoa9tnGGP+VCPT21QXP travis@travis-ci.org&quot;</span></code></pre></div>
+<p>Add a section in a play of your choosing that copies the public key to the deploy user’s known_hosts.</p>
+<div class="sourceCode"><pre class="sourceCode yml"><code class="sourceCode yaml"><span class="kw">-</span> <span class="fu">include_vars:</span><span class="at"> vars.yml</span>
+
+<span class="kw">-</span> <span class="fu">name:</span><span class="at"> Create deploy user</span>
+  <span class="fu">user:</span><span class="at"> name=deploy</span>
+        group=www
+
+<span class="kw">-</span> <span class="fu">name:</span><span class="at"> copy travis-ci public ssh key to deploy user</span>
+  <span class="fu">authorized_key:</span><span class="at"> key=&quot;{{ travis_ci_pubkey }}&quot;</span>
+                  path=/home/deploy/.ssh/authorized_keys
+                  user=deploy</code></pre></div>
+<p>This creates the deploy user and adds the travis-ci.pub to the deploy user’s <code>~/.ssh/known_hosts</code>.</p>
+<h3 id="make-your-target-a-git-server">Make your target a git server</h3>
+<p>For commands like <code>git push</code> to work from travis-ci to your deploy user you have to have your server be ready to receive git push commands. I will explain this later in a different post but for now what you need is a play that:</p>
+<ul>
+<li>Installs git</li>
+<li>Creates a target git repo which we shall push to</li>
+<li>Is able to overwrite the current contents of the repo when a change occurs.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="co"># creates a blog.git dir which is a bare git repo</span>
+<span class="kw">-</span> <span class="fu">name:</span><span class="at">    Create a bare blog.git repo</span>
+  <span class="fu">command:</span><span class="at"> </span><span class="st">&quot;git init --bare blog.git&quot;</span>
+
+<span class="kw">-</span> <span class="fu">name:</span><span class="at"> Add a post-receive hook to update blog</span>
+  <span class="fu">copy:</span><span class="at"> src=../files/git/hooks/post-receive</span>
+        dest=blog.git/hooks/post-receive
+        owner=deploy
+        group=www
+        mode=0550
+        backup=yes</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#! /bin/bash</span>
+
+<span class="co"># post-recieve hook to handle updates</span>
+<span class="co"># delete the current blog</span>
+<span class="fu">rm</span> -rf ~/blog
+<span class="bu">cd</span> ~/
+<span class="co"># clone from the blog.git bare repo into a blog dir</span>
+<span class="fu">git</span> clone blog.git blog</code></pre></div>
+<p>If you take notice this is similar to the bare git repo that github provides. For example: to clone this blog from github via ssh we would run:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">git</span> clone git@github.com:urbanslug/blog.git</code></pre></div>
+<p>and if you had ssh access to the server hosting this blog you would run:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">git</span> clone deploy@git.urbanslug.com:blog.git</code></pre></div>
+<p>I hope you can draw some interesting parallels there. Here’s my <a href="https://github.com/urbanslug/playbooks/blob/master/roles/blog/tasks/main.yml">blog’s play</a> for reference.</p>
+<p>In the case of this blog I run the below command from my deploy server.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">ansible-playbook</span> base.yml --ask-sudo-pass --ask-vault-pass</code></pre></div>
+<h3 id="push-the-private-key-to-travis-ci">Push the private key to travis ci</h3>
+<p>Install the <a href="https://docs.travis-ci.com/user/encryption-keys/#Usage">travis cli tool</a></p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">gem</span> install travis</code></pre></div>
+<p>Encrypt your private key and add the decryption command to your .travis.yml file using the travis cli tool and also push your public key to travis-ci with:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">travis</span> encrypt-file travis-ci --add</code></pre></div>
+<p>The <code>--add</code> flag should add a <code>before_install</code> phase to your .travis.yml file that resembles the following:</p>
+<div class="sourceCode"><pre class="sourceCode yml"><code class="sourceCode yaml"><span class="fu">before_install:</span>
+ <span class="kw">-</span> openssl aes-256-cbc -K $encrypted_7f9f7befb56d_key -iv $encrypted_7f9f7befb56d_iv -in travis-ci.enc -out travis-ci -d</code></pre></div>
+<p>That line decrypts your travis-ci private key in the travis container at runtime and creates a <code>~/travis-ci</code> which is the private key. Make sure not to have multiple before-install phases.</p>
+<blockquote>
+<p>Exposes: travis encrypt-file, ssh-keygen, ansible-playbook, ansible vars</p>
+</blockquote>
+<h2 id="travis-ci-continuous-integration-and-continuous-deployment">Travis CI (Continuous Integration and Continuous Deployment)</h2>
+<p>Travis CI is a mix of open source and some proprietary tools.<br />
+To quote them “Travis CI is run as a hosted service, free for Open Source, a paid product for private code, and it’s available as an on-premises version (Travis CI Enterprise).”</p>
+<p>Here’s their <a href="https://github.com/travis-ci">github page</a> and <a href="https://github.com/travis-ci/travis-ci">info page</a>. To learn how to get started with travis in your project you can read <a href="https://docs.travis-ci.com/user/getting-started/">get started doc</a>. Moving on, I assume you have (gained) enough experience with travis to go on.</p>
+<p>Travis will run tests and/or build our application on every branch or specific branches based on rules that we set. We then build on this functionality to deploy to a target based on various rules. The obvious one being when our tests pass.</p>
+<p>In our case: we want to run tests then after that deploy to the relevant target. In your .travis.yml file you can use one of the following <a href="https://docs.travis-ci.com/user/customizing-the-build/#The-Build-Lifecycle">travis ci build phases</a> <code>after_success</code> or <code>deploy</code> steps. I prefer to use <code>after_success</code> when I want to run a deploy script and then list all the commands that my script would run and <code>deploy</code> for already supported deploy environments. This is because the script feature is experimental at the time of writing this.</p>
+<blockquote>
+<p>Exposes: .travis.yml</p>
+</blockquote>
+<h3 id="continuously-deploying-to-a-host">Continuously deploying to a host</h3>
+<p>We want to push code from our travis container to our server. Here are some essesntials that would guide you in creating a .travis.yml file that would deploy to your target.</p>
+<h3 id="using-after_success">Using after_success</h3>
+<p>The <code>branches</code> section is essential in this case because it ensures that the .travis.yml file will only be ran for the master branch.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">branches:</span>
+  <span class="fu">only:</span>
+    <span class="kw">-</span> master
+
+<span class="fu">addons:</span>
+  <span class="co"># add the target server to the containers known_hosts</span>
+  <span class="co"># this prevents a blocking prompt to add the server to travis-ci&#39;s</span>
+  <span class="co"># known_hosts when attempting to git push</span>
+  <span class="fu">ssh_known_hosts:</span>
+    <span class="kw">-</span> git.urbanslug.com
+
+<span class="co"># decrypt our public key</span>
+<span class="fu">before_install:</span>
+  <span class="kw">-</span> openssl aes-256-cbc -K $encrypted_7f9f7befb56d_key -iv $encrypted_7f9f7befb56d_iv -in travis-ci.enc -out travis-ci -d
+
+<span class="fu">env:</span>
+  <span class="fu">global:</span>
+    <span class="kw">-</span> <span class="fu">GIT_EMAIL:</span><span class="at"> travis@travis-ci.org</span>
+    <span class="kw">-</span> <span class="fu">GIT_NAME:</span><span class="at"> Travis CI</span>
+
+
+<span class="fu">script:</span>
+  <span class="kw">-</span> ./site.hs build
+
+<span class="co"># run the following commends after the script phase is successful</span>
+<span class="fu">after_success:</span>
+  <span class="kw">-</span> eval <span class="st">&quot;$(ssh-agent -s)&quot;</span> <span class="co"># start the ssh agent</span>
+  <span class="kw">-</span> chmod 600 travis-ci
+  <span class="kw">-</span> ssh-add  travis-ci <span class="co"># add travis-ci private key to the ssh agent</span>
+  <span class="kw">-</span> cd _site
+  <span class="kw">-</span> git init
+  <span class="kw">-</span> git config --global user.email <span class="st">&quot;$GIT_EMAIL&quot;</span>
+  <span class="kw">-</span> git config --global user.name  <span class="st">&quot;$GIT_NAME&quot;</span>
+  <span class="kw">-</span> <span class="fu">git remote add deploy &quot;deploy@git.urbanslug.com:</span><span class="at">blog.git&quot;</span>
+  <span class="kw">-</span> git add --all
+  <span class="kw">-</span> git status
+  <span class="kw">-</span> git commit -m <span class="st">&quot;Built by Travis ( build $TRAVIS_BUILD_NUMBER )&quot;</span>
+  <span class="kw">-</span> <span class="fu">git push -q --force deploy master:</span><span class="at">master</span></code></pre></div>
+<h3 id="github-pages">Github pages</h3>
+<p>Here’s the way <a href="https://github.com/goodbotai/borq">borq, a library from goodbot.ai,</a> has its docs deployed to github pages every time a tag is created and here’s the <a href="https://github.com/goodbotai/borq/blob/master/.travis.yml">complete travis.yml file for borq</a>.</p>
+<p>In the above case <code>travis-encrypt</code> is used to encrypt the github token like so</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">travis</span> encrypt GH_TOKEN=super_secret_token --add</code></pre></div>
+<p>The essentials of our .travis.yml file</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">env:</span>
+  <span class="fu">global:</span>
+    <span class="kw">-</span> <span class="fu">GH_REF:</span><span class="at"> github.com/goodbotai/borq.git</span>
+    <span class="kw">-</span> <span class="fu">secure:</span><span class="at"> S567U/zOMKOddrGtQBmFyA6ROzinMgheQ7rGoyVbw9i43hBzvKVgk+C77+cVCLPr8ps6qwqhV9Ex5ehM3ic9gXDJt9ZlpzlevP+epKxG11WL3S3RwAOGlp/wOkSM+KhEqYqNOSzjA5WLttzg5GFSqs+T3l7HelQfZk55t2O4HSmmKUKPbFfDZ/84suvPSf1pm+d8f99k5KQFnTO3JHbIkbdx76Hsa8KRsZFJ2oA3DgQOXPOf+W3AdlG5zT5t1hAv0wg1O1Q45zB1MDcMfAUYcJOk72eajWTx9E0jreAgEVNUG2oyBG+GNdN2eMtbO4hANcdbBAH6wQq797OK76YVN6MM2HiMMZ1W7emNmo5wP6nc23w7YXJ88a1Ysffxxi4aLOMD1rBlVT5/cjcjvRUeR/OHx+9fOLPo/G6KioC5oz0iXwNPSYkZBHQ3nKf4uribXAPV/8f+n9HzjSQTnILWXiYaaGqIJAjEzL8WL5dBBGhngkILzCX/Ur4LeYJkhLnrVTg089X8urjtWnBpZKMKAwhPfV768prfKurmRbirIlgJfw5WfRoiV34Bl3O7bcNQMQ0nIobgaNhF8JZRq6adp0K8ChVnfNl3oplXN1kiVr9YJRRb4ErLzRSJZqkP/TNUqOs5wFeiSoFGgCUvAyjQZN5IkKIr4VrdKcnbEgj/3Co=</span>
+
+<span class="fu">deploy:</span>
+  <span class="fu">skip_cleanup:</span><span class="at"> true</span>
+  <span class="fu">provider:</span><span class="at"> pages</span>
+  <span class="fu">local_dir:</span><span class="at"> out</span>
+  <span class="fu">github_token:</span><span class="at"> $GH_TOKEN</span>
+  <span class="fu">on:</span>
+    <span class="fu">tags:</span><span class="at"> true</span></code></pre></div>
+<p>I just explained how we can set up a project so that the CI tool handles all deploys going forward after the inital setting up. If anything goes wrong we can go into the deploy server and then run an ansible script and have it roll back to a specific tag/branch.</p>
+<p>In the next post we shall talk about continuous deployment in a microservice architechture using the same tools but deploying to AWS ECS.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Mon, 16 Oct 2017 20:10:18 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2017-10-16-code-pipeline-putting-everything-together.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Pipeline as Code - overview</title>
+    <link>http://blog.urbanslug.com/posts/2017-10-13-code-pipeline-overview.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on October 13, 2017
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Devops.html">Devops</a>, <a href="/tags/CI.html">CI</a>, <a href="/tags/CD.html">CD</a>
+    
+</div>
+
+<p>Pipeline in this context refers to the collection of steps software goes through from planning to deployment. Pipeline as code is having this pipeline be stored in an executable or/and a version controllable way.</p>
+<p>Why does this matter? A code pipeline that is executable and/or version controllable:</p>
+<ul>
+<li>is easy to keep tracking of as changes occur</li>
+<li>makes it possible to keep track of the actual and all possible agents of change (people and/or hosts)</li>
+<li>reduces repitition and consequently saves time</li>
+<li>is easy to delegate parts of to tools or completely automate</li>
+<li>has clear and consistent history</li>
+<li>has immutable code pipeline history meaning we can revert to previous stable state</li>
+<li>in case of failure, the broken state can be reproduced and post moterms performed</li>
+<li>is much it easier to maintain and keep track of its components in complex architechtures such as microservices</li>
+<li>makes it much easier to build tools that lower the bar of entry into ops such as running ansible plays and chatops bots</li>
+</ul>
+<p>Pipeline as code is the next step in planning, provisioning, configuration management and application deployment, continuous integration and continuous deployment.</p>
+<p>It’s also a great way to manage growing complexity in terms of both the architechture and teams involved. I just threw a number of buzzwords around so let me explain each of them and why they matter.</p>
+<blockquote>
+<p>It’s important to note that the tools used in each step have a lot of overlap between them and a tool is likely to show up in multple sections.</p>
+</blockquote>
+<h3 id="planning">Planning</h3>
+<p>Since we can’t execute plans as code, yet; we have to settle for version controlling them. Save your execution plans as documentation in a <code>docs/</code> directory or a git submodule (or any other format) files and put them in version control.</p>
+<p>You can also commit <code>.org</code> files you created during meetings, export them into <code>.md</code> and add them as docs.</p>
+<blockquote>
+<p>Tools: version control systems</p>
+</blockquote>
+<h3 id="provisioning">Provisioning</h3>
+<p>Provision is the past participle of provide, in this context it means providing everything that your application will need to run.</p>
+<p>It is an implementation of the infrastructure diagram/plan; it involves the to run the software. That is: where to host it, how many servers, OS versions, server requirements, dependencies, file system, directory structure. The answer to whether to use a vendor solution like AWS Lamda, or ECS would lie here.</p>
+<p>You probably need to do this once or at most 3 times <strong>ever</strong> unless you keep changing core infrastructure. You could put this in an ansible script, ECS task definitions, docker images, Amazon Machine Images, virtual machine images et cetera.</p>
+<blockquote>
+<p>Tools: Packer, Terraform, Ansible, Kubernetes pods, ECS clusters.</p>
+</blockquote>
+<h3 id="configuration-management">Configuration management</h3>
+<div class="figure">
+<img src="https://i.giphy.com/media/3oz8xOOWHS2MYEJXXO/giphy.gif" />
+
+</div>
+<p>Applications today are a collection of tools combined to solve a need. In the example of a simple web application we have a database, an app, an app server and a webserver. Configuration management is basically managing the glue that binds these tools together; which commands to run, which services to start and stop and when, arguments, environment variables, order of running them and so forth.</p>
+<blockquote>
+<p>Tools: ansible vars/vault, ansible plays</p>
+</blockquote>
+<h3 id="application-deployment">Application deployment</h3>
+<p>This is putting all the parts of the application that need to run on their respective servers, starting them and making sure they’re all working together and correctly. In this case you have vendor tools such as Identity and Access Management from AWS which you can build on top of. This will mean having the following in an executable and version controllable form: the deploy server, their user, deploy scripts avaible to them, actual deploy commands to run and the order in which to run them. You will only need to this during the first deployment or when something goes terribly wrong and you have to rollback but even then it’s still going to be a few commands or just one. You can also use other tools for deployment such as bots.</p>
+<blockquote>
+<p>Tools: ansible, puppet, chef</p>
+</blockquote>
+<h3 id="continuous-integration">Continuous integration</h3>
+<p>This is running tests and building the application to catch errors either in the code or the way parts of it integrate with each other. Running tests, style checks and catching errors in the code.</p>
+<blockquote>
+<p>Tools: travis ci, circle ci, gitlab ci</p>
+</blockquote>
+<h3 id="continuous-deployment">Continuous deployment</h3>
+<p>Once the continuous integration tests run and pass, have a tool compile a binary or create a commit, push it to a deploy environment and make sure it’s running.</p>
+<p>This is comparable to continuous delivery which accordingo to Wikipedia: <a href="https://en.wikipedia.org/wiki/Continuous_delivery">“Continuous Delivery means that the team ensures every change can be deployed to production but may choose not to do it, usually due to business reasons”</a></p>
+<blockquote>
+<p>Tools: travis-ecs-deploy, deploy scripts, terraformy</p>
+</blockquote>
+<p> </p>
+<p> </p>
+<p>In this post I’ve explained how the pipeline can be presented as code but only as seperate components not how these components can be combined to work as one.</p>
+<p>In the next post I’ll explain how you can use free tools and some open source tools to create a code pipeline that runs from provisioning, configuration management, version control, continuous integration and continuous deployment requiring very little input from devops and with as little complexity as possible.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Fri, 13 Oct 2017 14:23:19 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2017-10-13-code-pipeline-overview.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>dm-crypt, luks, systemd-boot and UEFI on Archlinux.</title>
+    <link>http://blog.urbanslug.com/posts/2016-09-11-dm-crypt-systemd-boot-and-efi-on-archlinux.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on September 11, 2016
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/ArchLinux.html">ArchLinux</a>, <a href="/tags/SystemdBoot.html">SystemdBoot</a>, <a href="/tags/EFI.html">EFI</a>, <a href="/tags/dm-crypt.html">dm-crypt</a>
+    
+</div>
+
+<p>Here I provide a little help for setting up an archlinux system with full disk encryption, efi and using systemd-boot as the boot loader. This is really just what I learned from the <a href="https://wiki.archlinux.org/">arch wiki</a>, <a href="https://gist.github.com/mattiaslundberg/8620837">Mattias Lundberg’s gist</a> and <a href="http://www.brandonkester.com/tech/2014/03/16/full-disk-encryption-in-arch-linux-with-uefi.html">Brandon Kester’s post</a>. I’ll assume you have installed arch before and just need a little help getting everything up and running.</p>
+<p>Desired setup:</p>
+<pre><code>100M /boot
+100G /root
+8G swap
+the rest for /home</code></pre>
+<p><em>Unlike <a href="https://github.com/mattiaslundberg">Mattias Lundberg</a> I see no reason for separate <code>boot</code> and <code>efi</code> patitions.</em> Although some people have a problem with having their /boot in fat32 due to permissions reasons.</p>
+<p>This will be in 3 parts:</p>
+<ul>
+<li>Partitioning, encrypting and repartitioning.</li>
+<li>Installing the base system(arch).</li>
+<li>Configuring the bootloader.</li>
+</ul>
+<h2 id="partitioning-encrypting-and-repartitioning.">Partitioning, encrypting and repartitioning.</h2>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># I like gdisk.</span>
+<span class="ex">gdisk</span> /dev/sdX
+
+<span class="co"># Clear everything</span>
+<span class="ex">-</span><span class="op">&gt;</span> o
+
+<span class="co"># The first 100M efi partition</span>
+<span class="ex">-</span><span class="op">&gt;</span> n -<span class="op">&gt;</span> ... -<span class="op">&gt;</span> +100M -<span class="op">&gt;</span> ... -<span class="op">&gt;</span> EF00
+
+<span class="co"># power through this by always pressing enter.</span>
+<span class="co"># default hex code is 8E00</span>
+<span class="ex">-</span><span class="op">&gt;</span> n -<span class="op">&gt;</span> ...  -<span class="op">&gt;</span> 8E00</code></pre></div>
+<p>Expected gdisk output should be 2 partitions, something along the lines of:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># In the end `p` in gdisk or `gdisk -l` should give you two partitions along the lines of:</span>
+
+<span class="co"># Device      Start       End   Sectors   Size Type</span>
+<span class="co"># /dev/sda1    2048    514047    512000   250M EFI System</span>
+<span class="co"># /dev/sda2  514048 976773134 976259087 465.5G Linux filesystem</span></code></pre></div>
+<h4 id="format-encrypt-repartition-and-format-respectively.">Format, encrypt, repartition and format respectively.</h4>
+<p>The steps would be as follows:</p>
+<ul>
+<li>Format sdX1 in fat32</li>
+<li>Encrypt sdX2
+<ul>
+<li>Decrypt and repartition</li>
+<li>format the partitions in ext4</li>
+</ul></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># EFI only works with FAT32 so we format the 100M patition with FAT 32</span>
+<span class="ex">mkfs.vfat</span> -F32 /dev/sdX1
+
+<span class="co"># Let&#39;s encrypt the other partition.</span>
+<span class="ex">cryptsetup</span> -c aes-xts-plain64 -y --use-random luksFormat /dev/sdX2
+
+<span class="co"># Let&#39;s access our encrypted partition.</span>
+<span class="ex">cryptsetup</span> luksOpen /dev/sdX2 luks
+
+<span class="co"># Now to create partitions inside the encrypted partition. /root /home and /swap</span>
+<span class="ex">pvcreate</span> /dev/mapper/luks
+<span class="ex">vgcreate</span> vg0 /dev/mapper/luks
+<span class="ex">lvcreate</span> --size 8G vg0 --name swap
+<span class="ex">lvcreate</span> --size 100G vg0 --name root
+<span class="ex">lvcreate</span> -l +100%FREE vg0 --name home
+
+<span class="co"># Your /dev/mapper should now have:</span>
+<span class="co">#   /dev/mapper/vg0-home</span>
+<span class="co">#   /dev/mapper/vg0-root</span>
+<span class="co">#   /dev/mapper/vg0-swap</span>
+
+
+<span class="co"># Create file systems on the encrypted partitions.</span>
+<span class="co"># I don&#39;t know much about file systems so I just go with ext4.</span>
+<span class="ex">mkfs.ext4</span> /dev/mapper/vg0-root
+<span class="ex">mkfs.ext4</span> /dev/mapper/vg0-home
+<span class="ex">mkswap</span> /dev/mapper/vg0-swap
+
+
+<span class="co"># Mount the partitions.</span>
+<span class="co"># Make sure to start with the root.</span>
+<span class="fu">mount</span> /dev/mapper/vg0-root /mnt
+<span class="ex">swapon</span> /dev/mapper/vg0-swap    # Not needed but a good thing to test
+
+
+<span class="fu">mkdir</span> /mnt/boot
+<span class="fu">mount</span> /dev/sdX1 /mnt/boot
+
+
+<span class="fu">mkdir</span> /mnt/home
+<span class="fu">mount</span> /dev/mapper/vg0-home /mnt/home</code></pre></div>
+<h2 id="install-arch">Install arch</h2>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Install the base system</span>
+<span class="ex">pacstrap</span> /mnt base base-devel</code></pre></div>
+<h4 id="generate-fstab">Generate fstab</h4>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">genfstab</span> -pU /mnt <span class="op">&gt;&gt;</span> /mnt/etc/fstab
+
+
+<span class="co"># Make /tmp a ramdisk (add the following line to /mnt/etc/fstab)</span>
+<span class="ex">tmpfs</span>	/tmp	tmpfs	defaults,noatime,mode=1777	0	0</code></pre></div>
+<p>Verify that your fstab makes sense.</p>
+<blockquote>
+<p><em>Change relatime on all non-boot partitions to noatime (reduces wear if using an SSD)</em></p>
+</blockquote>
+<p>For example:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#</span>
+<span class="co"># /etc/fstab: static file system information</span>
+<span class="co">#</span>
+<span class="co"># &lt;file system&gt; &lt;dir&gt;   &lt;type&gt;  &lt;options&gt;       &lt;dump&gt;  &lt;pass&gt;</span>
+<span class="co"># /dev/mapper/vg0-root</span>
+<span class="va">UUID=</span>9a180980-d2bf-40d6-a09a-7a95a378f5e3       <span class="ex">/</span>               ext4            rw,relatime,data=ordered        0 1
+
+<span class="co"># /dev/mapper/vg0-home</span>
+<span class="va">UUID=</span>01e98383-e71a-4319-a70c-348783b1fc4c       <span class="ex">/home</span>           ext4            rw,relatime,data=ordered        0 2
+
+<span class="co"># /dev/sda1</span>
+<span class="va">UUID=</span>F679-59DA          <span class="ex">/boot</span>           vfat            rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro    0 2
+
+<span class="co"># make /tmp a ramdisk</span>
+<span class="ex">tmpfs</span>                   /tmp            tmpfs           defaults,noatime,mode=1777                              0 0</code></pre></div>
+<h4 id="chroot">chroot</h4>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># chroot into the new system</span>
+<span class="ex">arch-chroot</span> /mnt
+
+<span class="co"># Setup system clock</span>
+<span class="fu">ln</span> -s /usr/share/zoneinfo/Africa/Nairobi /etc/localtime
+<span class="ex">hwclock</span> --systohc --utc
+
+<span class="co"># Set the hostname</span>
+<span class="bu">echo</span> <span class="op">&lt;</span>cool-comp-name<span class="op">&gt;</span> <span class="op">&gt;</span> /etc/hostname
+
+<span class="co"># Update locale</span>
+<span class="bu">echo</span> LANG=en_US.UTF-8 <span class="op">&gt;&gt;</span> /etc/locale.conf
+
+<span class="co"># set password for root</span>
+<span class="fu">passwd</span>
+
+<span class="co"># add a sudo group because that&#39;s cool</span>
+<span class="ex">groupadd</span> sudo
+
+<span class="co"># Add a user</span>
+<span class="ex">useradd</span> -m -g sudo -s /bin/zsh <span class="op">&lt;</span>username<span class="op">&gt;</span>
+<span class="fu">passwd</span> <span class="op">&lt;</span>username<span class="op">&gt;</span>
+
+<span class="co"># add your user to sudoers</span>
+<span class="ex">visudo</span></code></pre></div>
+<h4 id="mkinitcpio">mkinitcpio</h4>
+<p>Configure mkinitcpio with modules needed for the initrd image.</p>
+<p>Add ‘ext4’ to MODULES (or whatever fs you use)</p>
+<p>Add ‘encrypt’, ‘lvm2’ and ‘resume’ to HOOKS before filesystems</p>
+<p><code>MODULES</code> and <code>HOOKS</code> should be something along the following lines:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">less</span> /etc/mkinitcpio.con
+  <span class="va">MODULES=</span><span class="st">&quot;ext4&quot;</span>
+  <span class="ex">.</span>
+  <span class="ex">.</span>
+  <span class="ex">.</span>
+  <span class="va">HOOKS=</span><span class="st">&quot;base udev autodetect modconf block keymap encrypt lvm2 resume filesystems keyboard fsck&quot;</span></code></pre></div>
+<h2 id="configure-the-bootloader.">Configure the bootloader.</h2>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Given you mounted /dev/sdX1 on /mnt/boot</span>
+<span class="ex">bootctl</span> --path=/boot install
+
+
+<span class="co"># Populate the systemd-boot configs</span>
+<span class="ex">blkid</span> /dev/sda2 <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;{print $2}&#39;</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&#39;s/&quot;//g&#39;</span> <span class="op">&gt;</span> /boot/loader/entries/arch.conf</code></pre></div>
+<p>Edit the config generated above. Use <code>allow-discards</code> when using an SSD</p>
+<p>To quote <a href="http://www.brandonkester.com/tech/2014/03/16/full-disk-encryption-in-arch-linux-with-uefi.html">Brandon Kester’s post</a>:</p>
+<p><em>“The resume= option will enable hibernation on the device. The nice thing about having an encrypted swap partition is that your hibernation data will be encrypted just like the rest of the at-rest data. This makes hibernation a very secure alternative to leaving your machine in stand-by mode, which is vulnerable to the cold boot attack.”</em></p>
+<p>Your /boot/loader/entries/arch.conf should be along the lines of:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">title</span>   Arch Linux
+<span class="ex">linux</span>   /vmlinuz-linux
+<span class="ex">initrd</span>  /initramfs-linux.img
+<span class="ex">options</span> cryptdevice=UUID=53f48717-2f23-466d-aad8-ce513286af42:lvm:allow-discards resume=/dev/mapper/vg0-swap root=/dev/mapper/vg0-root home=/dev/mapper/vg0-home rw quiet</code></pre></div>
+<p>/boot/loader/loader.conf should be along the lines of: note default arch refers to the entries/arch.conf from above I like 0 timeout because speed /boot/loader/loader.conf</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">timeout</span> 0
+<span class="ex">default</span> arch
+<span class="ex">editor</span> 0</code></pre></div>
+<p>Finishing up.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># generate the ramdisk</span>
+<span class="ex">mkinitcpio</span> -p linux
+
+<span class="co"># I hope your /boot is sane.</span>
+<span class="co"># Mine is along the lines of:</span>
+$ <span class="ex">tree</span> /boot
+<span class="ex">/boot</span>
+├── <span class="ex">EFI</span>
+│   ├── <span class="ex">BOOT</span>
+│   │   └── <span class="ex">BOOTX64.EFI</span>
+│   └── <span class="ex">systemd</span>
+│       └── <span class="ex">systemd-bootx64.efi</span>
+├── <span class="ex">initramfs-linux-fallback.img</span>
+├── <span class="ex">initramfs-linux.img</span>
+├── <span class="ex">loader</span>
+│   ├── <span class="ex">entries</span>
+│   │   └── <span class="ex">arch.conf</span>
+│   └── <span class="ex">loader.conf</span>
+└── <span class="ex">vmlinuz-linux</span>
+
+<span class="ex">5</span> directories, 7 files
+
+<span class="co"># exit the chroot</span>
+<span class="bu">exit</span>
+
+<span class="co"># unmount the drives</span>
+<span class="fu">umount</span> /mnt/home
+<span class="fu">umount</span> /mnt/boot
+<span class="fu">umount</span> /mnt
+
+<span class="co"># yaaay</span>
+<span class="ex">reboot</span></code></pre></div>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Sun, 11 Sep 2016 17:45:13 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2016-09-11-dm-crypt-systemd-boot-and-efi-on-archlinux.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Apple Deprecates the Use of OpenSSL.</title>
+    <link>http://blog.urbanslug.com/posts/2016-05-09-Apple-Deprecates-the-Use-of-OpenSSL.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on May  9, 2016
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/OpenSSL.html">OpenSSL</a>, <a href="/tags/Apple.html">Apple</a>, <a href="/tags/OSX.html">OSX</a>
+    
+</div>
+
+<p>During a brew upgrade I noticed that apple has deprecated the use of OpenSSL.</p>
+<p>Apple has deprecated use of OpenSSL in favour of its own TLS and crypto libraries</p>
+<pre><code>==&gt; Downloading https://homebrew.bintray.com/bottles/openssl-1.0.2h.el_capitan.bottle.tar.gz
+######################################################################## 100.0%
+==&gt; Pouring openssl-1.0.2h.el_capitan.bottle.tar.gz
+==&gt; Caveats
+A CA file has been bootstrapped using certificates from the system
+keychain. To add additional certificates, place .pem files in
+  /usr/local/etc/openssl/certs
+
+and run
+  /usr/local/opt/openssl/bin/c_rehash
+
+This formula is keg-only, which means it was not symlinked into /usr/local.
+
+Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries
+
+Generally there are no consequences of this for you. If you build your
+own software and it requires this formula, you&#39;ll need to add to your
+build variables:
+
+    LDFLAGS:  -L/usr/local/opt/openssl/lib
+    CPPFLAGS: -I/usr/local/opt/openssl/include</code></pre>
+<p>I know people are getting tired of all openSSL holes but this sounds like PR or overkill. Why not use something that exists? Why not name the lib they are favouring over openSSL? Is this security by obscurity or do they assume their users won’t understand it? Notice this: <em>“Generally there are no consequences of this for you.”</em></p>
+<p>I’ve heard good things about libreSSL which I would assume is what they’d use. Since it’s a BSD thing and OSX is BSD.</p>
+<p>I wonder what the future of OpenSSL is though this has been a long time coming. I also wonder whether we’ll start seeing more of this in the Linux server world.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Mon, 09 May 2016 13:33:13 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2016-05-09-Apple-Deprecates-the-Use-of-OpenSSL.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Packaging python projects.</title>
+    <link>http://blog.urbanslug.com/posts/2016-02-14-Packaging-python-projects.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on February 14, 2016
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Python.html">Python</a>, <a href="/tags/packaging.html">packaging</a>
+    
+</div>
+
+<p>A while ago I had quite a problem figuring out how to package a python project. This is because the python community has no set standard on how to package python projects.</p>
+<p>So I decided to fix this for those who shall come after me and wish to make something quick in python. As an example project I came up with <a href="https://github.com/urbanslug/Arithmetic">Arithmetic</a> and had to come up with <a href="https://github.com/urbanslug/WaterInfrastructure">WaterInfrastructure</a>.</p>
+<p>It is something close to a python project quickstart.<br />
+Incidentally, it also happens to be an example of <strong>functional programming in python</strong>.</p>
+<p>The point is to show you how to structure:</p>
+<ul>
+<li>your tests (which testing framework might be good)</li>
+<li>code</li>
+<li>package it for distribution via a tool like pip or pypy and so forth</li>
+<li>(all these in functional style)</li>
+</ul>
+<blockquote>
+<p><em>I use Python 3.</em></p>
+</blockquote>
+<h3 id="arithmetic">Arithmetic</h3>
+<p>The directory structure for this is as follows:</p>
+<pre><code>.
+├── README.md
+├── arithmetic
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── division
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── divide.py
+│   ├── multiplication
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── multiply.py
+│   └── tests
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── division
+│       │   └── test_divide.py
+│       └── multiplication
+│           └── test_multiply.py
+└── setup.py</code></pre>
+<h3 id="waterinfrastructure">WaterInfrastructure</h3>
+<p><a href="https://github.com/urbanslug/WaterInfrastructure">WaterInfrastructure</a> is the other project I wrote following the above guidelines. This was as an interview question (this is a form of attribution :D).</p>
+<p><em>Question: I have a problem, do python projects have to have .pyc files in the same directory as the source file?</em></p>
+<p>There really isn’t much to say here you can learn more by browsing through the code.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Sun, 14 Feb 2016 17:45:13 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2016-02-14-Packaging-python-projects.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Emacs cheatsheet</title>
+    <link>http://blog.urbanslug.com/posts/2015-09-11-Emacs-cheatsheet.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on September 11, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Emacs.html">Emacs</a>
+    
+</div>
+
+<p>These bindings should work for emacs from 24 upwards.<br />
+My emacs config is in my <a href="https://github.com/urbanslug/dotfiles/blob/master/.emacs">dotfiles</a>.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Key binding</th>
+<th align="center">Name</th>
+<th align="center">Purpose</th>
+<th align="center">Package</th>
+<th align="center">From emacs version</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">C-x SPC</td>
+<td align="center">(rectangle-mark-mode)</td>
+<td align="center">Select a rectangular region.</td>
+<td align="center">None</td>
+<td align="center">24.4</td>
+</tr>
+<tr class="even">
+<td align="center">C-c SPC</td>
+<td align="center">(ace-jump mode)</td>
+<td align="center">Jump to a letter at start of a word.</td>
+<td align="center">ace-jump</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-s C-w</td>
+<td align="center">(write-file)</td>
+<td align="center">Save current file as a different file</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-g C-/</td>
+<td align="center">Redo</td>
+<td align="center">Redo something you’ve undone.</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-/</td>
+<td align="center">Undo</td>
+<td align="center">Undo something you’ve done.</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-x k</td>
+<td align="center">(kill-buffer)</td>
+<td align="center">Close the current buffer.</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-x C-f</td>
+<td align="center">(find-file)</td>
+<td align="center">Visit a file</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-x C-v</td>
+<td align="center">(find-alternate-file)</td>
+<td align="center">Visit a different file</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-x C-r</td>
+<td align="center">(find-file-read-only)</td>
+<td align="center">Visit a file as read-only</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-x 4 f</td>
+<td align="center">(find-file-other-window)</td>
+<td align="center">Visit a file in another window/buffer</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="odd">
+<td align="center">C-x 5 f</td>
+<td align="center">(find-file-other-frame)</td>
+<td align="center">Visit a file in a new frame</td>
+<td align="center">None</td>
+<td align="center">unknown</td>
+</tr>
+<tr class="even">
+<td align="center">C-a</td>
+<td align="center">Jump to start of line</td>
+<td align="center">Not emacs specific but IBM home</td>
+<td align="center">None</td>
+<td align="center">all</td>
+</tr>
+<tr class="odd">
+<td align="center">C-e</td>
+<td align="center">Jump to end of line</td>
+<td align="center">Not emacs specific but IBM end</td>
+<td align="center">None</td>
+<td align="center">all</td>
+</tr>
+<tr class="even">
+<td align="center">C-s M-%</td>
+<td align="center"></td>
+<td align="center">Queried search and replace</td>
+<td align="center">None</td>
+<td align="center">all</td>
+</tr>
+</tbody>
+</table>
+<h3 id="handy-information">Handy information</h3>
+<ul>
+<li>For redo keep repeating C-/ to keep redoing, C-g isn’t repeated.</li>
+<li>If you “visit” a file that is actually a directory, Emacs invokes Dired, the Emacs directory browser. See <a href="http://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html#Dired">Dired</a>. You can disable this behavior by setting the variable find-file-run-dired to nil; in that case, it is an error to try to visit a directory.</li>
+<li>When the emacs version is unknown it will most likely work for your version of emacs.</li>
+<li>Here’s an awesome <a href="http://www.gnu.org/software/emacs/manual/html_node/emacs/index.html#SEC_Content">emacs manual</a></li>
+<li>Update emacs packages with M-x package-list-packages RET U x then follow the prompts as you wish.</li>
+</ul>
+<h4 id="to-learn">To learn</h4>
+<ul>
+<li>General indentation</li>
+<li>Indenting blocks.</li>
+</ul>
+<h4 id="handy-emacs-packages-i-like">Handy emacs packages I like</h4>
+<ul>
+<li>ace-jump</li>
+<li>auto-complete</li>
+</ul>
+<h4 id="extra">Extra</h4>
+<ul>
+<li><strong>Updating emacs packages</strong>: <code>M-x package-list-packages U x</code> then follow the prompts</li>
+<li><strong>emacs-nox</strong>: In the arch repos there’s emacs-nox described as “The extensible, customizable, self-documenting real-time display editor, without X11 support” Good for SSH.</li>
+<li>My <a href="https://github.com/urbanslug/dotfiles/blob/master/.emacs">emacs config</a></li>
+<li><strong>Installing packages</strong>: “i” mark for install. “x” to install</li>
+<li><code>M-x</code> to run any command. e.g <code>M-x erc</code> to IRC from emacs.</li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Fri, 11 Sep 2015 01:33:45 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-09-11-Emacs-cheatsheet.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Imports and exports as documentation.</title>
+    <link>http://blog.urbanslug.com/posts/2015-08-22-Imports-and-exports-as-documentation.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on August 22, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/Haskell.html">Haskell</a>
+    
+</div>
+
+<p>Lately I’ve been reading huge haskell code bases quite a lot. One thing that I have noted to be helpful when documentated has been the imports section as well as the code having a list of the code it exports.</p>
+<p>I don’t know whether this is just a non-experienced programmer issue or it cuts across the board.</p>
+<p>Documenting imports can happen:</p>
+<ul>
+<li>explicitly through:
+<ul>
+<li>comments</li>
+</ul></li>
+<li>implicity through:
+<ul>
+<li><p>uniquely qualified imports.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">A</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span>
+<span class="kw">import </span><span class="dt">B</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">Y</span></code></pre></div>
+<p>over</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">A</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span>
+<span class="kw">import </span><span class="dt">B</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span></code></pre></div></li>
+<li><p>importing of specific instances (i.e using brackets to specify what one wants to import)</p></li>
+</ul></li>
+</ul>
+<p>Basically anything that saves the programmer effort or time in:</p>
+<ul>
+<li>Understanding what you’re importing</li>
+<li>Why you’re importing it</li>
+<li>See the usage of a function and quickly know where it’s from</li>
+</ul>
+<p>I can’t quantify or explain exactly how this helps me understand the code but it really does. Especially when I can’t hoogle a function name (the internet connections aren’t too fast in these parts). It saves me the time of have to go through several modules trying to figure out where this import is from.</p>
+<p>Most of time we are in just too much of a hurry to do this I understand. I’m a victim of some terrible coding practices but I think it’s a good habit to adopt.</p>
+<p>Well, the user can use tools like the repl to query where these imports are from but again when you can save the user time and effort of querying for meta information please do so. I know it’s not possible to do it all the time and everywhere but please do it when and where you can.</p>
+<p>Let me illustrate this in some example code:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-|</span>
+<span class="co">Module      : Devel.Build</span>
+<span class="co">Description : Attempts to compile the WAI application.</span>
+<span class="co">Copyright   : (c)</span>
+<span class="co">License     : GPL-3</span>
+<span class="co">Maintainer  : njagi@urbanslug.com</span>
+<span class="co">Stability   : experimental</span>
+<span class="co">Portability : POSIX</span>
+
+<span class="co">compile compiles the app to give:</span>
+<span class="co">Either a list of source errors or an ide-backend session.</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE PackageImports, OverloadedStrings #-}</span>
+
+<span class="kw">module</span> <span class="dt">Devel.Compile</span> (compile) <span class="kw">where</span>
+
+<span class="co">-- Almost everything is dependent on ide-backend.</span>
+<span class="kw">import </span><span class="dt">IdeSession</span>
+
+<span class="co">-- From Cabal-ide-backend</span>
+<span class="co">-- for parsing the cabal file and extracting lang extensions used.</span>
+<span class="kw">import </span><span class="dt">Distribution.PackageDescription</span>
+<span class="kw">import </span><span class="dt">Distribution.PackageDescription.Parse</span>
+<span class="kw">import </span><span class="dt">Distribution.PackageDescription.Configuration</span>
+<span class="kw">import </span><span class="dt">Language.Haskell.Extension</span>
+
+<span class="co">-- Used internally for showing errors.</span>
+<span class="kw">import </span><span class="dt">Data.Text</span> (unpack)
+
+<span class="co">-- Utility functions</span>
+<span class="kw">import </span><span class="dt">Data.Monoid</span> ((&lt;&gt;))
+<span class="kw">import </span><span class="dt">System.Directory</span> (createDirectoryIfMissing, getCurrentDirectory)
+
+<span class="co">-- Local imports</span>
+<span class="kw">import </span><span class="dt">Devel.Paths</span>
+<span class="kw">import </span><span class="dt">Devel.Types</span></code></pre></div>
+<p>Compare with this which I wrote in a hurry.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-|</span>
+<span class="co">Module      : Devel.Paths</span>
+<span class="co">Description : For filepath related matters.</span>
+<span class="co">Copyright   : (c)</span>
+<span class="co">License     : GPL-3</span>
+<span class="co">Maintainer  : njagi@urbanslug.com</span>
+<span class="co">Stability   : experimental</span>
+<span class="co">Portability : POSIX</span>
+
+<span class="co">Uses the GHC package to parse .hi files.</span>
+<span class="co">Will hopefully be moved upstream to ide-backend.</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">module</span> <span class="dt">Devel.Paths</span> <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">System.Directory</span> (getCurrentDirectory, doesDirectoryExist, getDirectoryContents)
+<span class="kw">import </span><span class="dt">Control.Monad</span> (forM)
+<span class="kw">import </span><span class="dt">Control.Concurrent</span> (forkIO)
+<span class="kw">import </span><span class="dt">System.FilePath.Glob</span>
+<span class="kw">import </span><span class="dt">System.FilePath</span> ((&lt;/&gt;))
+<span class="kw">import </span><span class="dt">Data.List</span>
+<span class="kw">import </span><span class="dt">IdeSession</span>
+<span class="kw">import </span><span class="dt">Devel.Modules</span>
+<span class="kw">import </span><span class="dt">System.FilePath.Posix</span> (replaceExtension, dropExtension, takeExtensions)
+<span class="kw">import qualified</span> <span class="dt">Data.ByteString.Char8</span> <span class="kw">as</span> <span class="dt">C8</span>
+<span class="kw">import </span><span class="dt">Control.Monad.IO.Class</span>
+<span class="kw">import </span><span class="dt">System.FilePath</span> (pathSeparator)
+<span class="kw">import </span><span class="dt">System.Directory</span> (removeFile)</code></pre></div>
+<p>As you can see one can learn quite a bit just from looking at the imports and module documentation alone.</p>
+<p>The issue is that it sometimes takes a while for one to clean up their code like this so it’s okay if your imports aren’t legible before refactoring.</p>
+<p>Another thing, I don’t know if it’s just an emacs thing but I can just to my imports and jump between sections of imports with f12. This is both advantageous to both the one writing the code and the one reading it.<br />
+The point of all of this is that well structured and well documented imports and exports are a win for both the programmer and the one reading the code.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Sat, 22 Aug 2015 20:16:12 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-08-22-Imports-and-exports-as-documentation.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>wai-devel final submission.</title>
+    <link>http://blog.urbanslug.com/posts/2015-08-21-wai-devel-final-submission.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on August 21, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/Haskell.html">Haskell</a>, <a href="/tags/GSoC.html">GSoC</a>, <a href="/tags/WAI.html">WAI</a>, <a href="/tags/wai-devel.html">wai-devel</a>
+    
+</div>
+
+<p>This is the final day of code submissions to Google for Google Summer of Code. So it’s only fair that I give the community a report on the current state of affairs regarding wai-devel.<br />
+This is more of a very detailed changelog than a blog post about wai-devel.</p>
+<h2 id="what-wai-devel-expects-from-your-application.">What wai-devel expects from your application.</h2>
+<p><strong>NOTHING</strong><br />
+Yes, wai-devel expects nothing from your application. However, your application shall receive a port number through the environment variable <code>PORT</code>.</p>
+<p><em>UPDATE:</em> Due to it’s reliance on ide-backend you also have to set the environment variable <code>GHC_PACKAGE_PATH</code></p>
+<h3 id="what-port-is-used-for">What PORT is used for:</h3>
+<p>Your application shall listen for connections on <code>localhost:&lt;PORT&gt;</code> wai-devel by default creates a reverse proxy from port number 3000 to your application which is listening in on PORT.<br />
+You can change the port from the default port 3000 by setting the environment variable PORT yourself.</p>
+<p>wai-devel takes PORT and then cycles through various port numbers adding 1 to PORT to find a port that is free, sets that as the destination port and changes the PORT environment variable to that destination port. Therefore we can reverse proxy from PORT to a random port.</p>
+<p>Reverse proxying is important for error reporting, future proofing and other ways of abstracting away the services wai-devel provides to your application.</p>
+<h2 id="more-reliable-dirtiness-checking.">More reliable dirtiness checking.</h2>
+<p>wai-devel will use the the module you have chosen to find the files to watch for changes in. It watches the files it imports and their Template Haskell dependencies as well as the cabal file.</p>
+<h2 id="compatibility-with-haskell-wai-applications.">Compatibility with Haskell wai-applications.</h2>
+<p>wai-devel works with your usual yesod scaffold from yesod-bin out of the box and should work with other haskell wai apps as long as they use the PORT environment variable.</p>
+<p>You can pass the filepath and function to run via command line arguments <code>--path</code> or <code>-p</code> and function <code>--function</code> or <code>-f</code>. When these aren’t passed it assumes Application.develMain (borrowed from yesod).</p>
+<h2 id="yet-to-come.">Yet to come.</h2>
+<p>I will be actively developing wai-devel well after Google Summer of Code is over (that is today).</p>
+<p>The following are coming next:</p>
+<ul>
+<li>Show build progress in the browser.</li>
+<li>Provide a dashboard page with compilation status, garbage collection statistics, and other useful meta-information.</li>
+<li>Port to Windows. (This depends on ide-backend getting ported to Windows.)</li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Fri, 21 Aug 2015 19:14:34 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-08-21-wai-devel-final-submission.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Progress with wai-devel</title>
+    <link>http://blog.urbanslug.com/posts/2015-08-13-Progress-with-wai-devel.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on August 13, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/Haskell.html">Haskell</a>, <a href="/tags/WAI.html">WAI</a>, <a href="/tags/wai-devel.html">wai-devel</a>
+    
+</div>
+
+<p>wai-devel is a development server for wai compliant haskell web applications.</p>
+<p>Its name changed from yesod-devel (the haskell reddit community suggested this). You can find it at: <a href="https://github.com/urbanslug/wai-devel" class="uri">https://github.com/urbanslug/wai-devel</a></p>
+<h2 id="what-wai-devel-expects-from-your-application">What wai-devel expects from your application</h2>
+<p>Since wai-devel is very loosely coupled to your application it expects mainly two things from your application: a <strong>host:port</strong> pair and a function, <strong>Application.develMain</strong>.</p>
+<p>Due to it’s dependence on ide-backend it also expects you to set the environment variable <code>GHC_PACKAGE_PATH</code>.</p>
+<p>Mine for example is: <code>export GHC_PACKAGE_PATH=~/.stack/snapshots/x86_64-linux/lts-2.22/7.8.4/pkgdb:</code></p>
+<p>The host:port pair is expected to be passed in as two environment variables: wai_host and wai_port for example:</p>
+<ul>
+<li>export wai_host=127.0.0.1</li>
+<li>export wai_port=3001</li>
+</ul>
+<p>Better yet, the application itself should set the environment variables as in the example code below.</p>
+<p>wai-devel looks for a function Application.develMain I have a <a href="https://github.com/urbanslug/yesod">fork of yesod</a>, that builds a yesod binary which generates a scaffold with this function implemented. I recommend using it to generate the scaffold with which to try out wai-devel with.</p>
+<p>The specifics of how to set the port and host within yesod applications will obviously change. The point of this fork is to generate a scaffold that works with wai-devel out of the box.</p>
+<p>Here is a snippet develMain function from my yesod fork.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- | main function for use by yesod devel</span>
+<span class="ot">develMain ::</span> <span class="dt">IO</span> ()
+develMain <span class="fu">=</span> develMainHelper&#39; getApplicationDev
+
+<span class="ot">develMainHelper&#39; ::</span> <span class="dt">IO</span> (<span class="dt">Settings</span>, <span class="dt">Application</span>) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+develMainHelper&#39; getSettingsApp <span class="fu">=</span> <span class="kw">do</span>
+    (settings, app) <span class="ot">&lt;-</span> getSettingsApp
+
+    _ <span class="ot">&lt;-</span> unsetEnv <span class="st">&quot;wai_port&quot;</span> <span class="fu">&gt;&gt;</span> setEnv <span class="st">&quot;wai_port&quot;</span> <span class="st">&quot;3001&quot;</span>
+    _ <span class="ot">&lt;-</span> unsetEnv <span class="st">&quot;wai_host&quot;</span> <span class="fu">&gt;&gt;</span> setEnv <span class="st">&quot;wai_host&quot;</span> <span class="st">&quot;127.0.0.1&quot;</span>
+
+    <span class="kw">let</span> settings&#39;  <span class="fu">=</span> setPort (<span class="dv">3001</span><span class="ot"> ::</span> <span class="dt">Port</span>) settings
+        settings&#39;&#39; <span class="fu">=</span> setHost ((read <span class="st">&quot;127.0.0.1&quot;</span>)<span class="ot"> ::</span> <span class="dt">HostPreference</span>) settings\<span class="ch">&#39;</span>
+
+    sock <span class="ot">&lt;-</span> createSocket
+
+    runSettingsSocket settings&#39;&#39; sock app
+
+    <span class="kw">where</span> <span class="co">-- | Create the socket that we will use to communicate with</span>
+          <span class="co">-- localhost:3001 here.</span>
+<span class="ot">          createSocket ::</span> <span class="dt">IO</span> <span class="dt">Socket</span>
+          createSocket <span class="fu">=</span> <span class="kw">do</span>
+
+            sock <span class="ot">&lt;-</span> socket <span class="dt">AF_INET</span> <span class="dt">Stream</span> defaultProtocol
+
+            <span class="co">-- Tell the OS *not* to reserve the socket after your program exits.</span>
+            setSocketOption sock <span class="dt">ReuseAddr</span> <span class="dv">1</span>
+
+            <span class="co">-- Bind the socket to localhost:3000 and listen.</span>
+            <span class="co">-- I wonder why I can&#39;t specify localhost instead of iNADDR_ANY</span>
+            bindSocket sock (<span class="dt">SockAddrInet</span> <span class="dv">3001</span> iNADDR_ANY)
+            listen sock <span class="dv">2</span>
+            return sock</code></pre></div>
+<blockquote>
+<p>During socket creation I made sure that the socket option ReuseAddr has been set to 1.<br />
+This way the operating system doesn’t hold on to the socket after the program exits. This is important for when wai-devel takes note of file changes and the development server is restarted.</p>
+</blockquote>
+<h2 id="ignoring-files-and-directories">Ignoring files and directories</h2>
+<p>wai-devel expects that there will be a single <code>Main.main</code> function. In the case of having more than one, for example with yesod, we ignore all but one. Specifically, we ignore the file app/DevelMain.hs. There is no need for app/devel.hs so it has been removed in my fork.</p>
+<p>Moreover, wai-devel ignores files in your <code>test/</code> directory.<br />
+This is because wai-devel depends on ide-backend which will attempt to build all files in the current working diretory, including your test directory. This leads to a world of hurt because the test/ directory also has a <code>Main.main</code> function.</p>
+<p><em>Please report an issue if you would like any file ignored during builds.</em></p>
+<h1 id="moved-to-stack">Moved to stack</h1>
+<p>Since the Haskell community has moved in this direction, so has wai-devel.<br />
+wai-devel only depends on cabal in that stack and ide-backend depend on Cabal the library. Otherwise, the cabal binary is not used and hasn’t been tested to work with wai-devel.</p>
+<h2 id="compatible-versions-of-ghc">Compatible versions of GHC</h2>
+<p>Currently wai-devel is built and tested against:</p>
+<ul>
+<li>GHC-7.8</li>
+<li>GHC-7.10</li>
+</ul>
+<h2 id="regarding-file-watching">Regarding file watching</h2>
+<p>wai-devel watches for file changes on files with the following extensions:</p>
+<ul>
+<li>hamlet</li>
+<li>shamlet</li>
+<li>julius</li>
+<li>lucius</li>
+<li>hs</li>
+<li>yaml</li>
+</ul>
+<p>When a change takes place wai-devel will recompile and re-run your application on localhost:3001 or display an error if any on the browser at localhost:3000</p>
+<p><em>If you would want another extension added to the list of file extensions to watch for please report it as an issue.</em></p>
+<h2 id="command-line-arguments">Command line arguments</h2>
+<p>Currently wai-devel takes only these two arguments and the two are optional. If you feel the need for more arguments please report it as an issue on github.</p>
+<ul>
+<li><p>-r <em>to turn off reverse proxying</em> If this is turned on you will access your application at an address that is specific to your web application or web framework.</p></li>
+<li><p>–show-iface [hi file] <em>passes this command to ghc</em> Same as ghc –show-iface</p></li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Thu, 13 Aug 2015 15:58:24 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-08-13-Progress-with-wai-devel.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Yesod-devel</title>
+    <link>http://blog.urbanslug.com/posts/2015-07-19-Yesod-devel.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on July 19, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/GSoC.html">GSoC</a>, <a href="/tags/Yesod.html">Yesod</a>, <a href="/tags/Yesod-Devel.html">Yesod-Devel</a>
+    
+</div>
+
+<p>A new development server is upon us. It’s name is yesod-devel.<br />
+This post is about yesod-devel which is my Google Summer of Code project and not the current yesod-devel that is part of the yesod framework. It’s not yet available and is still under development, meaning a lot of things in this post may change.</p>
+<p>yesod-devel is a development server for haskell web applications that are <a href="https://www.yesodweb.com/book/web-application-interface">WAI</a> compliant.</p>
+<h1 id="what-we-expect-from-the-application.">What we expect from the application.</h1>
+<p>This is my opinion of what <strong>I</strong> expect from the web application and this may therefore change depending on what the community thinks. I think this design is good and losely coupled and leaves a lot of freedom to the web application.</p>
+<p>At the heart of your application (the root of your web application) we expect you to have an <code>Application.hs</code> file which holds the Appliaction module. This is the file pointed to by your <code>main-is</code> section of the .cabal file.:</p>
+<p>This Application.hs file holds the <code>main</code> function which fires up a <a href="http://hackage.haskell.org/package/warp"><code>warp</code></a> server at a an address and port specified in an environment variable. Yesod devel will read everything it needs from the web application from environment variables and not from a config file.<br />
+It is the responsibility of the web application to set environment variables(setEnv). This way yesod-devel is very losely coupled to the web application. That is, we(yesod-devel) will not have to specify the names, paths of your config files or which serialization format it will use.</p>
+<p>The environment variables we currently need are:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="va">haskellWebAddress=</span><span class="st">&quot;&lt;ip_address&gt;/localhost&quot;</span>
+<span class="va">haskellWebPort=</span><span class="st">&quot;&lt;port_number&gt;&quot;</span></code></pre></div>
+<h1 id="what-you-should-expect-from-yesod-devel.">What you should expect from yesod-devel.</h1>
+<h4 id="automatic-source-and-data-file-discovery.">Automatic source and data file discovery.</h4>
+<p>You shouldn’t expect to tell yesod-devel where your source files or data files (hamelet files and so forth) are as long as your web application knows where everything is. All you need to do is call the yesod-devel binary inside your app’s root.</p>
+<h4 id="building-and-running-your-code.">Building and running your code.</h4>
+<p>yesod-devel when run in your web application’s working directory will run build and run your application on localhost:3000.</p>
+<h4 id="automatic-code-reloading.">Automatic code reloading.</h4>
+<p>Yesod-devel supports automatic code reloading for any file modified in the current working directory. This is more proof of just how losely coupled yesod-devel will be from your application.</p>
+<p>Newly added files don’t trigger a recompile and neither do deleted files. However, file modifications do trigger a recompile. This is a deliberate design choice. Text editors as well as other programs keep adding and removing files from the file system and if we listened for any randomly created file or deleted file to trigger a recompile we would end up triggering useless recompiles.</p>
+<p>This however means there’s a trade-off. For being so losely coupled we have to manually restart yesod-devel everytime we add or delete files.</p>
+<h4 id="reverse-proxying.">Reverse proxying.</h4>
+<p>Yesod-devel will start listening on the address and port specified in your environment variables <code>haskellWebAddress</code> and <code>haskellWebPort</code> respectively and reverse proxy it to your <strong>localhost:3000</strong>.</p>
+<h4 id="report-error-messages-to-the-browser.">Report error messages to the browser.</h4>
+<p>Yesod-devel will report error messages from ghc to the web browser on localhost:3000.</p>
+<h4 id="command-line-arguments.">Command line arguments.</h4>
+<p>Currently yesod-devel takes no command line arguments.</p>
+<p>However, in the plans are the following.</p>
+<ul>
+<li>--configure-with <config flags to cabal configure></li>
+<li>--no-reverse-proxying</li>
+<li>--show-iface fileName.hs</li>
+</ul>
+<p>You should be fine without passing any of these arguments unless you have a special reason to.</p>
+<p>Currently yesod-devel will configure your web application with the following flags to cabal.</p>
+<ul>
+<li>-flibrary-only</li>
+<li>--disable-tests&quot;</li>
+<li>--disable-benchmarks&quot;</li>
+<li>-fdevel</li>
+<li>--disable-library-profiling</li>
+<li>--with-ld=yesod-ld-wrapper</li>
+<li>--with-ghc=yesod-ghc-wrapper</li>
+<li>--with-ar=yesod-ar-wrapper</li>
+<li>--with-hc-pkg=ghc-pkg</li>
+</ul>
+<p>I assume that these arguments are self explanatory.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Sun, 19 Jul 2015 15:35:14 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-07-19-Yesod-devel.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Google Summer of Code (2015).</title>
+    <link>http://blog.urbanslug.com/posts/2015-07-19-Google-Summer-of-Code-%282015%29.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on July 19, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/GSoC.html">GSoC</a>, <a href="/tags/Yesod.html">Yesod</a>, <a href="/tags/Yesod-Devel.html">Yesod-Devel</a>
+    
+</div>
+
+<p>This post is long overdue and I should’ve started writing on this a while ago but oh well I will write as much in the remaining time and try to make up for lost time.</p>
+<p>So I sent in a proposal for Google Summer of Code aimed at <a href="https://www.haskell.org">haskell.org</a>. The aim of the proposal was <strong>To build an improved yesod-devel server</strong>. Let the name not fool you, this server is supposed to work with all <a href="https://www.yesodweb.com/book/web-application-interface">WAI</a> compliant haskell web applications such as yesod, spock, scotty applications among others. My mentor has been <a href="https://github.com/snoyberg">Michael Snoyman</a>. I’ve also been working closely with <a href="https://github.com/mgsloan">Michael Sloan</a> and <a href="https://github.com/ncreep">Daniel Beskin</a>. It started on a high note. I was added to the <a href="https://github.com/fpco">FP Complete github organisation</a>. That had me very excited because of the kind of people who are in that organisation plus it’s <strong>THE HASKELL</strong> organisation in my opinion. So that’s the social aspect. Let’s talk programming.</p>
+<h1 id="ide-backend">ide-backend</h1>
+<p>So FP Complete recently released a library that acts as a wrapper around the <a href="https://wiki.haskell.org/GHC/As_a_library">GHC API</a>, that is, <a href="https://hackage.haskell.org/package/ide-backend-0.9.0.2">ide-backend</a> (I wrote about it in an earlier post). This library was extracted from the online FP Complete haskell ide. It was therefore still aimed at working a cleint - server model where the client and server are on different boxes. The client (the package depending on ide-backend) had to explicitly specify the files to be copied from the cleint to the server. This worked in the FP Complete use case but wouldn’t work in our use case.</p>
+<p>So we had to make it work in a local environment. This was my first task.</p>
+<p>The aim here was to enable automatic source file (as well as data files and everything else) discovery by ide-backend so that it can submit these files for compilationa by GHC.<br />
+To do this, one has to specify that they want to use ide-backend with a local working directory under <code>configLocalWorkingDir</code> in <a href="http://hackage.haskell.org/package/ide-backend-0.9.0.2/docs/IdeSession.html#v:defaultSessionConfig"><code>defaultSessionConfig</code></a>. <code>configLocalWorkingDir</code> is a value of type <code>Maybe FilePath</code>. It defaults to (Nothing :: Maybe FilePath) and has ide-backend working in a client-server environment. When <code>configLocalWorkingDir</code> is set it uses the given file path as the place it will look for source files, data files and everything in between.</p>
+<p>Functionality for ide-backend to work in a non-server environment was finally merged in <a href="https://github.com/fpco/ide-backend/tree/19561d9ff5f496d6556f38992bc8d08896d54091">this commit onwards on github</a>. It’s not yet on the hackage version of ide-backend as of writing this post but it will be pushed soon enough.</p>
+<h1 id="yesod-devel">yesod-devel</h1>
+<p>Then came the challenge of yesod-devel. This is the “client” in our case that depends on ide-backend. Quite honestly the fact is that ide-backend is the one doing most of the heavy lifting while yesod-devel coordinates everything.</p>
+<p>The objectives of yesod-devel are:</p>
+<ul>
+<li>Automatic source and data file discovery.</li>
+<li>Load code</li>
+<li>Compile to bytecode</li>
+<li>Run the code</li>
+<li>Read environment variables</li>
+<li>Grab compiler error messages and display them on the browser</li>
+<li>Listening for changes in the current working directory</li>
+<li>Automatic code reloading and recompilation</li>
+<li>Perform reverse proxying for the web application</li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Sun, 19 Jul 2015 13:30:44 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-07-19-Google-Summer-of-Code-%282015%29.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>What is a runtime system (Overview).</title>
+    <link>http://blog.urbanslug.com/posts/2015-05-17-What-is-a-runtime-system-%28Haskell%29.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on May 22, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: 
+    
+</div>
+
+<p>This post is aimed at total beginners. Especially those who have no idea what a runtime system is and is a gross oversimplification. :) Let’s go. Later I will write something about the haskell runtime system.</p>
+<p>This post was inspired by <a href="http://ezyang.com/jfp-ghc-rts-draft.pdf">The GHC Runtime System by Edward Z. Yang (2013)</a> and <a href="https://users-cs.au.dk/hosc/local/LaSC-3-4-pp343-380.pdf">A Runtime System by Andrew W. Appel (1989)</a>. I also tried reading: <a href="http://research.microsoft.com/en-us/um/people/simonpj/papers/slpj-book-1987/">The Implementation of Functional Programming Languages by Simon Peyton Jones, published by Prentice Hall, 1987.</a> and <a href="http://research.microsoft.com/en-us/um/people/simonpj/Papers/pj-lester-book/">Implementing functional languages: a tutorial by Simon Peyton Jones and David Lester. Published by Prentice Hall, 1992.</a> but they’re really big and quite dated. You may also read <a href="http://en.wikipedia.org/wiki/Runtime_system">wikipedia on runtime systems</a>.</p>
+<p>So what is a runtime system? It is a program that is invoked by the compiler to wrap your compiled program/code and gives it bindings to the “API” provided by the environment(<em>operating system</em>) that the program is running in. So the runtime system can’t run on it’s own. It only runs when the program, for example a haskell program, is running and as you would expect the runtime system would vary between operating systems because the environments are different.</p>
+<p>It provides primitive langauge features unlike a standard library which is typically implemented in the language itself.</p>
+<p>We count on the runtime system to provide the following services among others:</p>
+<ul>
+<li>Garbage collection.</li>
+<li>Streaming input and output.</li>
+<li>Structured input and output.</li>
+<li>Process suspension</li>
+<li>Handling interrupts and asynchronous events.</li>
+<li>Operating system calls.</li>
+<li>Arithmetic interrupts.</li>
+<li>Execution profiling.</li>
+<li>Assembly language implementation of language primitives.</li>
+<li>Debugging.</li>
+<li>Fun with continuation.</li>
+<li>Foreign language procedure calls.</li>
+</ul>
+<h3 id="haskell-runtime-system.">Haskell runtime system.</h3>
+<p>Haskell features that complicate the design of the runtime system:</p>
+<ul>
+<li>Lazy evaluation. <em>No clear order of execution</em></li>
+<li>Ubiquitous concurrency.</li>
+</ul>
+<p>However, <strong>emphasis on pure computation</strong> simplifies the design of the garbage collector and Software Transactional Memory.</p>
+<h3 id="ghc-and-the-haskell-runtime-system.">GHC and the haskell runtime system.</h3>
+<p>GHC is broken down into three parts.</p>
+<ul>
+<li>The compiler</li>
+<li>The runtime system</li>
+<li>The boot/base libraries.</li>
+</ul>
+<p>As you can see the runtime system is developed as part of GHC but not part of the compiler itself.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>I can’t keep this on without turning these into notes I wrote down when reading a paper. So I’ll write a different and more specific post later.</p>
+<h3 id="references">References:</h3>
+<ul>
+<li><a href="http://ezyang.com/jfp-ghc-rts-draft.pdf">The GHC Runtime System by Edward Z. Yang (2013)</a></li>
+<li><a href="https://users-cs.au.dk/hosc/local/LaSC-3-4-pp343-380.pdf">A Runtime System by Andrew W. Appel (1989)</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Runtime_system">wikipedia on runtime systems</a></li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Fri, 22 May 2015 11:36:45 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-05-17-What-is-a-runtime-system-%28Haskell%29.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Notes on IdeSession.</title>
+    <link>http://blog.urbanslug.com/posts/2015-04-27-Notes-on-IdeSession.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on April 27, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: 
+    
+</div>
+
+<p>These are literally notes I wrote down while reading on ide-backend and I chose to turn into a blog post.</p>
+<h4 id="what-is-idesession">What is IdeSession?</h4>
+<p>This a module from the package <a href="http://hackage.haskell.org/package/ide-backend-0.9.0.7">ide-backend</a> from <a href="https://www.fpcomplete.com/business/about/about-us/">FP Complete</a> that provides an interface to ide-backend. As far as I can tell it is the sole interface to ide-backend.<br />
+I choose think of it as the sole API to ide-backend.</p>
+<h4 id="what-is-ide-backend">What is ide-backend?</h4>
+<p>There’s a blog post from <a href="https://www.fpcomplete.com/business/about/about-us/">FP Complete</a> explaining what ide-backend is: <a href="https://www.fpcomplete.com/blog/2015/03/announce-ide-backend">ide-backend blog post</a></p>
+<p>I’ll summarize in my own words.<br />
+FP Complete have been creating an IDE for haskell and in this IDE they have code that they use for communication between the IDE and GHC (the most widely used haskell compiler).<br />
+Duncan Coutts, Edsko de Vries, and Mikolaj Konarski implemented a library that would act as a wrapper around the GHC API from this this code.<br />
+It’s this library (ide-backend) that is being used by people in the haskell community as general a wrapper around the GHC API.</p>
+<p>Copied and pasted from the <a href="https://www.fpcomplete.com/blog/2015/03/announce-ide-backend">ide-backend blog post</a>. The functions of ide-backend are:</p>
+<ul>
+<li>Compiling code</li>
+<li>Get compile error messages</li>
+<li><strong>Submit</strong> updated code for recompilation</li>
+<li>Extract type information</li>
+<li>Find usage locations for identifiers <em>- works for both local and top level identifiers</em></li>
+<li>Run generated bytecode</li>
+<li>Produce optimized executables</li>
+</ul>
+<h2 id="idesession">IdeSession</h2>
+<p>You may want to read <a href="http://hackage.haskell.org/package/ide-backend-0.9.0.7/docs/IdeSession.html">official IdeSession documentation</a>.</p>
+<p>IdeSession is centered around:</p>
+<ul>
+<li>A single threaded IDE session.</li>
+<li>Operations for updating the session (changes in files, data, compiler parameters etc.)</li>
+<li>Running querries given the current state of the session.</li>
+</ul>
+<blockquote>
+<p>Note that everything going on here is taking place in a single threaded environment.</p>
+</blockquote>
+<h4 id="interaction-with-the-compiler">Interaction with the compiler</h4>
+<p>This interface is rather sequential; in part because we are dealing with files and data which are mutable.<br />
+The general pattern of interation with the compiler is as follows:</p>
+<ol style="list-style-type: decimal">
+<li>Update phase (update source files, data et cetera).</li>
+<li>Compile phase</li>
+<li>Query phase (query the compiler on matters regarding the code).</li>
+<li>Run phase</li>
+</ol>
+<p><strong>Update phase</strong>: We don’t directly mutate the files since we don’t want to end up in a situation where ide-backend has a different state of files and data while our client has a different state of the files and data. However, we describle the changes we want to make to the files and let ide-backend effect them. That is, give ide-backend, via IdeSession, the new state of the files.<br />
+<strong>Compile phase</strong>: We apply the relevant updates and invoke the compiler. It incrementally compiles some modules. This may take a while therefore we want progress information.<br />
+<strong>Query phase</strong>: After compilation we collect info related to the compilation: source errors, list of successfully loaded modules et cetera.<br />
+<strong>Run phase</strong>: Regardless of compilation results; we may want to run code from a certain module, interact with the code, interrupt its execution.</p>
+<p>In haskell we follow types so naturally there are types associated with each of these phases.</p>
+<ol style="list-style-type: decimal">
+<li>IdeSession: <em>Query phase</em> - This is the default mode (we start here because at the start the files are in some state).</li>
+<li>IdeSessionUpdate: <em>Update phase</em> - Accumulate updates.</li>
+<li>Progress: <em>Compile phase</em> - Progress info.</li>
+<li>RunActions: <em>Run phase</em> - For handles on the running code, through which one can interact with the code.</li>
+</ol>
+<h2 id="additional-notes.">Additional notes.</h2>
+<p><strong>Managing and mutating files in the source directory.</strong></p>
+<blockquote>
+<p>Trust the session. Trust IdeSession.</p>
+</blockquote>
+<p>In this environment we should coordinate updating and changing source files through IdeSession.<br />
+Ide session manages files in the source directory. This is important because we don’t want the client and ide-backend have different versions of the files.<br />
+All file changes and file reading must be done via the session (sequenced relative to other session state changes).<br />
+The session will manage the files carefully including the case of exceptions and things going awry. The caller needn’t duplicate file state.</p>
+<p>The caller should be able to:</p>
+<ul>
+<li>Put files into the session</li>
+<li>Apply updates to files via the session</li>
+<li>Extract files at any time before the session is closed.</li>
+</ul>
+<p><strong>Morally pure querries.</strong></p>
+<p>Purity:</p>
+<ul>
+<li>The property of a function to always gives the same output given the same input.</li>
+<li>The property of a function not to have side effects.</li>
+</ul>
+<p>In this case we want to regard the compiler as a pure function disregarding the side effects part of purity because we have a lot of IO going on here.<br />
+It should always be the case that we can throw away all the compilation results and recover them just from the file state and user parameters.<br />
+<em>In case of warnings:</em> Traditionally compilers show warnings for the modules they compile skipping warning for modules they didn’t have to recompile. This however doesn’t match the pure function principle of same results for the same parameters. So IdeSession provides purity in cases such as these.</p>
+<blockquote>
+<p>So we try to maintain the compiler as:<br />
+compiler (modules, args, env) -&gt; (object code, compiler warnings, errors….)</p>
+</blockquote>
+<p><strong>Persistent and transitory state.</strong></p>
+<p>The persistent state regards:</p>
+<ul>
+<li>The source files</li>
+<li>Data files</li>
+<li>User supplied arguments for compilation.</li>
+</ul>
+<p>Internally there is a lot of cached and transitory state. In memory or on disk; none of these persist in the case of a fatal error; for example, they are wiped before shutdown and only the source and data files persit in case of a power failure.</p>
+<p>It should be possible to drop all transitory state and recover (somewhat) as long as the original session value is available. The <a href="http://hackage.haskell.org/package/ide-backend-0.9.0.7/docs/IdeSession.html#v:restartSession"><code>restartSession</code></a> function serves this purpose.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Mon, 27 Apr 2015 13:23:14 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-04-27-Notes-on-IdeSession.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Emacs setup for haskell.</title>
+    <link>http://blog.urbanslug.com/posts/2015-04-13-Emacs-setup-for-haskell.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on April 13, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: 
+    
+</div>
+
+<p>This post assumes that you have a little experience with emacs and maybe some experience writing haskell.<br />
+I assume that you’re using emacs and not xemacs or something else and therefore your init file is ~/.emacs. You can also find your init file via <code>M-: RET (find-file user-init-file) RET</code>.<br />
+To set up emacs so that you can install packages add the following to your ~/.emacs:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">require</span> &#39;package)
+(add-to-list &#39;package-archives
+  &#39;(<span class="st">&quot;melpa&quot;</span> . <span class="st">&quot;http://melpa.milkbox.net/packages/&quot;</span>) <span class="kw">t</span>)
+(package-initialize)</code></pre></div>
+<p>I personally believe that melpa alone is enough.</p>
+<p>Then to install packages:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET &lt;package-name&gt; RET RET</code></pre></div>
+<p>Every time you make a save your ~/.emacs file instead of restarting emacs to make sure everything is still okay, run</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x eval-buffer RET</code></pre></div>
+<p>To install haskell packages (I assume you already have cabal) use:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">$ cabal install &lt;package-name&gt;</code></pre></div>
+<p>Let’s get started. Here’s a list of all the things that we’ll need.<br />
+You can chose to install them all now or install them as we go on and as you see the need for them.</p>
+<h4 id="haskell-packages-to-install">Haskell packages to install</h4>
+<ul>
+<li><a href="https://github.com/chrisdone/structured-haskell-mode">structured-haskell-mode</a></li>
+<li><a href="http://hackage.haskell.org/package/hasktags">hasktags</a></li>
+</ul>
+<h4 id="emacs-packages-to-install">Emacs packages to install</h4>
+<ul>
+<li><a href="http://www.flycheck.org/">flycheck</a></li>
+<li><a href="https://github.com/chrisdone/haskell-flycheck">flycheck-haskell</a></li>
+<li><a href="https://github.com/haskell/haskell-mode/wiki">haskell-mode</a></li>
+<li><a href="www.emacswiki.org/emacs/RainbowDelimiters">rainbow-delimiters</a></li>
+<li>shm (the emacs package isn’t called structured-haskell-mode but shm)</li>
+<li><a href="http://www.emacswiki.org/emacs/AceJump">ace-jump-mode</a></li>
+<li><a href="http://www.emacswiki.org/emacs/AutoComplete">auto-complete-mode</a></li>
+</ul>
+<h2 id="setting-up-the-path-for-emacs.">Setting up the PATH for emacs.</h2>
+<p>To have emacs point to where your haskell packages are installed add this to your ~/.emacs:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">let</span> ((my-cabal-path (expand-file-name <span class="st">&quot;~/.cabal/bin&quot;</span>)))
+  (setenv <span class="st">&quot;PATH&quot;</span> (concat my-cabal-path <span class="st">&quot;:&quot;</span> (getenv <span class="st">&quot;PATH&quot;</span>)))
+  (add-to-list &#39;exec-path my-cabal-path))</code></pre></div>
+<p>You can replace <code>&quot;~/.cabal/bin&quot;</code> with a sandbox but I had issues with this when the sandbox cabal version didn’t keep up with the universal packages. So I would recommend you use the user-wide one ~/.cabal/bin.<br />
+<em>Mind you, you can can use this to add anything to your emacs specific PATH.</em></p>
+<h2 id="haskell-mode">Haskell mode</h2>
+<p>I hope you are already using haskell mode but if you aren’t it’s okay. This post is for you. This is going to be the major mode that you will be using. It would be wise to read the <a href="https://github.com/haskell/haskell-mode/wiki">haskell mode wiki</a>.</p>
+<p>Install haskell-mode from within emacs.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET haskell-mode RET RET</code></pre></div>
+<p>To enable the minor mode which activates keybindings associated with interactive mode, add:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">require</span> &#39;haskell-interactive-mode)
+(<span class="kw">require</span> &#39;haskell-process)
+(add-hook &#39;haskell-mode-hook &#39;interactive-haskell-mode)</code></pre></div>
+<p><em>Make sure to use haskell-interactive-mode as done above and not inferor haskell mode which has been deprecated.</em></p>
+<p>To jump to the import list add this. <em>I prefer to bind this to f12.</em></p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(define-key haskell-mode-map [f12] &#39;haskell-navigate-imports)</code></pre></div>
+<p>To get import suggestions. For adding, removing or commenting out of imports and a process log use:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(custom-set-variables
+  &#39;(haskell-process-suggest-remove-import-lines <span class="kw">t</span>)
+  &#39;(haskell-process-auto-import-loaded-modules <span class="kw">t</span>)
+  &#39;(haskell-process-log <span class="kw">t</span>))</code></pre></div>
+<p>General emacs haskell-mode bindings from the haskell-mode wiki:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-l&quot;</span>) &#39;haskell-process-load-or-reload)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-`&quot;</span>) &#39;haskell-interactive-bring)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-t&quot;</span>) &#39;haskell-process-do-type)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-i&quot;</span>) &#39;haskell-process-do-info)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-c&quot;</span>) &#39;haskell-process-cabal-build)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-k&quot;</span>) &#39;haskell-interactive-mode-clear)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c c&quot;</span>) &#39;haskell-process-cabal)
+(define-key haskell-mode-map (kbd <span class="st">&quot;SPC&quot;</span>) &#39;haskell-mode-contextual-space)</code></pre></div>
+<p><em>It will always prompt to begin a new project. Don’t fight it, just go with it. It won’t create any files.</em></p>
+<p>Same as the ones above but are good to have in cabal-mode i.e when one is in the repl.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-`&quot;</span>) &#39;haskell-interactive-bring)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c C-k&quot;</span>) &#39;haskell-interactive-mode-clear)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c C-c&quot;</span>) &#39;haskell-process-cabal-build)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c c&quot;</span>) &#39;haskell-process-cabal)</code></pre></div>
+<p>Which GHCi process will we use in our repl? I prefer using cabal-repl instead of ghci because it loads one entire project automatically. If you’re using a modern version of cabal I would go with cabal repl.<br />
+To use cabal-repl as your GHCi process add the following:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(custom-set-variables
+  &#39;(haskell-process-type &#39;cabal-repl))</code></pre></div>
+<h5 id="tags">Tags</h5>
+<p>You sometimes need to jump to the definition of a function that you are using in the same file. For this we have tags within haskell-mode. It however requires the haskell package hasktags so:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">$ cabal install hasktags</code></pre></div>
+<p>To enable generation of tags when you save a file use:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(custom-set-variables
+  &#39;(haskell-tags-on-save <span class="kw">t</span>))</code></pre></div>
+<p>To use both ghci and tags for jumping to a definition you can use the following. This way when GHCi fails because the code can’t compile it will fall back to tags.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(define-key haskell-mode-map (kbd <span class="st">&quot;M-.&quot;</span>) &#39;haskell-mode-jump-to-def-or-tag)</code></pre></div>
+<p><em>This will be generating a file with the name TAGS within your projects. It’s a good idea to put this file in your .gitignore</em></p>
+<p>To have what we see in our repl look good we could use, <a href="https://github.com/haskell/haskell-mode/wiki/Haskell-Interactive-Mode-REPL#printing-mode">printing in the repl</a></p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">setq</span> haskell-interactive-mode-eval-mode &#39;haskell-mode)</code></pre></div>
+<h5 id="debugging">Debugging</h5>
+<p>Check out how to use the <a href="https://github.com/haskell/haskell-mode/wiki/Haskell-Interactive-Mode-Debugger">debugger in haskell mode</a>.</p>
+<h5 id="autocompletion.">Autocompletion.</h5>
+<p>Since ghc version 7.8 you can use the <code>TAB</code> key to auto complete suggestions.</p>
+<h2 id="flycheck-and-haskell-flycheck.">Flycheck and haskell-flycheck.</h2>
+<p>These are gems my friend. GEMS I TELL YA!!</p>
+<p>They compliment each other to compile your code in the background each time you save the file you are working on. If there is an error in your code the line with an error is underlined in red and in case of a warning it’s underlined in yellow. You get a pop up when you hover over the error with the mouse, the minibuffer also shows the error when the cursor is over the line in question. This means you don’t have to wait for compilation to fix those tiny errors.</p>
+<p>Much to my surprise <a href="http://www.flycheck.org/">flycheck</a> and <a href="https://github.com/chrisdone/haskell-flycheck">haskell-flycheck</a> also give style suggestions as I assume HLint would top of error and warning checking.</p>
+<p>I previously used ghc-mod for the purposes for which I am using flycheck now. I prefer flycheck because it does this for many more langauges.</p>
+<p>To install Install flycheck and haskell-flycheck from within emacs.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET flycheck flycheck-haskell RET RET</code></pre></div>
+<p>To use flycheck add this to your .emacs</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(add-hook &#39;after-init-hook #&#39;global-flycheck-mode)
+(eval-after-load &#39;flycheck
+  &#39;(add-hook &#39;flycheck-mode-hook #&#39;flycheck-haskell-setup))</code></pre></div>
+<h2 id="structured-haskell-mode-and-shm">Structured Haskell Mode and shm</h2>
+<p>The emacs package <code>shm</code> depends on the haskell package <code>structured-haskell-mode</code> so you have to install both. {% highlight bash%} $ cabal install structured-haskell-mode ```</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET shm RET RET</code></pre></div>
+<p>It’s the most impressive haskell in emacs “feature” for me. You should definitely read the <a href="https://github.com/chrisdone/structured-haskell-mode#structured-haskell-mode">structured haskell mode README</a> if you want to know how to use it well.</p>
+<p>It helps you write in a clear and consistent style all through. It also helps with those little things that IDEs do and text editors don’t plus much more. You’ll understand what I mean after you use it.</p>
+<p>To enable this I you should add the following to your init file:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(add-hook &#39;haskell-mode-hook &#39;structured-haskell-mode)
+(define-key shm-map (kbd <span class="st">&quot;C-c C-s&quot;</span>) &#39;shm/case-split)</code></pre></div>
+<p>If you try structured haskell mode and you don’t like it replace the above with:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(add-hook &#39;haskell-mode-hook &#39;turn-on-haskell-indentation)</code></pre></div>
+<h2 id="rainbow-delimiters.">Rainbow delimiters.</h2>
+<p>I haven’t yet actually felt the value addition of this yet but it’s purpose it to show you brackets in different colours so that it’s simple to identify when you have an open bracket or something.</p>
+<p>You can check it out in the <a href="http://www.emacswiki.org/emacs/RainbowDelimiters">rainbow delimiters wiki page</a>.</p>
+<p>It’s not very useful when I have structured haskell mode which automatically closes brackets. I’ll probably unistall it. You can however try it if you want.</p>
+<p>Installing rainbow delimiters mode:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET rainbow-delimiters RET RET</code></pre></div>
+<p>For usage:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">require</span> &#39;rainbow-delimiters)
+(add-hook &#39;prog-mode-hook &#39;rainbow-delimiters-mode)</code></pre></div>
+<h2 id="auto-compelete-mode">Auto-compelete mode</h2>
+<p>This does just that. I’m not sure if there’s need for it or haskell-mode already does auto complete but I love it because I get autocomplete in other modes not just haskell mode.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(package-initialize) (global-auto-complete-mode)
+(add-hook &#39;prog-mode-hook &#39;auto-complete-mode) <span class="co">;; Added for all programming modes.</span></code></pre></div>
+<h2 id="ace-jump-mode.">Ace jump mode.</h2>
+<p>This also has nothing to do with haskell it’s just really handy and you can use it anywhere. Use it to jump to a letter that is at the start of a word. It eliminates a whole lot of scrolling about.</p>
+<p>Installing ace jump mode:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET ace-jump-mode RET RET</code></pre></div>
+<p>To use it, add the following to your init file:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(add-to-list &#39;load-path <span class="st">&quot;which-folder-ace-jump-mode-file-in/&quot;</span>)
+(<span class="kw">require</span> &#39;ace-jump-mode)
+(define-key global-map (kbd <span class="st">&quot;C-c SPC&quot;</span>) &#39;ace-jump-mode)
+(<span class="kw">setq</span> ace-jump-mode-gray-background) <span class="co">;; This line makes it work in black background coloured terminals.</span></code></pre></div>
+<p><em>You can use ace-jump mode with other backgrounds not just grey, I use grey because it just worked great for me.</em></p>
+<h4 id="stuff-that-i-think-would-be-fun-to-try-out">Stuff that I think would be fun to try out:</h4>
+<ul>
+<li>present <em>(this failed to install due to ghc 7.10 dependency issues so I will update this post regarding it after I have used it.)</em></li>
+</ul>
+<h2 id="handy-keybindings-to-remember">Handy keybindings to remember:</h2>
+<p>There are many more of course but I really love these:</p>
+<table>
+<colgroup>
+<col width="11%" />
+<col width="88%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Key binding</th>
+<th align="center">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">C-j</td>
+<td align="center">Newline indent, also automatically adds a newline and comma when creating a list.</td>
+</tr>
+<tr class="even">
+<td align="center">M-^</td>
+<td align="center">Delete indentation relative to parent. Opposite of C-j.</td>
+</tr>
+<tr class="odd">
+<td align="center">M-a</td>
+<td align="center">Jump to start of a parent</td>
+</tr>
+<tr class="even">
+<td align="center">)</td>
+<td align="center">Jump to end of a parent</td>
+</tr>
+<tr class="odd">
+<td align="center">M-r</td>
+<td align="center">Raise the current node to replace its parent</td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-s</td>
+<td align="center">Case split.</td>
+</tr>
+<tr class="odd">
+<td align="center">M-;</td>
+<td align="center">Wrap in multiline comment i.e <code>{- &lt;code&gt;  -}</code></td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-q</td>
+<td align="center">Works with C-j to add imports, this qualifies/unqualifies them.</td>
+</tr>
+<tr class="odd">
+<td align="center">M-k</td>
+<td align="center">Kill/paste node taking indentation to account.</td>
+</tr>
+<tr class="even">
+<td align="center">C-k</td>
+<td align="center">Kill/paste line taking indentation to account.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-y</td>
+<td align="center">Yank/copy take indentation into account</td>
+</tr>
+<tr class="even">
+<td align="center">C- `</td>
+<td align="center">Start the REPL buffer. The project not loaded in it.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-c C-l</td>
+<td align="center">Compile and load a Haskell module into your REPL.</td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-c</td>
+<td align="center">Compile the whole Cabal project.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-x `</td>
+<td align="center">Jump to the next error, or you can move your cursor to an error in the REPL and hit <code>RET</code> to jump to it.</td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-k</td>
+<td align="center">Clear screen in REPL.</td>
+</tr>
+<tr class="odd">
+<td align="center">F12</td>
+<td align="center">Jump to import list.</td>
+</tr>
+<tr class="even">
+<td align="center">C-u C-c c</td>
+<td align="center">To run an arbitrary Cabal command.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-c c</td>
+<td align="center">To run some common Cabal commands.</td>
+</tr>
+<tr class="even">
+<td align="center">C-u C-c C-t</td>
+<td align="center">To print the type of the top-level identifier at point.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-c C-t</td>
+<td align="center">To print the type of the top-level identifier at point in the REPL and in the message buffer.</td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-i</td>
+<td align="center">To print the info of the identifier at point in a buffer. Hit q to close.</td>
+</tr>
+<tr class="odd">
+<td align="center">M-.</td>
+<td align="center">Jump to definition or tag.</td>
+</tr>
+<tr class="even">
+<td align="center">C-c SPC</td>
+<td align="center">Use ace jump mode.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="finally">Finally</h2>
+<p>All that init file code in one file that you can conveniently paste in your init file.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp"><span class="co">;; --------- Package lists</span>
+(<span class="kw">require</span> &#39;package)
+(add-to-list &#39;package-archives
+  &#39;(<span class="st">&quot;melpa&quot;</span> . <span class="st">&quot;http://melpa.milkbox.net/packages/&quot;</span>) <span class="kw">t</span>)
+(package-initialize)
+<span class="co">;; --------- &lt;/ Package lists</span>
+
+
+<span class="co">;; ---------------- Haskell-mode</span>
+(<span class="kw">let</span> ((my-cabal-path (expand-file-name <span class="st">&quot;~/.cabal/bin&quot;</span>)))
+  (setenv <span class="st">&quot;PATH&quot;</span> (concat my-cabal-path <span class="st">&quot;:&quot;</span> (getenv <span class="st">&quot;PATH&quot;</span>)))
+  (add-to-list &#39;exec-path my-cabal-path))
+
+(<span class="kw">require</span> &#39;haskell-interactive-mode)
+(<span class="kw">require</span> &#39;haskell-process)
+(add-hook &#39;haskell-mode-hook &#39;interactive-haskell-mode)
+  
+<span class="co">; Makes editor focus on imports block in source file</span>
+<span class="co">;; (eval-after-load &#39;haskell-mode</span>
+<span class="co">;;          &#39;(define-key haskell-mode-map [f12] &#39;haskell-navigate-imports))</span>
+(define-key haskell-mode-map [f12] &#39;haskell-navigate-imports)
+
+<span class="co">;;; For module import suggestions.</span>
+(custom-set-variables
+  &#39;(haskell-process-suggest-remove-import-lines <span class="kw">t</span>)
+  &#39;(haskell-process-auto-import-loaded-modules <span class="kw">t</span>)
+  &#39;(haskell-process-log <span class="kw">t</span>))
+
+<span class="co">;; Key bindings from the wiki</span>
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-l&quot;</span>) &#39;haskell-process-load-or-reload)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-`&quot;</span>) &#39;haskell-interactive-bring)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-t&quot;</span>) &#39;haskell-process-do-type)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-i&quot;</span>) &#39;haskell-process-do-info)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-c&quot;</span>) &#39;haskell-process-cabal-build)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-k&quot;</span>) &#39;haskell-interactive-mode-clear)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c c&quot;</span>) &#39;haskell-process-cabal)
+(define-key haskell-mode-map (kbd <span class="st">&quot;SPC&quot;</span>) &#39;haskell-mode-contextual-space)
+
+<span class="co">; The below commands pretty much match the ones above, but are handy to have in cabal-mode, too:</span>
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-`&quot;</span>) &#39;haskell-interactive-bring)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c C-k&quot;</span>) &#39;haskell-interactive-mode-clear)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c C-c&quot;</span>) &#39;haskell-process-cabal-build)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c c&quot;</span>) &#39;haskell-process-cabal)
+
+<span class="co">; ghci process within emacs</span>
+(custom-set-variables
+  &#39;(haskell-process-type &#39;cabal-repl))
+
+<span class="co">; Hasktags</span>
+<span class="co">; customization variable to enable tags generation on save</span>
+(custom-set-variables
+  &#39;(haskell-tags-on-save <span class="kw">t</span>))
+
+(define-key haskell-mode-map (kbd <span class="st">&quot;M-.&quot;</span>) &#39;haskell-mode-jump-to-def-or-tag)
+
+<span class="co">;printing mode</span>
+(<span class="kw">setq</span> haskell-interactive-mode-eval-mode &#39;haskell-mode)
+<span class="co">;; ---------------- &lt;/ Haskell-mode</span>
+
+<span class="co">;; --------------- flycheck</span>
+(add-hook &#39;after-init-hook #&#39;global-flycheck-mode)
+(eval-after-load &#39;flycheck
+  &#39;(add-hook &#39;flycheck-mode-hook #&#39;flycheck-haskell-setup))
+<span class="co">;; --------------- &lt;/ flycheck</span>
+
+
+<span class="co">;; -------------- structured haskell mode</span>
+(<span class="kw">require</span> &#39;shm)
+<span class="co">;; use indentation from structured haskell mode</span>
+(add-hook &#39;haskell-mode-hook &#39;structured-haskell-mode)
+(define-key shm-map (kbd <span class="st">&quot;C-c C-s&quot;</span>) &#39;shm/case-split)
+<span class="co">;; -------------- structured haskell mode</span>
+
+
+<span class="co">;; ------------------- Auto complete mode</span>
+(package-initialize) (global-auto-complete-mode)
+(add-hook &#39;prog-mode-hook &#39;auto-complete-mode) <span class="co">;; Added for all programming modes.</span>
+<span class="co">;; -------------------- &lt;/ Auto complete mode</span>
+
+
+<span class="co">;; -------------------- Ace jump</span>
+(add-to-list &#39;load-path <span class="st">&quot;which-folder-ace-jump-mode-file-in/&quot;</span>)
+(<span class="kw">require</span> &#39;ace-jump-mode)
+(define-key global-map (kbd <span class="st">&quot;C-c SPC&quot;</span>) &#39;ace-jump-mode)
+(<span class="kw">setq</span> ace-jump-mode-gray-background) <span class="co">;; Otherwise it will set background to same as emacs backgorund in terminal.</span>
+<span class="co">;; ---------------------- &lt;/ ace jump</span>
+
+
+<span class="co">;; --------- Rainbow delimiters</span>
+<span class="co">; show each level of parenthesis or braces in a different color.</span>
+(<span class="kw">require</span> &#39;rainbow-delimiters)
+(add-hook &#39;prog-mode-hook &#39;rainbow-delimiters-mode)
+<span class="co">;;--------- &lt;/ Rainbow delimiters</span></code></pre></div>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Mon, 13 Apr 2015 03:15:33 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-04-13-Emacs-setup-for-haskell.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Universal environment variables.</title>
+    <link>http://blog.urbanslug.com/posts/2015-04-03-Universal-environment-variables.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on April  2, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: 
+    
+</div>
+
+<h2 id="the-problem">The problem</h2>
+<p>We want to have environment variables that are accessible from within emacs and our shell as well as other REPLs (cabal repl or ghci if you’re writing haskell).</p>
+<p>Why would we want to use environment variables? It depends really, mainly if we want to pass info to our app/code and we can’t put that in config files plus we are clever enough not to hardcode such things.</p>
+<p>I run emacs from withing Xorg like most people do. The problem with this is that it couldn’t read the environment variables set in my <code>~/.bashrc</code>, <code>~/.zshrc</code> et cetera. So I needed to find a way to set these variables in a place where they could be accessible from other “places” and not just emacs. Something more <em>universal</em>.</p>
+<p>There is a solution that involves setting environment variables that will be used <strong>WITHIN</strong> emacs in the ~/.emacs file but that isn’t what I wanted. In case you want to read on it here’s the <a href="http://ergoemacs.org/emacs/emacs_env_var_paths.html">environment variables within link.</a></p>
+<h2 id="the-solution">The solution</h2>
+<p>Short version: Add the environment variables to your <code>~/.profile</code> or <code>/etc/profile</code></p>
+<p>Long version: Lo and behold this file <code>~/.profile</code> or <code>/etc/profile</code>.<br />
+You can set your environment variables there that will be loaded before X starts and that will be loaded even when you log in via SSH. You can then access these variables accross everything that runs in the terminal, from within xorg and so forth.</p>
+<p>So the basic workflow is:</p>
+<pre class="text"><code>open or create ~/.profile or /etc/profile depending on your purpose
+add your environment variables.
+Save the file.</code></pre>
+<p>I recommend that look at this <a href="http://stackoverflow.com/questions/11005478/how-to-access-a-bash-environment-variable-from-within-r-in-emacs-ess">stack overflow question</a> which is where I drew my answer.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Thu, 02 Apr 2015 03:15:33 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2015-04-03-Universal-environment-variables.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>My Gnome 3 experience.</title>
+    <link>http://blog.urbanslug.com/posts/2014-12-09-My-Gnome-3-experience.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on December  9, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: 
+    
+</div>
+
+<p>I’ve used the usual ones xfce, KDE, MATE, Cinnamon, and a little unity in the past.</p>
+<p>Then I used xmonad on top of xorg without a Desktop Manager. It wasn’t fun. It felt like I was spending too much time writing scripts to do things that I knew makers of DEs have done better and I used the terminal instead of shortcuts a lot. Anyway, I didn’t work for me.</p>
+<p>Now I’m on Gnome 3 and do I say. This Desktop Environment is the best I’ve used. As far as compatibilty with devices goes (compatibilty is a major linux issue). It works with just about everything out of the box like projectors (something KDE didn’t do). I haven’t tried it with HDMI yet but if it worked with a random Sony projector it will most likely work. I have GTK apps for just about everything so I don’t have to worry about themes for GTK or Qt and what not. This means more time spent doing other things instead of constantly fixing breakage in different parts of the system. This must be what mac users feel like. That wasn’t a compliment Mac user. Forever FOSS.</p>
+<p>Apps I have liked: Rhythmbox for music and <strong>NOT</strong> Gnome music I have found it very good with podcasts and scrobbling and editing metadata. Gnome music is not yet okay to use right now because it’s still in active development. It failed in listing tracks as I wanted it to and sometimes it did not load songs at all. It did other things well like fetch album art and looking preety instead of playing music when I wanted it to, also no scrobbling yet :-(. Though I will use it as soon it goes stable and hopefully stick to it.</p>
+<p>Bottomline, I’ve found home and if by any chance I ditch Gnome 3 I’ll probably look for something close to what I with is xmonad on xorg but with wayland instead of xorg. Hope I get to try wayland soon.</p>
+<p>Fun times :-)</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Tue, 09 Dec 2014 19:41:23 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-12-09-My-Gnome-3-experience.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Scope in inheritance and composition in C++.</title>
+    <link>http://blog.urbanslug.com/posts/2014-12-08-Scope-in-inheritance-and-composition-in-C%2B%2B.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on December  8, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/OOP.html">OOP</a>, <a href="/tags/C%2B%2B.html">C++</a>
+    
+</div>
+
+<p>I hope you read my previous post before looking at this one if you don’t know much about OOP in C++. The previous post explains various things like naming of stuff in C++ which is different from naming conventions in other languages.</p>
+<p>This one is about explaining scope in C++ when we have inheritance and non-default constructors as well as compositions.</p>
+<p>The piont of this post is to establish:</p>
+<ol style="list-style-type: decimal">
+<li>What order are constructors called in case we create an object of a derived class.</li>
+<li>What order are destructors called in case we destroy an object of a derived class.</li>
+<li>In the case of compositions (objects as data members) which constructors are called first. The one of the composing class or the object?</li>
+</ol>
+<p>Anyway let’s get to it.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span>
+
+<span class="kw">using</span> <span class="kw">namespace</span> std;
+
+<span class="kw">class</span> parent {
+<span class="kw">public</span>:
+  parent() {
+    cout &lt;&lt; <span class="st">&quot;Parent object created.&quot;</span> &lt;&lt; endl;
+  }
+  ~parent() {
+    cout &lt;&lt; <span class="st">&quot;Parent object destoyed.&quot;</span> &lt;&lt; endl;
+  }
+};
+
+<span class="kw">class</span> child: <span class="kw">public</span> parent {
+<span class="kw">public</span>:
+  child() {
+    cout &lt;&lt; <span class="st">&quot;Child object created.&quot;</span> &lt;&lt; endl;
+  }
+  ~child() {
+    cout &lt;&lt; <span class="st">&quot;Child object destoyed.&quot;</span> &lt;&lt; endl;
+  }
+};
+
+<span class="kw">class</span> composition {
+child* childObj;
+<span class="kw">public</span>:
+  composition() {
+    cout &lt;&lt; <span class="st">&quot;Composing object created&quot;</span> &lt;&lt; endl;
+    childObj = <span class="kw">new</span> child;
+  }
+
+  ~composition() {
+    <span class="kw">delete</span> childObj;
+    cout &lt;&lt; <span class="st">&quot;Composed oject destroyed.&quot;</span> &lt;&lt; endl;
+  }
+};
+
+<span class="dt">int</span> main () {
+  composition compObject;
+  <span class="cf">return</span> <span class="dv">0</span>;
+}</code></pre></div>
+<p>Output:</p>
+<pre><code>Composing object created
+Parent object created.
+Child object created.
+Child object destoyed.
+Parent object destoyed.
+Composed oject destroyed.</code></pre>
+<p>So what do we see here:</p>
+<ol style="list-style-type: decimal">
+<li>The composed object is created before the objects in it.</li>
+<li>The parent class is created before the child class.</li>
+<li>They are then destroyed in reverse order of their creation. Child then parent then composing.</li>
+</ol>
+<p>It’s really that simple.</p>
+<p>Hail Stallman and may the FOSS be with you.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Mon, 08 Dec 2014 18:00:33 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-12-08-Scope-in-inheritance-and-composition-in-C%2B%2B.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Object Oriented Programming in C++.</title>
+    <link>http://blog.urbanslug.com/posts/2014-12-08-Object-Oriented-Programming-in-C%2B%2B.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on December  8, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/C%2B%2B.html">C++</a>, <a href="/tags/OOP.html">OOP</a>
+    
+</div>
+
+<p>These are more like private paraphrased notes. If you wanted to really learn these things a C++ text book or <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Classes">this wikibooks article</a> would be better. These things can’t be learned in a hurry. Naming conventions are surprisingly different in C++ than they are in other languages. This post assumes you’re familiar with what functions, classes, inheritance, objects and so forth are. If you’re taking <a href="http://www.mu.ac.ke/informationscience/index.php/academic-prorammes/bachelor-programmes/bachelor-of-science-in-informatics#second-semester">INF 332</a> this would be good to read while studying for your exam.</p>
+<p>The method through which I will do this is by using a lot of working example code so that it becomes easy for you to follow along and play with the code yourself.</p>
+<p>So we’ll define a few things we need:</p>
+<h2 id="definitions">Definitions</h2>
+<p><strong>Data member</strong>: This is basically an attribute. A variable accessible from within the class or global within the class.</p>
+<p><strong>Member function</strong>: A function that is within a class. Known as methods in other langauges.</p>
+<p><strong>Abstract class</strong>: A class that contains at least one pure virtual function is considered an abstract class.</p>
+<p><strong>Getter</strong>: Also called accessor. A function used to access or get the value held by a private data member. These variable names often start with get</p>
+<p><strong>Setter</strong>: Also called Modifier. A function used to modify or set the value held by a private data member. These variable names often start with set.</p>
+<p><strong>Struct vs Class</strong>: There are two ways to define a class in C++. Using class and using struct. When using class all that is within the braces is private by default unless otherwise specified. When using struct all that is within the braces is public unless otherwise specified.</p>
+<p><strong>this</strong> It’s a special pointer in C++ used to refer to the current object at the time. To use it you often have to use <code>this -&gt; memFunction()</code> or <code>(*this).memFunction()</code> syntax to call member functions of the object itself.<br />
+In a human analogy it’s a pronoun the object can use to refer to itself; among people this would be “me”.</p>
+<p><strong>Base class</strong>: A base class is a class that is created with the intention of deriving other classes from it.<br />
+<strong>Child class</strong>: A child class is a class that was derived from another, that will now be the parent class to it.<br />
+<strong>Parent class</strong>: A parent class is the closest class that we derived from to create the one we are referencing as the child class. The one right above in the inheritance heirachy.</p>
+<h3 id="access-labels"><u>Access Labels</u></h3>
+<p>These are private, public and protected. They are used within classes to set access permissions for the members in that section of the class. They are also used for base classes to specify how you want the base class inherited as shown in the table below.</p>
+<p><strong>public</strong>: This label indicates any members within the ‘public’ section can be accessed freely anywhere a declared object is in scope.</p>
+<p><strong>private</strong>: Members defined as private are only accessible within the class defining them, or friend classes. Usually the domain of member variables and helper functions. It’s often useful to begin putting functions here and then moving them to the higher access levels as needed so to reduce complexity.</p>
+<p><strong>protected</strong>: The protected label has a special meaning to inheritance, protected members are accessible in the class that defines them and in classes that inherit from that base class, or friends of it.</p>
+<p>During inheritance things may change slightly as shown in this table. How things were in the parent class in terms of access lables may not be so in the child class.<br />
+By type of inheritance I mean:</p>
+<blockquote>
+<p><em>class childClass: private parentClass</em> is private inheritance<br />
+<em>class childClass: protected parentClass</em> is protected inheritance<br />
+<em>class childClass: public parentClass</em> is public inheritance</p>
+</blockquote>
+<p>The following table indicates how the attributes are inherited in the three different types of inheritance:</p>
+<table>
+<colgroup>
+<col width="22%" />
+<col width="28%" />
+<col width="25%" />
+<col width="22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>type of inheritance</th>
+<th>private</th>
+<th>protected</th>
+<th>public</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Private inheritance</td>
+<td>The member is inaccessible.</td>
+<td>The member is private.</td>
+<td>The member is private.</td>
+</tr>
+<tr class="even">
+<td>Protected inheritance</td>
+<td>The member is inaccessible.</td>
+<td>The member is protected</td>
+<td>The member is protected</td>
+</tr>
+<tr class="odd">
+<td>Public inheritance</td>
+<td>The member is inaccessible.</td>
+<td>The member is protected</td>
+<td>The member is public</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><em>Table copied entirely from the <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Classes">wikibooks</a> article</em></p>
+</blockquote>
+<h2 id="constructors">Constructors</h2>
+<p>A constructor is a special member function that is called <em>whenever</em> a new instance of a class is created. The compiler calls the constructor <em>after</em> the new object has been allocated in memory, and converts that “raw” memory into a proper, typed object (typed here means the class becomes a type of the same level with int, string and so forth).</p>
+<p>A constructor is used to assign values to the data members that the creator of the class choses. If you don’t declare a constructor the compiler will impicitly make one for you.</p>
+<p>The constructor is declared much like a normal member function but it:</p>
+<ul>
+<li>Doesn’t have a type annotation meaning it doesn’t start with the name of a type such as int or string.</li>
+<li>Has to have the same name as the class.</li>
+<li>Has no return value (Meaning it also has no return statement).</li>
+</ul>
+<p>The constructor may or may not have arguments. A constructor that does not take arguments is called a <strong>default constructor</strong>, while a constructor that takes argument(s) is a <strong>non-default constructor</strong>.</p>
+<p><strong>Overloading</strong>: This is the ability to create multiple methods of the same name but with different implementations. Calls to an overloaded function will run a specific implementation of that function appropriate to the context of the call, allowing one function call to perform different tasks depending on context.</p>
+<p>So let’s rewrite this in a way that combines constructors and contructor overloading. Don’t focus on what the code in the constructors does since I haven’t yet covered it. However, take note that the constructors were called depending on the arguments that the objects passed to them.</p>
+<script src="http://ideone.com/e.js/kXUWU4" type="text/javascript" ></script>
+<p>Note: the constructor has the same name as the class. Also it doesn’t begin with a type annotation and it returns nothing.</p>
+<h4 id="default-parameters">Default parameters</h4>
+<p>It’s a good idea to read on the below constructor initialization lists first then read this before looking at the example code.<br />
+Sometimes we may want to have a default value initialised to a data member in case the creator of an object doesn’t give it a value. I such situations we have default parameters.<br />
+In the code below (the one under constructor initialization lists) we see that the constructor assumes that any phone that hasn’t had a parameter passed to it is a Phablet. Note that we have applied overloading to the constructor.</p>
+<h4 id="constructor-initalization-lists">Constructor initalization lists</h4>
+<p>These are also called <em>member initialization lists</em>. They are used to initialize data members and base classes in the cases of non-default constructors.</p>
+<p>Why do we need constructor initialization lists?</p>
+<ul>
+<li>We save by not having to do an assignment.</li>
+<li>The compiler knows to construct the object with that value in memory.</li>
+</ul>
+<p>It would otherwise construct the object in memory and then start assigning values to it’s member functions. This would lead be bad for performance.</p>
+<p>Explained further: the difference between using constructor initialization list and custom constructors through assignment is run-time speed. If you have a class with a few large data members, assignment construction (or constructing by assignment) can create a lot of extra overhead.</p>
+<p>Constructors are used to assign values to data members however the initialization isn’t done within the body of constructors; such kind of initialization would actually be <em>assignment</em> and not initialization and would have the drawbacks stated above. Keep in mind that data members are initialized in the order they are <em>declared</em>, not the order they appear in the constructor initialisation list.It is therefore good practice to add the data members to the initializer list in the same order they’re declared.</p>
+<p>To quote the wikibook on C++ classes under constructor initialization lists: <em>The C++ standard defines that all initialization of data members are done before entering the body of constructors. This is the reason why certain types (const types and references) cannot be assigned to and must be initialized in the constructor initialization list.</em></p>
+<p>Note: <em>we didn’t assign. The values look like paramters being passed to data members.</em></p>
+<script src="http://ideone.com/e.js/FsrsAf" type="text/javascript" ></script>
+<p>We’ve overloaded the constructor but used constructor initialization lists instead of assigning values. We also passed a default parameter “phablet” to the class phones.</p>
+<h3 id="destructors">Destructors</h3>
+<p>The Destructor is a special function that is invoked AFTER an object has been destroyed to restore the system to a desired state.</p>
+<p>Destructors, like constructors, are declared like any normal member function but will share the same name as the class and also lack a type annotation and a return value. What distinguishes them from constructors is that the Destructor’s name is preceded by a “~”.</p>
+<p>A destructor also can not have arguments and therefore doesn’t require brackets after the destructor name. It also can’t be overloaded.</p>
+<p>Destructors are called whenever an object of the class it belongs to is destroyed. Destructors are crucial in avoiding resource leaks (by deallocating memory) and in implementing the <a href="https://en.wikipedia.org/wiki/Resource_Acquisition_Is_Initialization">RAII idiom</a>.</p>
+<p>Sadly in this section there are some concepts of memory management that you may not be familiar with. You can ignore them and just focus on how to declare a destructor but it might be better if you read this <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Memory_Management">wikibooks page on memory management in C++</a>.</p>
+<script src="http://ideone.com/e.js/u7FUAH" type="text/javascript" ></script>
+<blockquote>
+<p>We created the object firstObj on the heap and therefore had to destroy it in class composition’s destructor (~composition () ). If the line delete firstObj was ommited that would lead to a memory leak (memory is held by the program that it shouldn’t hold). You can try it out yourself.</p>
+</blockquote>
+<h3 id="static">Static</h3>
+<p>The static keyword can be used to:</p>
+<ul>
+<li>Create permanent storage for local variables in a function.</li>
+<li>Specify internal linkage.</li>
+<li>Declare member functions that act like non-member functions.</li>
+<li>Create a single copy of a data member.</li>
+</ul>
+<p><strong>Static member functions</strong></p>
+<p>Member functions or variables declared static are shared between all instances of an object type. Meaning that only one copy of the member function or variable exists for any object type</p>
+<p><strong>Member functions callable without an object</strong> These member functions are callable even without an object. This means that static member functions can be called without creating instances of the class. Normally member functions seem to take an implicit <em>this</em> parameter. However, in the case of static member functions this isn’t the case, since they behave as some sort of free (not tied to a class) function.</p>
+<p>To initialize an a static data member you initialize it in the scope right outside of the class and refer to it using double semi colons. In the below code we see the static data member, citizens::citizenship, being initialized in line 19.<br />
+We use the double colon :: to show [scope] that is, the level of abstraction that a part of our program (class, function, variable) belongs to. In this case citizenship and functions inside citizens are declared in a different level of abstraction (in class citizens) than where they are being called in the case of funtions or initialized in the case of data members (citizenship).</p>
+<script src="http://ideone.com/e.js/OPbecb" type="text/javascript" ></script>
+<blockquote>
+<p>We are interacting with citizenship without having created a citizen. Note that the constructor for citizenship never ran or else we would’ve seen the output “New citizen created.”</p>
+</blockquote>
+<p><strong>Named constructors</strong></p>
+<p>Named constructors are functions used to create an object of a class without (directly) using it’s constructors. Going by how we said that static member functions can be called without belonging to an object it means we can use static member functions to make a call to a named constructor.This can be translated to manually calling the constructor. Consequently, we chose the contructor we want to call.</p>
+<p>Other reasons we may want to use named constructors:</p>
+<ul>
+<li>To circumvent the restriction that constructors can be overloaded only if their signatures differ.</li>
+<li>Making the class non-inheritable by making the constructors private.</li>
+<li>Preventing stack allocation by making constructors private</li>
+</ul>
+<p>In the code below we’re taking different doubles but we are passing them differently to the constructor of the class Temperature. If this was part of an API it would give the programmer more freedom since the internal representation of temparature would be the same but they can think of temperature in the way they are most comfortable.</p>
+<script src="http://ideone.com/e.js/bm5rAA" type="text/javascript" ></script>
+<blockquote>
+<p>One cannot define a static function ( or a member function) that refers to non-static data. We are initializing the objects created here via functions Kelvin(), Celsius() and Fahrenheit() to objects kelvin, celsius and fahrenheit so these objects will be created holding these objects. The static functions in this code example return a temporary object of type Temperature each.</p>
+</blockquote>
+<h3 id="composition">Composition</h3>
+<p>A composition is a class which has at least one of it’s data members being an object of another class. For example below the class composition is a composition.</p>
+<script src="http://ideone.com/e.js/1EKGU3" type="text/javascript" ></script>
+<h3 id="inheritance">Inheritance</h3>
+<p>So inheritance is a rather huge topic for me to explain here. It’s best you read it elsewhere. I shall just explain how to do inheritance in C++. Multiple inheritance to be specific.</p>
+<p>In the below case we shall have 3 classes two base classes baseClassA and baseClassB; one child class that will inherit from both classes childClass. We shall see the use of constructor initialization lists with multiple inheritance and regarding constructors of parent classes.</p>
+<script src="http://ideone.com/e.js/4BGyrL" type="text/javascript" ></script>
+<h3 id="dynamic-polymorphism">Dynamic Polymorphism</h3>
+<p>It would do you better to read this <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Classes#Dynamic_polymorphism_.28Overrides.29">Dynamic polymorphism</a> but since I already read it I’ll just give you the part that I feel is most relevant.</p>
+<p>Suppose that we have two classes, A and B. B derives from A and redefines the implementation of a method c() that resides in class A. Now suppose that we have an object b of class B. How should the instruction b.c() be interpreted?</p>
+<p>If b is declared in the stack (not declared as a pointer or a reference) the compiler applies <strong>static binding</strong>, this means it interprets (at compile time) that we refer to the implementation of c() that resides in B. y However, if we declare b as a pointer or a reference of class A, the compiler could not know which method to call at compile time, because b can be of type A or B. If this is resolved at run time, the method that resides in B will be called. This is called <strong>dynamic binding</strong>. If this is resolved at compile time, the method that resides in A will be called. This is again, <strong>static binding</strong>.</p>
+<h3 id="virtual-member-funtions">Virtual Member Funtions</h3>
+<p>Virtual member functions are member functions, that can be overridden in any class derived from the one where they were declared. Sort of like you can “overwrite” the funtion in the derived class. This is done by placing the keyword virtual before the method declaration. For example</p>
+<p>{% highlight c++ %} virtual memberFunc() { /<em>Member function code</em>/ } {% endhighlight %}</p>
+<p>The point is that when the compiler has to decide between applying static binding or dynamic binding it will apply dynamic binding. Otherwise, static binding will be applied. If the base class function is virtual all subclass overrides of it will also be virtual. However it is still good practice to add the virtual keyword before function definitions in subclasses, clarity and all.</p>
+<p>In this case assume we were simulating marketing companies in the world so. The new one will redefine marketing. (There’s a mutifaceted joke here btw :’-D )</p>
+<script src="http://ideone.com/e.js/ynqkYc" type="text/javascript" ></script>
+<h4 id="pure-virtual-member-functions">Pure Virtual Member Functions</h4>
+<p>Sometimes we don’t want to provide an implementation of our function at all, but want to <strong>force</strong> people sub-classing our class to provide an implementation on their own.</p>
+<p>To create a pure virtual function:</p>
+<ul>
+<li>Include the keyword “virtual” before the “void” type annotation for the pure virtual member function.</li>
+<li>Don’t write the function code (not even the braces {} however, just add ‘= 0’ after function declaration.</li>
+</ul>
+<p>For example: <em>virtual void pureFunc() = 0;</em></p>
+<p>In the code below the pure virtual function “divorce ()” makes “person” an abstact class. This way anyone deriving from class person will have to implement <em>divorce ()</em> or their code won’t compile.<br />
+Assumption: This is by assumption that a person without a gender can’t undergo divorce. If that is offensive to anyone I’m sorry and I believe anyone should be able to marry anyone and divorce them if they want.</p>
+<script src="http://ideone.com/e.js/jJGZRN" type="text/javascript" ></script>
+<p><strong>References:</strong> Basically every link here is a reference but the main ones are: &gt; Wikibooks classes: <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Classes">Wikibooks</a> &gt; Wikibooks memory management in C++: <a href="https://en.wikibooks.org/wiki/C%2B%2B_Programming/Memory_Management">wikibooks page on memory management in C++</a></p>
+<p>Hail Stallman and may the FOSS be with you.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Mon, 08 Dec 2014 17:30:24 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-12-08-Object-Oriented-Programming-in-C%2B%2B.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Back to chess.</title>
+    <link>http://blog.urbanslug.com/posts/2014-12-08-Back-to-Chess.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on December  8, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Chess.html">Chess</a>
+    
+</div>
+
+<p>This is not a post about any chess strategies but about me playing chess again after a not playing for a while. This post makes me wish my blog had comments. You could tweet me at <span class="citation">[@urbanslug]</span> if it’s not too much work.</p>
+<p>So after many years of not playing chess, at least taking it seriously, I’ve decided to go back to playing. Why? I thought it would help me with mathematics and logic and programming but it’s turned out to be a lot of fun so now I’m doing it because it’s fun.</p>
+<p>So it’s like this, I’m getting better at my opening game thanks to <a href="http://mychessblog.com">mychessblog.com</a>. My middle game and end game will be worked on in that order. I’m not reading any books yet because I have exams to study for but I am reading a lot of online material other than what I’ve mentioned above and playing a lot more. I will start on a book when I get the time hopefully this December. I will write a review on the book that I will read and how it has impacted my playing.</p>
+<p>Also I have tried creating a profile on <a href="http://www.freechess.org/Register/index.html">FICS</a> (Free Internet Chess Server) to play online, for some reason they never send me the confirmation email. I guess I’ll be playing as guest until I get the time to email an admin and whine. Why I chose <a href="http://www.freechess.org/Register/index.html">FICS</a>? I installed pychess (on my arch) and the online play it has allows for <a href="http://www.freechess.org/Register/index.html">FICS</a> as the default so I went with it.</p>
+<p>I hope this will be as fun as I remember it being back when I was in chess club and there was a coach and not just be a phase. Anyway if <a href="http://mychessblog.com">mychessblog.com</a> has taught me anything it’s that it’s not about reading books or memorizing strategies but rather about practice.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Mon, 08 Dec 2014 16:33:15 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-12-08-Back-to-Chess.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Pulseaudio mute on boot.</title>
+    <link>http://blog.urbanslug.com/posts/2014-12-02-Pulseaudio-Mute-on-Boot.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on December  2, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Linux.html">Linux</a>, <a href="/tags/Pulseaudio.html">Pulseaudio</a>
+    
+</div>
+
+<p>This might work for you or fail to. Doesn’t hurt to try.</p>
+<p>I got this info at <a href="http://www.pclinuxos.com/forum/index.php?topic=112440.0">Pulseaudio original post</a> and just refined it.</p>
+<p>Open /usr/share/pulseaudio/alsa-mixer/paths/analog-output.conf</p>
+<p>Locate the following sections:</p>
+<pre><code>[Element Speaker]
+switch = mute
+volume = off
+
+[Element Desktop Speaker]
+switch = mute
+volume = off</code></pre>
+<p>Change the “volume” value so that it reads:</p>
+<pre><code>[Element Speaker]
+switch = mute
+volume = merge
+
+[Element Desktop Speaker]
+switch = mute
+volume = merge</code></pre>
+<p>I have noticed after installing rythmbox this issue has returned. I shall find a fix for it soon. Also music on rhythmbox is awesome. Gnome music looks good but it doesn’t work. Ever. I shall update with a fix for rhythmbox.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Tue, 02 Dec 2014 04:38:32 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-12-02-Pulseaudio-Mute-on-Boot.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>The Man in the Arena.</title>
+    <link>http://blog.urbanslug.com/posts/2014-04-05-Man-in-the-Arena.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on April  5, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Inspiration.html">Inspiration</a>
+    
+</div>
+
+<p>I was on you tube when I watched <a href="https://www.youtube.com/watch?v=8-JXOnFOXQk">Brené Brown: Why Your Critics Aren’t The Ones Who Count</a>. You should watch it. It’s all about not minding the haters.</p>
+<p>Citizenship in a Republic is the title of a speech given by former President of the United States, Theodore Roosevelt at the Sorbonne in Paris, France on April 23, 1910. One notable passage on page seven of the 35-page speech is referred to as “The Man in the Arena”</p>
+<p>Read about it on wikipedia if you please <a href="https://en.wikipedia.org/wiki/Citizenship_in_a_Republic">Citizenship in a Republic</a>.</p>
+<p>Here is “The Man in the Arena”:</p>
+<p><em>It is not the critic who counts; not the man who points out how the strong man stumbles, or where the doer of deeds could have done them better. The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood; who strives valiantly; who errs, who comes short again and again, because there is no effort without error and shortcoming; but who does actually strive to do the deeds; who knows great enthusiasms, the great devotions; who spends himself in a worthy cause; who at the best knows in the end the triumph of high achievement, and who at the worst, if he fails, at least fails while daring greatly, so that his place shall never be with those cold and timid souls who neither know victory nor defeat.</em></p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Sat, 05 Apr 2014 14:11:21 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-04-05-Man-in-the-Arena.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>mail at urbanslug</title>
+    <link>http://blog.urbanslug.com/posts/2014-03-26-mail-at-urbanslug.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on March 26, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Email.html">Email</a>
+    
+</div>
+
+<p>So uh since I am not allowed by society to wear a tinfoil hat and I believe that the we are under attack I have decided to leave gmail and set up my own mail server. Futile efforts but at least I shall have a fighting chance.</p>
+<p>FYI I heard not to wear a tinfoil hat because amplify the waves instead wear a wet towel on your head but you might get a cold or worse.</p>
+<h3 id="hosting.">Hosting.</h3>
+<p>I will get hosting from <span class="citation">[@computionist]</span> on twitter. I don’t know him personally but I know him from #nothaskell on freenode and twitter. A great guy to say the least.</p>
+<p>He is passionate about a ton of things.</p>
+<p>He gave me <strong>free</strong> hosting.</p>
+<p>He’s got free hosting for minorities, LGBT, newbies, <a href="http://www.haskellnow.org/CodeOfConduct">haskell-now</a> members and #nothaskell members. I don’t know under which criteria I qualified but I thank him.</p>
+<h3 id="the-stack.">The Stack.</h3>
+<p>The plan was for a full FOSS stack and if possible GPL compatibilty and copyleft.</p>
+<p><strong>Operating System</strong></p>
+<p>Linux CentOS because systemd baybie :) and my redhat fanboyism.</p>
+<p><strong>Mail Server</strong></p>
+<p>I decided to go with IMAP and SMTP because well it is the most flexible as far as I can tell.</p>
+<p><strong><em>SMTP</em></strong></p>
+<p>The <a href="https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol">SMTP</a> server I have decided to use will be <strong><a href="http://www.postfix.org/">Postfix</a></strong>. I had issues with the choice because it is <a href="https://en.wikipedia.org/wiki/IBM_Public_License">IPL (IBM Public Licence)</a> . It’s <a href="http://en.wikipedia.org/wiki/Free_software">free</a> and <a href="http://en.wikipedia.org/wiki/Copyleft">copyleft</a> but not <a href="http://en.wikipedia.org/wiki/GNU_General_Public_License">GPL</a> compatible. A moral conundrum ey? Anyway it has a community around it and having read on it’s incompatibility with the GPL I decided to go with it. This is the cause iof incompatibility: “The IPL differs from the GPL in the handling of patents, as IPL terminates the license upon patent disputes.”</p>
+<p><strong><em>IMAP</em></strong></p>
+<p>The <a href="https://en.wikipedia.org/wiki/Transport_Layer_Security">IMAP</a> server I will use will be <strong><a href="https://en.wikipedia.org/wiki/Cyrus_IMAP_server">Cyrus</a></strong>. This was a hard choice due to it’s <a href="https://en.wikipedia.org/wiki/BSD_licenses#4-clause_license_.28original_.22BSD_License.22.29">original BSD license</a>. I honestly don’t like anything BSD licensed let alone an older one with an advertising clause that I just learned about.</p>
+<p>However I was consoled by this statement. “the Free Software Foundation, recommends developers not use the license, though it states there is no reason not to use software already using it.”</p>
+<p>Worth noting that the choice in Cyrus and Postfix was mostly because <span class="citation">[@computionist]</span> already uses them and recommended them. I just wanted to make sure I was using FOSS and my choices were well documented plus had communities around them.</p>
+<h3 id="security.">Security.</h3>
+<p>Well I will be hosting in the USA so I have to try extra hard to make sure the NSA doesn’t listen in. The can break my encryption in 5 years after they have quantum computers strong enough. I don’t care.</p>
+<p>What I know I want:</p>
+<ul>
+<li>Ensure the server hardware and software are secure.</li>
+<li>Reduce to a minimum and if possible eliminate any chances of mail being in plaintext whilst in the server.</li>
+<li>TLS connection to the server.</li>
+<li>Outgoing mail to be encrypted opportunistically i.e where the remote end supports it.</li>
+<li>Hopefully encrypt mail while it is on the server.</li>
+<li>Key pair per user and when they get a message, generate a random symmetric key and encrypt their email with it. Then encrypt that symmetric key to the users public key and store that with the encrypted message. This way even I can’t decrypt it. Only the user with the secret key can.</li>
+</ul>
+<p>How to achieve all this I am not yet sure since it might get tricky but not much worry since most of the time I, and any other users if there will be, will be using end to end encyption for my mail.</p>
+<h3 id="visual-representation.">Visual Representation.</h3>
+<p>Below is a high overview diagram of how a mail server works with the IMAP server routing local mail to the IMAP server and foward the rest to another SMTP server. This may change depending on one’s configuration of course. I left out the crypto bits.</p>
+<p><em>Created with GIMP and my mad graphics skills lulz</em></p>
+<div class="figure">
+<img src="/images/Content/Educate/mail.png" title="mail image overview" alt="mail image" />
+<p class="caption">mail image</p>
+</div>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Wed, 26 Mar 2014 21:30:16 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-03-26-mail-at-urbanslug.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>Solar power in Africa.</title>
+    <link>http://blog.urbanslug.com/posts/2014-03-18-Solar-Power-in-Africa.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on March 18, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Energy.html">Energy</a>, <a href="/tags/Africa.html">Africa</a>
+    
+</div>
+
+<p>I have an opinion on a topic (renewable energy) I hardly understand but I wish the world would get right, who doesn’t?</p>
+<p>I read a a wikipedia article that inspired this post: <a href="https://en.wikipedia.org/wiki/Solar_power_in_Africa#cite_note-2">Solar power in Africa</a>. It starts with: <em>Solar power in Africa has the potential to provide all of the world’s energy, by using only a <b>small</b> portion of the Sahara Desert.</em> Note usage of the word <strong>small</strong>.</p>
+<p>If you read that wikipedia article and ignored the rest of this that would be okay.</p>
+<p>This may sound loke a question a naive person would ask but why hasn’t Africa acted upon this in a major way? I wish African leaders would debate along these lines and actually do something about it.</p>
+<p><strong>This post is about getting people to learn about Solar Power in Africa and talk about it.</strong></p>
+<p>Oil industry is big because it is an energy source, right? Compare this to knowing that we have a better renewable type of oil in our land but doing nothing about it. I do admit that the cost of the undertaking would be huge but that shouldn’t stop us. In fact I there is this line I read in the article: Many African countries receive on average 325 days per year of bright sunlight. This gives solar power the potential to bring energy to virtually any location in Africa without the need for <strong>expensive</strong> large scale grid level infrastructural developments.</p>
+<p>So we have even hours of daylight and darkness already working in our favour, right?</p>
+<p>If Africa were able to control just it’s energy sources let alone the worlds it would have a ripple effect on the cost of products made in Africa not to mention the quality of life et al. Obviously energy is an untapped sector that could do Africa a lot of good the saddest part is knowing that I will probably die before it is exploited. I don’t know about you but to me clean energy is something <strong>humanity</strong> should aim at achieving.</p>
+<p>The rest of the paragraph goes on to read: <em>The Desertec project is a proposal to provide 15% of Europe’s energy from the desert.</em></p>
+<p>Moreover, a recent study indicates that a solar generating facility covering just 0.3% of the area comprising North Africa could supply all of the energy required by the European Union.</p>
+<p>So Europe saw this and decided to act upon it. I sought figures on Europe’s power consumption to compare with Africa’s from wolfram alpha.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    _Format_ <span class="dt">Query</span><span class="fu">:</span> <span class="dt">Result</span>
+    <span class="dv">2010</span> estimates<span class="fu">.</span>
+    kW h<span class="fu">/</span>yr means (kilowatt hours per year)
+
+    <span class="dt">Europe</span> power consumption<span class="fu">:</span> <span class="ot">`total | 3.409 trillion kW h/yr`</span>
+    <span class="dv">15</span><span class="fu">%</span> <span class="kw">of</span> <span class="dt">Europe</span> <span class="dt">Power</span> <span class="dt">Consumption</span><span class="fu">:</span> <span class="ot">`511.3 billion kW h/yr`</span>
+    <span class="dt">Africa</span> power consumption<span class="fu">:</span> <span class="ot">`total | 559.6 billion kW h/yr`</span>
+    africa power consumption<span class="fu">+</span>(<span class="dv">15</span><span class="fu">%</span> <span class="kw">of</span> europe power consumption)<span class="fu">:</span> <span class="ot">`1.071 trillion kW h/yr`</span></code></pre></div>
+<p>Ok so let me get this right. We could’ve almost matched Africa’s power consumption by just doing what Europe did? This is obviously HUGE! albeit from a renewable and clean source.</p>
+<p>So I have a line graph for this comparing:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    <span class="fu">-</span> africa power consumption
+    <span class="fu">-</span> europe power consumption
+    <span class="fu">-</span> <span class="dv">15</span><span class="fu">%</span> <span class="kw">of</span> europe power consumption
+    <span class="fu">-</span> africa power consumption<span class="fu">+</span>(<span class="dv">15</span><span class="fu">%</span> <span class="kw">of</span> europe power consumption)</code></pre></div>
+<p>See it as a graph of where we are, where Europe is and where we would be if we gave minimal shit!</p>
+<p>For a line graph see: <a href="http://www.wolframalpha.com/share/clip?f=d41d8cd98f00b204e9800998ecf8427eli4fojnp9r">line graph</a></p>
+<div class="figure">
+<img src="/images/Content/Graphs/Comparison_of_Africa_Europe_power_consumption.png" title="Solar power comparison bar graph" alt="graph image" />
+<p class="caption">graph image</p>
+</div>
+<p><em>Note that 15% of Europes power consumption is just about on the same line as Africa’s power consumption so it’s hard to tell apart.</em></p>
+<p>I couldn’t get an image of the graph because I haven’t written code to do so and also because I don’t have a wolfram alpha pro account. However if you’re reading this clicking on a link won’t hurt.</p>
+<p>I know General Electric too has seen potential and invested in this but what have Africans done in this sector?</p>
+<p>A few other interesting parts:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    <span class="dt">A</span> <span class="dv">50</span> <span class="dt">MW</span> photovoltaic power plant is planned for <span class="dt">Garissa</span>, <span class="kw">in</span> <span class="dt">Kenya</span>, 
+    which is expected to produce approximately <span class="dv">76</span>,<span class="dv">473</span> <span class="dt">MWh</span><span class="fu">/</span>year<span class="fu">.</span>
+
+    <span class="dt">A</span> <span class="dv">155</span> <span class="dt">MW</span> photovoltaic power plant is planned for <span class="dt">Ghana</span>, 
+    and is expected to be completed <span class="kw">in</span> <span class="dv">2015</span><span class="fu">.</span>
+
+    <span class="dt">A</span> <span class="dv">75</span> <span class="dt">MW</span> solar power plant started production on <span class="dt">September</span> 13th, <span class="dv">2013</span> <span class="kw">in</span> <span class="dt">Kalkbult</span>,
+    <span class="kw">in</span> <span class="dt">South</span> <span class="dt">Africa&#39;s</span> <span class="dt">Northern</span> <span class="dt">Cape</span> (implemented by <span class="dt">Scatec</span>)<span class="fu">.</span> </code></pre></div>
+<p>It is obvious that something is being done along these lines and I am happy Kenya is involved but it is obviously not enough. I really feel that Kenya would’ve done better if it didn’t have it’s priorities in it’s anus and embraced a form of socialism.</p>
+<p>We should not downplay the role solar power can play in energy as most would China and Germany which are the top two exporters in the world are doing a lot on solar power as well as other forms of renewable energy.</p>
+<p>Another wikipedia article shows the continent’s potential with solar power <a href="https://en.wikipedia.org/wiki/Solar_power_by_country">Solar power by country</a></p>
+<p><em>It’s a shame that Africa’s subsection is only one paragraph instead of being broken down to info on solar power in individual african nations. To demonstrate just how short that paragraph is I shall paste it here.</em></p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">    <span class="dt">On</span> average, many <span class="dt">African</span> countries receive up to <span class="dv">325</span> days <span class="kw">of</span> sunlight per year<span class="fu">.</span>
+    <span class="dt">This</span> gives solar power the potential to bring energy to virtually any location 
+    <span class="kw">in</span> <span class="dt">Africa</span>  without the need for expensive large scale grid level
+    infrastructural developments<span class="fu">.</span>
+
+    <span class="dt">The</span> distribution <span class="kw">of</span> solar resources across <span class="dt">Africa</span> is fairly uniform, with more than
+    <span class="dv">80</span> percent <span class="kw">of</span> the <span class="dt">African</span> landscape receiving almost <span class="dv">2000</span> kW·h per square meter 
+    per year<span class="fu">.</span>
+    <span class="dt">A</span> recent study indicates that a solar generating facility covering just <span class="fl">0.3</span><span class="fu">%</span> <span class="kw">of</span>
+    the area comprising <span class="dt">North</span> <span class="dt">Africa</span> could supply all <span class="kw">of</span> the energy required by 
+    the <span class="dt">European</span> <span class="dt">Union</span></code></pre></div>
+<p>I know this might be an issue of solar power developments not having been documented, but why? It is obviously just not a priority. We are good at documenting politics so we have the ability.</p>
+<p>Another interesting article one <strong>should</strong> read on the same is <a href="https://en.wikipedia.org/wiki/Renewable_energy_in_Africa">Renewable energy in Africa</a></p>
+<p>I hope this convinces someone that Africa has the potential of being a leader in energy generation not just renewable energy and someone with the ability to do something about it will see it, actually give a fuck and do something about it.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Tue, 18 Mar 2014 17:34:23 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-03-18-Solar-Power-in-Africa.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>My public key.</title>
+    <link>http://blog.urbanslug.com/posts/2014-03-11-my-public-key.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on March 11, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Cryptography.html">Cryptography</a>, <a href="/tags/Email.html">Email</a>
+    
+</div>
+
+<p>You may get the public key 0x97CCCF20636D31D9 from a keyserver or download it from <a href="/assets/0x97CCCF20636D31D9.key">0x97CCCF20636D31D9.key</a> and import it with <code>gpg --import 0x97CCCF20636D31D9.key</code></p>
+<p>Then talk to me :)</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Tue, 11 Mar 2014 20:34:12 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-03-11-my-public-key.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>ThreadScope patch.</title>
+    <link>http://blog.urbanslug.com/posts/2014-03-05-ThreadScope-patch.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on March  5, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/Haskell.html">Haskell</a>
+    
+</div>
+
+<p>So I had some issues installing threadscope earlier.</p>
+<p>After having installed the dependencies I had problems with building ThreadScope due to changes in ghc. The errors are right here: <a href="https://gist.github.com/urbanslug/9365829">gist to threadscope errors</a></p>
+<p>A few tips on haskell on archlinux:</p>
+<pre class="text"><code>     Don&#39;t use Pacman, AUR or another package manager to install anything other than:
+     ghc and cabal.
+     For everything else use cabal install i.e `cabal install package_name`</code></pre>
+<p>Anyhoo the real matter here is that there was a problem with the source in ThreadScope.</p>
+<p>The assumption is that you have all the dependencies met. Get ThreadScope source files from: <a href="http://hackage.haskell.org/package/threadscope">ThreadScope source</a></p>
+<p>Here is the patch: {% gist 9367418 threadscope.diff %}</p>
+<p>If you have issues applying the patch read on it here: <a href="%7B%%20post_url%202014-03-05-How-to-apply-a-patch-quickly%20%%7D">How to apply a patch quickly.</a></p>
+<p>99% of it is really thanks to <a href="http://trac.haskell.org/ThreadScope/ticket/32">source of diff</a> where you can see the patch was submitted by Bob Ippolito as an attachment.</p>
+<p>The issue with the patch there is that it misses the tiny change GUI/Main.hs</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Wed, 05 Mar 2014 22:45:12 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-03-05-ThreadScope-patch.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
+    <title>How to quickly apply a patch.</title>
+    <link>http://blog.urbanslug.com/posts/2014-03-05-How-to-apply-a-patch-quickly.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on March  5, 2014
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/General.html">General</a>
+    
+</div>
+
+<p>So you really should read more on this but of you are in a hurry.</p>
+<p>You should get your source then copy the .patch or .diff into the root of the source file. Then run <code>git apply patch_name</code>. If you don’t have git installed you can use the patch command. How to use it is in the first link below.</p>
+<p>Other places you can read on the same including how to make one include:</p>
+<p><a href="http://jungels.net/articles/diff-patch-ten-minutes.html">The Ten Minute Guide to diff and patch</a></p>
+<p><a href="http://git-scm.com/docs/git-apply">git apply</a></p>
+<p><a href="http://blog.linuxacademy.com/linux/introduction-using-diff-and-patch/">Introduction: Using diff and patch</a></p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Wed, 05 Mar 2014 15:34:45 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2014-03-05-How-to-apply-a-patch-quickly.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+
+    </channel>
+</rss>

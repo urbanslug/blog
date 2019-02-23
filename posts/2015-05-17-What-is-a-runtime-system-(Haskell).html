@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>What is a runtime system (Overview). urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>What is a runtime system (Overview).</h1>
+          <div class="info">
+    Posted on May 22, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: 
+    
+</div>
+
+<p>This post is aimed at total beginners. Especially those who have no idea what a runtime system is and is a gross oversimplification. :) Let’s go. Later I will write something about the haskell runtime system.</p>
+<p>This post was inspired by <a href="http://ezyang.com/jfp-ghc-rts-draft.pdf">The GHC Runtime System by Edward Z. Yang (2013)</a> and <a href="https://users-cs.au.dk/hosc/local/LaSC-3-4-pp343-380.pdf">A Runtime System by Andrew W. Appel (1989)</a>. I also tried reading: <a href="http://research.microsoft.com/en-us/um/people/simonpj/papers/slpj-book-1987/">The Implementation of Functional Programming Languages by Simon Peyton Jones, published by Prentice Hall, 1987.</a> and <a href="http://research.microsoft.com/en-us/um/people/simonpj/Papers/pj-lester-book/">Implementing functional languages: a tutorial by Simon Peyton Jones and David Lester. Published by Prentice Hall, 1992.</a> but they’re really big and quite dated. You may also read <a href="http://en.wikipedia.org/wiki/Runtime_system">wikipedia on runtime systems</a>.</p>
+<p>So what is a runtime system? It is a program that is invoked by the compiler to wrap your compiled program/code and gives it bindings to the “API” provided by the environment(<em>operating system</em>) that the program is running in. So the runtime system can’t run on it’s own. It only runs when the program, for example a haskell program, is running and as you would expect the runtime system would vary between operating systems because the environments are different.</p>
+<p>It provides primitive langauge features unlike a standard library which is typically implemented in the language itself.</p>
+<p>We count on the runtime system to provide the following services among others:</p>
+<ul>
+<li>Garbage collection.</li>
+<li>Streaming input and output.</li>
+<li>Structured input and output.</li>
+<li>Process suspension</li>
+<li>Handling interrupts and asynchronous events.</li>
+<li>Operating system calls.</li>
+<li>Arithmetic interrupts.</li>
+<li>Execution profiling.</li>
+<li>Assembly language implementation of language primitives.</li>
+<li>Debugging.</li>
+<li>Fun with continuation.</li>
+<li>Foreign language procedure calls.</li>
+</ul>
+<h3 id="haskell-runtime-system.">Haskell runtime system.</h3>
+<p>Haskell features that complicate the design of the runtime system:</p>
+<ul>
+<li>Lazy evaluation. <em>No clear order of execution</em></li>
+<li>Ubiquitous concurrency.</li>
+</ul>
+<p>However, <strong>emphasis on pure computation</strong> simplifies the design of the garbage collector and Software Transactional Memory.</p>
+<h3 id="ghc-and-the-haskell-runtime-system.">GHC and the haskell runtime system.</h3>
+<p>GHC is broken down into three parts.</p>
+<ul>
+<li>The compiler</li>
+<li>The runtime system</li>
+<li>The boot/base libraries.</li>
+</ul>
+<p>As you can see the runtime system is developed as part of GHC but not part of the compiler itself.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>I can’t keep this on without turning these into notes I wrote down when reading a paper. So I’ll write a different and more specific post later.</p>
+<h3 id="references">References:</h3>
+<ul>
+<li><a href="http://ezyang.com/jfp-ghc-rts-draft.pdf">The GHC Runtime System by Edward Z. Yang (2013)</a></li>
+<li><a href="https://users-cs.au.dk/hosc/local/LaSC-3-4-pp343-380.pdf">A Runtime System by Andrew W. Appel (1989)</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Runtime_system">wikipedia on runtime systems</a></li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

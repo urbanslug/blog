@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Packaging python projects. urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Packaging python projects.</h1>
+          <div class="info">
+    Posted on February 14, 2016
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/Python.html">Python</a>, <a href="../tags/packaging.html">packaging</a>
+    
+</div>
+
+<p>A while ago I had quite a problem figuring out how to package a python project. This is because the python community has no set standard on how to package python projects.</p>
+<p>So I decided to fix this for those who shall come after me and wish to make something quick in python. As an example project I came up with <a href="https://github.com/urbanslug/Arithmetic">Arithmetic</a> and had to come up with <a href="https://github.com/urbanslug/WaterInfrastructure">WaterInfrastructure</a>.</p>
+<p>It is something close to a python project quickstart.<br />
+Incidentally, it also happens to be an example of <strong>functional programming in python</strong>.</p>
+<p>The point is to show you how to structure:</p>
+<ul>
+<li>your tests (which testing framework might be good)</li>
+<li>code</li>
+<li>package it for distribution via a tool like pip or pypy and so forth</li>
+<li>(all these in functional style)</li>
+</ul>
+<blockquote>
+<p><em>I use Python 3.</em></p>
+</blockquote>
+<h3 id="arithmetic">Arithmetic</h3>
+<p>The directory structure for this is as follows:</p>
+<pre><code>.
+├── README.md
+├── arithmetic
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── division
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── divide.py
+│   ├── multiplication
+│   │   ├── __init__.py
+│   │   ├── __main__.py
+│   │   └── multiply.py
+│   └── tests
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── division
+│       │   └── test_divide.py
+│       └── multiplication
+│           └── test_multiply.py
+└── setup.py</code></pre>
+<h3 id="waterinfrastructure">WaterInfrastructure</h3>
+<p><a href="https://github.com/urbanslug/WaterInfrastructure">WaterInfrastructure</a> is the other project I wrote following the above guidelines. This was as an interview question (this is a form of attribution :D).</p>
+<p><em>Question: I have a problem, do python projects have to have .pyc files in the same directory as the source file?</em></p>
+<p>There really isn’t much to say here you can learn more by browsing through the code.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

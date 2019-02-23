@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Flux, React and redux urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Flux, React and redux</h1>
+          <div class="info">
+    Posted on June 29, 2018
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/react.html">react</a>, <a href="../tags/javascript.html">javascript</a>, <a href="../tags/redux.html">redux</a>
+    
+</div>
+
+<h1 id="react">React</h1>
+<p>React is declarative</p>
+<p>The data and operations seem mangled up</p>
+<p>React Component class or react component type A component takes parameters called <strong>props</strong> and returns a hierarchy of views to display via the <strong>render</strong> method</p>
+<p>Haskell speak: component :: render -&gt; props -&gt; hierarchy of views It’s as if a render is a functor and component is fmap</p>
+<p>render returns a description of what you wish to render react takes the description and renders it to a screen <code>render</code> returns a react element (a lightweight description of what to render)</p>
+<p>Each React element is a real JavaScript object that you can store in a variable or pass around your program.</p>
+<p>React components can have state by setting this.state in the constructor, which should be considered <em>private to the component</em>.</p>
+<p>In JavaScript classes, you need to explicitly call <code>super();</code> when defining the constructor of a subclass.</p>
+<p>We even have a topic on <em>lifting</em> state</p>
+<p>When you want to aggregate data from multiple children or to have two child components communicate with each other, move the state upwards so that it lives in the parent component. The parent can then pass the state back down to the children via props, so that the child components are always in sync with each other and with the parent</p>
+<p>It is conventional in React apps to use on* names for the attributes and handle* for the handler methods.</p>
+<p>controlled components - child components that receive their state from a parent component</p>
+<p>react components are made up of react elements which so far look just like HTML elements to me</p>
+<h2 id="rendering">rendering</h2>
+<p>Imperative rendering</p>
+<p>React comes in here: re renders diffs</p>
+<p>From: [A Case against the GO TO Statement by Edward Dijkstra] &gt; we should do (as wise programmers aware of our limitations) our utmost best to shorten the conceptual gap between the static program and the dynamic process, to make the correspondence between the program (spread out in text space) and the process (spread out in time) as trivial as possible.</p>
+<p>Make things snapshottable: * one state to next state</p>
+<p>When data changes react re renders entire component</p>
+<p>referentially transparent functions/endpoints - trivial tp predict for given input - easy to test</p>
+<p>Stateful DOM or any stateful UI toolkit</p>
+<p>Solution is a virtual DOM which is implemented in a lib called react</p>
+<p>immutability plays well with diffing two states</p>
+<h2 id="functional-components">Functional components</h2>
+<p>Rather than return a class extending React.Component, write a fn that takes props and returns what should be rendered</p>
+<h2 id="state">state</h2>
+<p>State is similar to props, but it is private and fully controlled by the component. Local state is exactly that: a feature available only to classes.</p>
+<h3 id="state-updates-may-be-asynchronous">State updates may be asynchronous</h3>
+<p><strong>React</strong> may batch multiple <code>setState()</code> calls into a single update for performance. Because <code>this.props</code> and <code>this.state</code> may be updated asynchronously, you should not rely on their values for calculating the next state.</p>
+<p>to fix this use a version of <code>setState</code> that accepts a function e.g</p>
+<pre><code>this.setState((prevState, props) =&gt; {
+  counter: prevState.counter + props.increment
+});</code></pre>
+<h3 id="state-updates-are-merged">State updates are merged</h3>
+<p>merges the object you provide into the current state. merging is shallow i.e. leaves other key value pairs untouched</p>
+<h2 id="handling-events">Handling events</h2>
+<p>When using React you should generally not need to call addEventListener to add listeners to a DOM element after it is created. Instead, just provide a listener when the element is initially rendered.</p>
+<p>You have to be careful about the meaning of this in JSX callbacks. In JavaScript, class methods are not bound by default. If you forget to bind this.handleClick and pass it to onClick, this will be undefined when the function is actually called.</p>
+<ul>
+<li>https://www.smashingmagazine.com/2014/01/understanding-javascript-function-prototype-bind/</li>
+</ul>
+<p>you can use an arrow fn in the callback e.g</p>
+<p><code>onClick={(e) =&gt; this.handleClick(e)}</code></p>
+<p>The problem with this syntax is that a different callback is created each time the LoggingButton renders. In most cases, this is fine. However, if this callback is passed as a prop to lower components, those components might do an extra re-rendering. We generally recommend binding in the constructor or using the class fields syntax, to avoid this sort of performance problem.</p>
+<h2 id="lifecycle-hooks">Lifecycle hooks</h2>
+<p>methods run during the life cycle events such as mounting and umounting</p>
+<ul>
+<li><code>componentDidMount</code>: runs after the component output has been rendered to the DOM</li>
+<li><code>componentWillUnmount</code>:</li>
+</ul>
+<p><code>this.setState({})</code> takes an object of new state <code>constructor</code> runs before the object is created</p>
+<p>modifying state directly e.g this.state.comment = “I’m new…” doesn’t lead to a rerender. use set state</p>
+<p>The only place where you can assign <code>this.state</code> is the <code>constructor</code>.</p>
+<h3 id="kaznet">kaznet</h3>
+<p>App.js has all the paths triggers container for that component</p>
+<h1 id="flux">Flux</h1>
+<p><a href="https://facebook.github.io/flux/">flux</a> arch for building UIs using react</p>
+<p>think of flux as new MVC</p>
+<p>action: comes into the system dispatcher: traffic controller for the whole thing store: data layer updates whenever we get a new action view: re render whenever store says something has changed</p>
+<p>Difference from MVC 1. use explicit data instead of derived data 2. separate data from view state 3. avoid cascading effects by preventing nested updates - x updates y which updates z - let data layer completely finish processing before triggering any additional actions</p>
+<p>single direction flow: action -&gt; stores -&gt; views</p>
+<p>flux action -&gt; dispatcher -&gt; store -&gt; view ^—– action —–|</p>
+<p>the dispatcher ensures that until store is done views or anything else can’t put an action through the system</p>
+<p>advantages: - improved data consistency: everything in sync - easier to pinpoint root of a bug - easier unit tests because modules are pure-ish/atomic/functional</p>
+<h2 id="views">views</h2>
+<p>can trigger actions</p>
+<h2 id="dispatcher">dispatcher</h2>
+<p>enforces no cascading effects once an action goes into store you can’t put another until store is done processing it</p>
+<h1 id="redux">Redux</h1>
+<p>Redux has no relation to react but works especially well with it because react let’s you describe UI as a function of state. Redux emits state updates in response to actions.</p>
+<p>actions pure functions in redux only 2 things allowed to interact with the store one is a reducer it changes the state others are selectors retrieve data from the state</p>
+<p>containers are components aware of global state</p>
+<p>all things that fetch lists should be aware of pagination</p>
+<p>page numbers</p>
+<p>generic for tasks, locations clients</p>
+<h3 id="connectmapstatetoprops-mapdispatchtoprops-mergeprops-options">connect(<a href="#mapstatetoprops">mapStateToProps</a>, <a href="#mapdispatchtoprops">mapDispatchToProps</a>, [mergeProps], [options])</h3>
+<p>Connects a React component to a Redux store. <code>connect</code> is a facade around <code>connectAdvanced</code>, providing a convenient API for the most common use cases.</p>
+<p>It doesn’t modify the component class passed to it; instead it returns a new, connected component class for you to use.</p>
+<p>reference [React-redux “connect” explained][Usage with React](https://redux.js.org/basics/usage-with-react) <a href="https://github.com/reduxjs/react-redux">source code</a></p>
+<h3 id="mapstatetoprops">mapStateToProps</h3>
+<p>the result must be a plain object which will be <strong>merged</strong> into the component’s props.</p>
+<h3 id="mapdispatchtoprops">mapDispatchToProps</h3>
+<h2 id="provider">Provider</h2>
+<p>To allow all components to access the store use a d special react redux component <Provider> to make the store available to all container components in the app without passing it explicitly. <a href="https://github.com/reduxjs/react-redux/blob/master/docs/api.md#provider-store">provider docs</a></p>
+<h3 id="action-creator">Action creator</h3>
+<p>A function that creates an action. &gt; action is a payload of information, and an action creator is a factory that creates an action.</p>
+<p>Calling an action creator only produces the action but does not dispatch it. You need to call the store’s <a href="https://redux.js.org/api-reference/store#dispatch">dispatch</a> fn to actually cause the mutation</p>
+<h2 id="reducer">Reducer</h2>
+<p>Also called a reducing function function that accepts an accumulation and a value and returns a new value</p>
+<p>reduce in other langs or fold in haskell.</p>
+<p>reduce a collection of values into a single values</p>
+<p>most important concept in redux</p>
+<h3 id="combinereducers"><a href="https://redux.js.org/api-reference/combinereducers">combineReducers</a></h3>
+<p>A helper function that turns an object whose values are different reducing functions into a single reducing fn you can pass to <a href="https://redux.js.org/api-reference/createstore"><code>createStore</code></a>.</p>
+<p>the resulting reducer calls every child reducer and gethers the resilt into a single state object</p>
+<p>The state produced by combineReducers() namespaces the states of each reducer under their keys as passed to combineReducers()</p>
+<h3 id="createstore">createStore</h3>
+<p>creates a single redux store that holds the complete state of your app.</p>
+<blockquote>
+<p>Your app should have a single store</p>
+</blockquote>
+<p>args: reducer, preloadedState, enhancer</p>
+<p>enhancer: <strong>store enhancer</strong> optionally specify it to enhance the store with third party capabilities such as middleware, time travel, persistence etc</p>
+<p>the only store enhancer that ships with redux is <a href="https://redux.js.org/api-reference/applymiddleware"><code>applyMiddleware</code></a></p>
+<h3 id="applymiddleware">applyMiddleware</h3>
+<p>Lets you wrap the store’s <a href="https://redux.js.org/api-reference/store#dispatch"><code>dispatch</code></a> method Middleware is composable</p>
+<p>Most common use case is to support async actions without much boilerplate code or lib dependency. Does so by letting you dispatch <a href="https://redux.js.org/glossary#async-action"><code>async actions</code></a> in addition to normal actions</p>
+<h4 id="thunk-redux">thunk-redux</h4>
+<p>lets the action creators invert control by dispatching functions. They would receive <code>dispatch</code> as an arg and may call it async. Such functions are called thunks.</p>
+<h4 id="redux-promise">redux-promise</h4>
+<p>Lets you dispatch a promise async action and dispatches a normal action when the promise resolves.</p>
+<blockquote>
+<p>Middleware is not baked into createStore and is not a fundamental part of the Redux architecture, but we consider it useful enough to be supported right in the core. This way, there is a single standard way to extend dispatch in the ecosystem, and different middleware may compete in expressiveness and utility.</p>
+</blockquote>
+<h4 id="async-action">Async action</h4>
+<p>A value that is sent to a dispatching function but not yet ready for consumption by the reducer. It will be transformed by middleware into an action before being sent to the base dispatch fn</p>
+<h3 id="store"><a href="https://redux.js.org/api-reference/store#dispatch">Store</a></h3>
+<p>Holds the whole state tree of your app. A store is not a class. It’s just an object with a few methods on it.</p>
+<p>There’s no way to directly modify the store only way is through reducers and only way to trigger reducers is to dispatch actions</p>
+<p>to change data dispatch and action to obtain data we should (need to) go through a selector</p>
+<blockquote>
+<p>we get the state of the application at the time we made the select</p>
+</blockquote>
+<h2 id="components">Components</h2>
+<p>Smart components are not allowed to have any logic except dispatching actions. Smart components should always access state through selectors.</p>
+<p>Place all business logic inside action handlers (thunks), selectors and reducers.</p>
+<h3 id="presentational-and-container-components">presentational and container components</h3>
+<p>reference: https://medium.com/<span class="citation">@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0</span> aka stateful and pure components among other names</p>
+<p>this approach achieves: - separation of concerns - reusability</p>
+<h2 id="services">Services</h2>
+<p>Abstract an external API</p>
+<blockquote>
+<p>services must be stateless</p>
+</blockquote>
+<h2 id="state-1">state</h2>
+<p>In Redux, the reducer is the construct that holds state and updates it</p>
+<h2 id="resources">resources</h2>
+<p>https://hackernoon.com/redux-step-by-step-a-simple-and-robust-workflow-for-real-life-apps-1fdf7df46092</p>
+<h1 id="service-workers">Service workers</h1>
+<h1 id="terms">Terms</h1>
+<ul>
+<li><strong>thunk</strong>: a function that takes no argument not like a <a href="https://wiki.haskell.org/Thunk">haskell thunk</a>.</li>
+<li>****:</li>
+</ul>
+<p>Other implementions of the store - backbone: instagram</p>
+<p>[React-redux “connect” explained] :https://www.sohamkamani.com/blog/2017/03/31/react-redux-connect-explained/</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

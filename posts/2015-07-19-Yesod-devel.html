@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Yesod-devel urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Yesod-devel</h1>
+          <div class="info">
+    Posted on July 19, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/Programming.html">Programming</a>, <a href="../tags/GSoC.html">GSoC</a>, <a href="../tags/Yesod.html">Yesod</a>, <a href="../tags/Yesod-Devel.html">Yesod-Devel</a>
+    
+</div>
+
+<p>A new development server is upon us. It’s name is yesod-devel.<br />
+This post is about yesod-devel which is my Google Summer of Code project and not the current yesod-devel that is part of the yesod framework. It’s not yet available and is still under development, meaning a lot of things in this post may change.</p>
+<p>yesod-devel is a development server for haskell web applications that are <a href="https://www.yesodweb.com/book/web-application-interface">WAI</a> compliant.</p>
+<h1 id="what-we-expect-from-the-application.">What we expect from the application.</h1>
+<p>This is my opinion of what <strong>I</strong> expect from the web application and this may therefore change depending on what the community thinks. I think this design is good and losely coupled and leaves a lot of freedom to the web application.</p>
+<p>At the heart of your application (the root of your web application) we expect you to have an <code>Application.hs</code> file which holds the Appliaction module. This is the file pointed to by your <code>main-is</code> section of the .cabal file.:</p>
+<p>This Application.hs file holds the <code>main</code> function which fires up a <a href="http://hackage.haskell.org/package/warp"><code>warp</code></a> server at a an address and port specified in an environment variable. Yesod devel will read everything it needs from the web application from environment variables and not from a config file.<br />
+It is the responsibility of the web application to set environment variables(setEnv). This way yesod-devel is very losely coupled to the web application. That is, we(yesod-devel) will not have to specify the names, paths of your config files or which serialization format it will use.</p>
+<p>The environment variables we currently need are:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="va">haskellWebAddress=</span><span class="st">&quot;&lt;ip_address&gt;/localhost&quot;</span>
+<span class="va">haskellWebPort=</span><span class="st">&quot;&lt;port_number&gt;&quot;</span></code></pre></div>
+<h1 id="what-you-should-expect-from-yesod-devel.">What you should expect from yesod-devel.</h1>
+<h4 id="automatic-source-and-data-file-discovery.">Automatic source and data file discovery.</h4>
+<p>You shouldn’t expect to tell yesod-devel where your source files or data files (hamelet files and so forth) are as long as your web application knows where everything is. All you need to do is call the yesod-devel binary inside your app’s root.</p>
+<h4 id="building-and-running-your-code.">Building and running your code.</h4>
+<p>yesod-devel when run in your web application’s working directory will run build and run your application on localhost:3000.</p>
+<h4 id="automatic-code-reloading.">Automatic code reloading.</h4>
+<p>Yesod-devel supports automatic code reloading for any file modified in the current working directory. This is more proof of just how losely coupled yesod-devel will be from your application.</p>
+<p>Newly added files don’t trigger a recompile and neither do deleted files. However, file modifications do trigger a recompile. This is a deliberate design choice. Text editors as well as other programs keep adding and removing files from the file system and if we listened for any randomly created file or deleted file to trigger a recompile we would end up triggering useless recompiles.</p>
+<p>This however means there’s a trade-off. For being so losely coupled we have to manually restart yesod-devel everytime we add or delete files.</p>
+<h4 id="reverse-proxying.">Reverse proxying.</h4>
+<p>Yesod-devel will start listening on the address and port specified in your environment variables <code>haskellWebAddress</code> and <code>haskellWebPort</code> respectively and reverse proxy it to your <strong>localhost:3000</strong>.</p>
+<h4 id="report-error-messages-to-the-browser.">Report error messages to the browser.</h4>
+<p>Yesod-devel will report error messages from ghc to the web browser on localhost:3000.</p>
+<h4 id="command-line-arguments.">Command line arguments.</h4>
+<p>Currently yesod-devel takes no command line arguments.</p>
+<p>However, in the plans are the following.</p>
+<ul>
+<li>--configure-with <config flags to cabal configure></li>
+<li>--no-reverse-proxying</li>
+<li>--show-iface fileName.hs</li>
+</ul>
+<p>You should be fine without passing any of these arguments unless you have a special reason to.</p>
+<p>Currently yesod-devel will configure your web application with the following flags to cabal.</p>
+<ul>
+<li>-flibrary-only</li>
+<li>--disable-tests&quot;</li>
+<li>--disable-benchmarks&quot;</li>
+<li>-fdevel</li>
+<li>--disable-library-profiling</li>
+<li>--with-ld=yesod-ld-wrapper</li>
+<li>--with-ghc=yesod-ghc-wrapper</li>
+<li>--with-ar=yesod-ar-wrapper</li>
+<li>--with-hc-pkg=ghc-pkg</li>
+</ul>
+<p>I assume that these arguments are self explanatory.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

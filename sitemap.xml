@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2019-01-07-pass-for-ios.html</loc>
+	<lastmod>2019-01-07</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2017-10-16-code-pipeline-putting-everything-together.html</loc>
+	<lastmod>2017-10-16</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2017-10-13-code-pipeline-overview.html</loc>
+	<lastmod>2017-10-13</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2016-09-11-dm-crypt-systemd-boot-and-efi-on-archlinux.html</loc>
+	<lastmod>2016-09-11</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2016-05-09-Apple-Deprecates-the-Use-of-OpenSSL.html</loc>
+	<lastmod>2016-05-09</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2016-02-14-Packaging-python-projects.html</loc>
+	<lastmod>2016-02-14</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-09-11-Emacs-cheatsheet.html</loc>
+	<lastmod>2015-09-11</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-08-22-Imports-and-exports-as-documentation.html</loc>
+	<lastmod>2015-08-22</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-08-21-wai-devel-final-submission.html</loc>
+	<lastmod>2015-08-21</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-08-13-Progress-with-wai-devel.html</loc>
+	<lastmod>2015-08-13</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-07-19-Yesod-devel.html</loc>
+	<lastmod>2015-07-19</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-07-19-Google-Summer-of-Code-%282015%29.html</loc>
+	<lastmod>2015-07-19</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-05-17-What-is-a-runtime-system-%28Haskell%29.html</loc>
+	<lastmod>2015-05-22</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-04-27-Notes-on-IdeSession.html</loc>
+	<lastmod>2015-04-27</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-04-13-Emacs-setup-for-haskell.html</loc>
+	<lastmod>2015-04-13</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2015-04-03-Universal-environment-variables.html</loc>
+	<lastmod>2015-04-02</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-12-09-My-Gnome-3-experience.html</loc>
+	<lastmod>2014-12-09</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-12-08-Scope-in-inheritance-and-composition-in-C%2B%2B.html</loc>
+	<lastmod>2014-12-08</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-12-08-Object-Oriented-Programming-in-C%2B%2B.html</loc>
+	<lastmod>2014-12-08</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-12-08-Back-to-Chess.html</loc>
+	<lastmod>2014-12-08</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-12-02-Pulseaudio-Mute-on-Boot.html</loc>
+	<lastmod>2014-12-02</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-04-05-Man-in-the-Arena.html</loc>
+	<lastmod>2014-04-05</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-03-26-mail-at-urbanslug.html</loc>
+	<lastmod>2014-03-26</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-03-18-Solar-Power-in-Africa.html</loc>
+	<lastmod>2014-03-18</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-03-11-my-public-key.html</loc>
+	<lastmod>2014-03-11</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-03-05-ThreadScope-patch.html</loc>
+	<lastmod>2014-03-05</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
+	<loc>http://blog.urbanslug.com/posts/2014-03-05-How-to-apply-a-patch-quickly.html</loc>
+	<lastmod>2014-03-05</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+</urlset>

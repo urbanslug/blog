@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Pipeline as Code - putting everything together urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Pipeline as Code - putting everything together</h1>
+          <div class="info">
+    Posted on October 16, 2017
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/Devops.html">Devops</a>, <a href="../tags/CI.html">CI</a>, <a href="../tags/CD.html">CD</a>
+    
+</div>
+
+<p>In this post we shall implement a continuous deployment pipeline using <a href="https://www.ansible.com/">ansible</a>, <a href="https://travis-ci.org/">travis ci</a> and <a href="https://git-scm.com/">git</a>.</p>
+<p>During implementation we don’t have steps such as planning, provisioning, configuration management etc that we mentioned in the <a href="../posts/2017-10-13-code-pipeline-overview.html">previous post</a>; those are conceptual. The flowchart below represents the actual places that our software should live at all times. Think of each component in the flowchart as a service that exposes an API.</p>
+<div class="figure">
+<img src="../images/Content/Flowcharts/Pipeline_as_code_putting.svg" />
+
+</div>
+<h2 id="deploy-server">Deploy server</h2>
+<p>In the diagram above we introduce an deploy server. This is the host from which you can access your other servers such production, staging etsc.</p>
+<blockquote>
+<p>Exposes: ansible, ssh</p>
+</blockquote>
+<h2 id="git-version-control">Git (Version Control)</h2>
+<p>We want to have playbooks, deploy scripts and code in version control.<br />
+What we get from version control that is necessary for continuous deployment is:</p>
+<ul>
+<li>tags get deployed to the main production environment</li>
+<li>master branch gets deployed to the main staging environment</li>
+<li>other major branches get deployed to other staging environments of our choosing</li>
+</ul>
+<p>Not all these steps need to be done for it to be a continuous deployment pipeline. For example: for this blog, changes that get merged into master go straight into production. This is because the application is really small and simple so before anything goes into master I know it’s error free. Moreover, even if the blog were to experience downtime I have very little to lose compared to a business. This is the same model that github pages uses; what is in master is pushed into the <code>gh-pages</code> branch which is basically a github pages blog’s production environment.</p>
+<blockquote>
+<p>Exposes: git branches and git tags</p>
+</blockquote>
+<h2 id="ansible-provisioning-and-configuration-management">Ansible (Provisioning and Configuration Management)</h2>
+<p>Assuming you have a fresh server such as the one Digital Ocean would offer or a fresh EC2 instance. We want an ansible play that creates an unprivileged user with SSH authentication. So we have to do the following locally or on our deploy server:</p>
+<ul>
+<li>generate an SSH key pair <strong>without a passphrase</strong></li>
+<li>add the public key of the generated key to the deploy user’s known_hosts file</li>
+<li>push the private key of the generated key to travis ci so that the travis container can autheniticate as that user.</li>
+</ul>
+<h3 id="generate-an-ssh-keypair-without-a-passphrase">Generate an SSH keypair without a passphrase</h3>
+<p>Under <code>Enter file in which to save the key...</code> type in <code>travis-ci</code>.<br />
+Under <code>Enter passphrase (empty for no passphrase):</code> just press enter</p>
+<pre><code>$ ssh-keygen -t ed25519 -C &quot;travis@travis-ci.org&quot;</code></pre>
+<p>This will create two files <code>travis-ci</code> and <code>travis-ci.pub</code>.</p>
+<h3 id="add-the-public-key-to-the-deploy-users-known_hosts">Add the public key to the deploy user’s known_hosts</h3>
+<p>Write a play to prepare the deploy environment.<br />
+Copy the contents of <code>travis-ci.pub</code> file to a vars file in your the playbooks For example <a href="https://github.com/urbanslug/playbooks/blob/master/roles/base/vars/vars.yml#L1">here’s my vars file</a>.</p>
+<div class="sourceCode"><pre class="sourceCode yml"><code class="sourceCode yaml"><span class="fu">travis_ci_pubkey:</span><span class="at"> </span><span class="st">&quot;ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINFzeaPrMXDVS1/+V4hKsgC+Pzoa9tnGGP+VCPT21QXP travis@travis-ci.org&quot;</span></code></pre></div>
+<p>Add a section in a play of your choosing that copies the public key to the deploy user’s known_hosts.</p>
+<div class="sourceCode"><pre class="sourceCode yml"><code class="sourceCode yaml"><span class="kw">-</span> <span class="fu">include_vars:</span><span class="at"> vars.yml</span>
+
+<span class="kw">-</span> <span class="fu">name:</span><span class="at"> Create deploy user</span>
+  <span class="fu">user:</span><span class="at"> name=deploy</span>
+        group=www
+
+<span class="kw">-</span> <span class="fu">name:</span><span class="at"> copy travis-ci public ssh key to deploy user</span>
+  <span class="fu">authorized_key:</span><span class="at"> key=&quot;{{ travis_ci_pubkey }}&quot;</span>
+                  path=/home/deploy/.ssh/authorized_keys
+                  user=deploy</code></pre></div>
+<p>This creates the deploy user and adds the travis-ci.pub to the deploy user’s <code>~/.ssh/known_hosts</code>.</p>
+<h3 id="make-your-target-a-git-server">Make your target a git server</h3>
+<p>For commands like <code>git push</code> to work from travis-ci to your deploy user you have to have your server be ready to receive git push commands. I will explain this later in a different post but for now what you need is a play that:</p>
+<ul>
+<li>Installs git</li>
+<li>Creates a target git repo which we shall push to</li>
+<li>Is able to overwrite the current contents of the repo when a change occurs.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="co"># creates a blog.git dir which is a bare git repo</span>
+<span class="kw">-</span> <span class="fu">name:</span><span class="at">    Create a bare blog.git repo</span>
+  <span class="fu">command:</span><span class="at"> </span><span class="st">&quot;git init --bare blog.git&quot;</span>
+
+<span class="kw">-</span> <span class="fu">name:</span><span class="at"> Add a post-receive hook to update blog</span>
+  <span class="fu">copy:</span><span class="at"> src=../files/git/hooks/post-receive</span>
+        dest=blog.git/hooks/post-receive
+        owner=deploy
+        group=www
+        mode=0550
+        backup=yes</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#! /bin/bash</span>
+
+<span class="co"># post-recieve hook to handle updates</span>
+<span class="co"># delete the current blog</span>
+<span class="fu">rm</span> -rf ~/blog
+<span class="bu">cd</span> ~/
+<span class="co"># clone from the blog.git bare repo into a blog dir</span>
+<span class="fu">git</span> clone blog.git blog</code></pre></div>
+<p>If you take notice this is similar to the bare git repo that github provides. For example: to clone this blog from github via ssh we would run:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">git</span> clone git@github.com:urbanslug/blog.git</code></pre></div>
+<p>and if you had ssh access to the server hosting this blog you would run:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">git</span> clone deploy@git.urbanslug.com:blog.git</code></pre></div>
+<p>I hope you can draw some interesting parallels there. Here’s my <a href="https://github.com/urbanslug/playbooks/blob/master/roles/blog/tasks/main.yml">blog’s play</a> for reference.</p>
+<p>In the case of this blog I run the below command from my deploy server.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">ansible-playbook</span> base.yml --ask-sudo-pass --ask-vault-pass</code></pre></div>
+<h3 id="push-the-private-key-to-travis-ci">Push the private key to travis ci</h3>
+<p>Install the <a href="https://docs.travis-ci.com/user/encryption-keys/#Usage">travis cli tool</a></p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">gem</span> install travis</code></pre></div>
+<p>Encrypt your private key and add the decryption command to your .travis.yml file using the travis cli tool and also push your public key to travis-ci with:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">travis</span> encrypt-file travis-ci --add</code></pre></div>
+<p>The <code>--add</code> flag should add a <code>before_install</code> phase to your .travis.yml file that resembles the following:</p>
+<div class="sourceCode"><pre class="sourceCode yml"><code class="sourceCode yaml"><span class="fu">before_install:</span>
+ <span class="kw">-</span> openssl aes-256-cbc -K $encrypted_7f9f7befb56d_key -iv $encrypted_7f9f7befb56d_iv -in travis-ci.enc -out travis-ci -d</code></pre></div>
+<p>That line decrypts your travis-ci private key in the travis container at runtime and creates a <code>~/travis-ci</code> which is the private key. Make sure not to have multiple before-install phases.</p>
+<blockquote>
+<p>Exposes: travis encrypt-file, ssh-keygen, ansible-playbook, ansible vars</p>
+</blockquote>
+<h2 id="travis-ci-continuous-integration-and-continuous-deployment">Travis CI (Continuous Integration and Continuous Deployment)</h2>
+<p>Travis CI is a mix of open source and some proprietary tools.<br />
+To quote them “Travis CI is run as a hosted service, free for Open Source, a paid product for private code, and it’s available as an on-premises version (Travis CI Enterprise).”</p>
+<p>Here’s their <a href="https://github.com/travis-ci">github page</a> and <a href="https://github.com/travis-ci/travis-ci">info page</a>. To learn how to get started with travis in your project you can read <a href="https://docs.travis-ci.com/user/getting-started/">get started doc</a>. Moving on, I assume you have (gained) enough experience with travis to go on.</p>
+<p>Travis will run tests and/or build our application on every branch or specific branches based on rules that we set. We then build on this functionality to deploy to a target based on various rules. The obvious one being when our tests pass.</p>
+<p>In our case: we want to run tests then after that deploy to the relevant target. In your .travis.yml file you can use one of the following <a href="https://docs.travis-ci.com/user/customizing-the-build/#The-Build-Lifecycle">travis ci build phases</a> <code>after_success</code> or <code>deploy</code> steps. I prefer to use <code>after_success</code> when I want to run a deploy script and then list all the commands that my script would run and <code>deploy</code> for already supported deploy environments. This is because the script feature is experimental at the time of writing this.</p>
+<blockquote>
+<p>Exposes: .travis.yml</p>
+</blockquote>
+<h3 id="continuously-deploying-to-a-host">Continuously deploying to a host</h3>
+<p>We want to push code from our travis container to our server. Here are some essesntials that would guide you in creating a .travis.yml file that would deploy to your target.</p>
+<h3 id="using-after_success">Using after_success</h3>
+<p>The <code>branches</code> section is essential in this case because it ensures that the .travis.yml file will only be ran for the master branch.</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">branches:</span>
+  <span class="fu">only:</span>
+    <span class="kw">-</span> master
+
+<span class="fu">addons:</span>
+  <span class="co"># add the target server to the containers known_hosts</span>
+  <span class="co"># this prevents a blocking prompt to add the server to travis-ci's</span>
+  <span class="co"># known_hosts when attempting to git push</span>
+  <span class="fu">ssh_known_hosts:</span>
+    <span class="kw">-</span> git.urbanslug.com
+
+<span class="co"># decrypt our public key</span>
+<span class="fu">before_install:</span>
+  <span class="kw">-</span> openssl aes-256-cbc -K $encrypted_7f9f7befb56d_key -iv $encrypted_7f9f7befb56d_iv -in travis-ci.enc -out travis-ci -d
+
+<span class="fu">env:</span>
+  <span class="fu">global:</span>
+    <span class="kw">-</span> <span class="fu">GIT_EMAIL:</span><span class="at"> travis@travis-ci.org</span>
+    <span class="kw">-</span> <span class="fu">GIT_NAME:</span><span class="at"> Travis CI</span>
+
+
+<span class="fu">script:</span>
+  <span class="kw">-</span> ./site.hs build
+
+<span class="co"># run the following commends after the script phase is successful</span>
+<span class="fu">after_success:</span>
+  <span class="kw">-</span> eval <span class="st">&quot;$(ssh-agent -s)&quot;</span> <span class="co"># start the ssh agent</span>
+  <span class="kw">-</span> chmod 600 travis-ci
+  <span class="kw">-</span> ssh-add  travis-ci <span class="co"># add travis-ci private key to the ssh agent</span>
+  <span class="kw">-</span> cd _site
+  <span class="kw">-</span> git init
+  <span class="kw">-</span> git config --global user.email <span class="st">&quot;$GIT_EMAIL&quot;</span>
+  <span class="kw">-</span> git config --global user.name  <span class="st">&quot;$GIT_NAME&quot;</span>
+  <span class="kw">-</span> <span class="fu">git remote add deploy &quot;deploy@git.urbanslug.com:</span><span class="at">blog.git&quot;</span>
+  <span class="kw">-</span> git add --all
+  <span class="kw">-</span> git status
+  <span class="kw">-</span> git commit -m <span class="st">&quot;Built by Travis ( build $TRAVIS_BUILD_NUMBER )&quot;</span>
+  <span class="kw">-</span> <span class="fu">git push -q --force deploy master:</span><span class="at">master</span></code></pre></div>
+<h3 id="github-pages">Github pages</h3>
+<p>Here’s the way <a href="https://github.com/goodbotai/borq">borq, a library from goodbot.ai,</a> has its docs deployed to github pages every time a tag is created and here’s the <a href="https://github.com/goodbotai/borq/blob/master/.travis.yml">complete travis.yml file for borq</a>.</p>
+<p>In the above case <code>travis-encrypt</code> is used to encrypt the github token like so</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">travis</span> encrypt GH_TOKEN=super_secret_token --add</code></pre></div>
+<p>The essentials of our .travis.yml file</p>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">env:</span>
+  <span class="fu">global:</span>
+    <span class="kw">-</span> <span class="fu">GH_REF:</span><span class="at"> github.com/goodbotai/borq.git</span>
+    <span class="kw">-</span> <span class="fu">secure:</span><span class="at"> S567U/zOMKOddrGtQBmFyA6ROzinMgheQ7rGoyVbw9i43hBzvKVgk+C77+cVCLPr8ps6qwqhV9Ex5ehM3ic9gXDJt9ZlpzlevP+epKxG11WL3S3RwAOGlp/wOkSM+KhEqYqNOSzjA5WLttzg5GFSqs+T3l7HelQfZk55t2O4HSmmKUKPbFfDZ/84suvPSf1pm+d8f99k5KQFnTO3JHbIkbdx76Hsa8KRsZFJ2oA3DgQOXPOf+W3AdlG5zT5t1hAv0wg1O1Q45zB1MDcMfAUYcJOk72eajWTx9E0jreAgEVNUG2oyBG+GNdN2eMtbO4hANcdbBAH6wQq797OK76YVN6MM2HiMMZ1W7emNmo5wP6nc23w7YXJ88a1Ysffxxi4aLOMD1rBlVT5/cjcjvRUeR/OHx+9fOLPo/G6KioC5oz0iXwNPSYkZBHQ3nKf4uribXAPV/8f+n9HzjSQTnILWXiYaaGqIJAjEzL8WL5dBBGhngkILzCX/Ur4LeYJkhLnrVTg089X8urjtWnBpZKMKAwhPfV768prfKurmRbirIlgJfw5WfRoiV34Bl3O7bcNQMQ0nIobgaNhF8JZRq6adp0K8ChVnfNl3oplXN1kiVr9YJRRb4ErLzRSJZqkP/TNUqOs5wFeiSoFGgCUvAyjQZN5IkKIr4VrdKcnbEgj/3Co=</span>
+
+<span class="fu">deploy:</span>
+  <span class="fu">skip_cleanup:</span><span class="at"> true</span>
+  <span class="fu">provider:</span><span class="at"> pages</span>
+  <span class="fu">local_dir:</span><span class="at"> out</span>
+  <span class="fu">github_token:</span><span class="at"> $GH_TOKEN</span>
+  <span class="fu">on:</span>
+    <span class="fu">tags:</span><span class="at"> true</span></code></pre></div>
+<p>I just explained how we can set up a project so that the CI tool handles all deploys going forward after the inital setting up. If anything goes wrong we can go into the deploy server and then run an ansible script and have it roll back to a specific tag/branch.</p>
+<p>In the next post we shall talk about continuous deployment in a microservice architechture using the same tools but deploying to AWS ECS.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

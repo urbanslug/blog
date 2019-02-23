@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Imports and exports as documentation. urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Imports and exports as documentation.</h1>
+          <div class="info">
+    Posted on August 22, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/Programming.html">Programming</a>, <a href="../tags/Haskell.html">Haskell</a>
+    
+</div>
+
+<p>Lately I’ve been reading huge haskell code bases quite a lot. One thing that I have noted to be helpful when documentated has been the imports section as well as the code having a list of the code it exports.</p>
+<p>I don’t know whether this is just a non-experienced programmer issue or it cuts across the board.</p>
+<p>Documenting imports can happen:</p>
+<ul>
+<li>explicitly through:
+<ul>
+<li>comments</li>
+</ul></li>
+<li>implicity through:
+<ul>
+<li><p>uniquely qualified imports.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">A</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span>
+<span class="kw">import </span><span class="dt">B</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">Y</span></code></pre></div>
+<p>over</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">A</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span>
+<span class="kw">import </span><span class="dt">B</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span></code></pre></div></li>
+<li><p>importing of specific instances (i.e using brackets to specify what one wants to import)</p></li>
+</ul></li>
+</ul>
+<p>Basically anything that saves the programmer effort or time in:</p>
+<ul>
+<li>Understanding what you’re importing</li>
+<li>Why you’re importing it</li>
+<li>See the usage of a function and quickly know where it’s from</li>
+</ul>
+<p>I can’t quantify or explain exactly how this helps me understand the code but it really does. Especially when I can’t hoogle a function name (the internet connections aren’t too fast in these parts). It saves me the time of have to go through several modules trying to figure out where this import is from.</p>
+<p>Most of time we are in just too much of a hurry to do this I understand. I’m a victim of some terrible coding practices but I think it’s a good habit to adopt.</p>
+<p>Well, the user can use tools like the repl to query where these imports are from but again when you can save the user time and effort of querying for meta information please do so. I know it’s not possible to do it all the time and everywhere but please do it when and where you can.</p>
+<p>Let me illustrate this in some example code:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-|</span>
+<span class="co">Module      : Devel.Build</span>
+<span class="co">Description : Attempts to compile the WAI application.</span>
+<span class="co">Copyright   : (c)</span>
+<span class="co">License     : GPL-3</span>
+<span class="co">Maintainer  : njagi@urbanslug.com</span>
+<span class="co">Stability   : experimental</span>
+<span class="co">Portability : POSIX</span>
+
+<span class="co">compile compiles the app to give:</span>
+<span class="co">Either a list of source errors or an ide-backend session.</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE PackageImports, OverloadedStrings #-}</span>
+
+<span class="kw">module</span> <span class="dt">Devel.Compile</span> (compile) <span class="kw">where</span>
+
+<span class="co">-- Almost everything is dependent on ide-backend.</span>
+<span class="kw">import </span><span class="dt">IdeSession</span>
+
+<span class="co">-- From Cabal-ide-backend</span>
+<span class="co">-- for parsing the cabal file and extracting lang extensions used.</span>
+<span class="kw">import </span><span class="dt">Distribution.PackageDescription</span>
+<span class="kw">import </span><span class="dt">Distribution.PackageDescription.Parse</span>
+<span class="kw">import </span><span class="dt">Distribution.PackageDescription.Configuration</span>
+<span class="kw">import </span><span class="dt">Language.Haskell.Extension</span>
+
+<span class="co">-- Used internally for showing errors.</span>
+<span class="kw">import </span><span class="dt">Data.Text</span> (unpack)
+
+<span class="co">-- Utility functions</span>
+<span class="kw">import </span><span class="dt">Data.Monoid</span> ((&lt;&gt;))
+<span class="kw">import </span><span class="dt">System.Directory</span> (createDirectoryIfMissing, getCurrentDirectory)
+
+<span class="co">-- Local imports</span>
+<span class="kw">import </span><span class="dt">Devel.Paths</span>
+<span class="kw">import </span><span class="dt">Devel.Types</span></code></pre></div>
+<p>Compare with this which I wrote in a hurry.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-|</span>
+<span class="co">Module      : Devel.Paths</span>
+<span class="co">Description : For filepath related matters.</span>
+<span class="co">Copyright   : (c)</span>
+<span class="co">License     : GPL-3</span>
+<span class="co">Maintainer  : njagi@urbanslug.com</span>
+<span class="co">Stability   : experimental</span>
+<span class="co">Portability : POSIX</span>
+
+<span class="co">Uses the GHC package to parse .hi files.</span>
+<span class="co">Will hopefully be moved upstream to ide-backend.</span>
+<span class="co">-}</span>
+
+<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
+
+<span class="kw">module</span> <span class="dt">Devel.Paths</span> <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">System.Directory</span> (getCurrentDirectory, doesDirectoryExist, getDirectoryContents)
+<span class="kw">import </span><span class="dt">Control.Monad</span> (forM)
+<span class="kw">import </span><span class="dt">Control.Concurrent</span> (forkIO)
+<span class="kw">import </span><span class="dt">System.FilePath.Glob</span>
+<span class="kw">import </span><span class="dt">System.FilePath</span> ((&lt;/&gt;))
+<span class="kw">import </span><span class="dt">Data.List</span>
+<span class="kw">import </span><span class="dt">IdeSession</span>
+<span class="kw">import </span><span class="dt">Devel.Modules</span>
+<span class="kw">import </span><span class="dt">System.FilePath.Posix</span> (replaceExtension, dropExtension, takeExtensions)
+<span class="kw">import qualified</span> <span class="dt">Data.ByteString.Char8</span> <span class="kw">as</span> <span class="dt">C8</span>
+<span class="kw">import </span><span class="dt">Control.Monad.IO.Class</span>
+<span class="kw">import </span><span class="dt">System.FilePath</span> (pathSeparator)
+<span class="kw">import </span><span class="dt">System.Directory</span> (removeFile)</code></pre></div>
+<p>As you can see one can learn quite a bit just from looking at the imports and module documentation alone.</p>
+<p>The issue is that it sometimes takes a while for one to clean up their code like this so it’s okay if your imports aren’t legible before refactoring.</p>
+<p>Another thing, I don’t know if it’s just an emacs thing but I can just to my imports and jump between sections of imports with f12. This is both advantageous to both the one writing the code and the one reading it.<br />
+The point of all of this is that well structured and well documented imports and exports are a win for both the programmer and the one reading the code.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

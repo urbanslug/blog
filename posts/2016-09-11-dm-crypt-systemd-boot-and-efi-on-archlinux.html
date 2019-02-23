@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>dm-crypt, luks, systemd-boot and UEFI on Archlinux. urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>dm-crypt, luks, systemd-boot and UEFI on Archlinux.</h1>
+          <div class="info">
+    Posted on September 11, 2016
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/ArchLinux.html">ArchLinux</a>, <a href="../tags/SystemdBoot.html">SystemdBoot</a>, <a href="../tags/EFI.html">EFI</a>, <a href="../tags/dm-crypt.html">dm-crypt</a>
+    
+</div>
+
+<p>Here I provide a little help for setting up an archlinux system with full disk encryption, efi and using systemd-boot as the boot loader. This is really just what I learned from the <a href="https://wiki.archlinux.org/">arch wiki</a>, <a href="https://gist.github.com/mattiaslundberg/8620837">Mattias Lundberg’s gist</a> and <a href="http://www.brandonkester.com/tech/2014/03/16/full-disk-encryption-in-arch-linux-with-uefi.html">Brandon Kester’s post</a>. I’ll assume you have installed arch before and just need a little help getting everything up and running.</p>
+<p>Desired setup:</p>
+<pre><code>100M /boot
+100G /root
+8G swap
+the rest for /home</code></pre>
+<p><em>Unlike <a href="https://github.com/mattiaslundberg">Mattias Lundberg</a> I see no reason for separate <code>boot</code> and <code>efi</code> patitions.</em> Although some people have a problem with having their /boot in fat32 due to permissions reasons.</p>
+<p>This will be in 3 parts:</p>
+<ul>
+<li>Partitioning, encrypting and repartitioning.</li>
+<li>Installing the base system(arch).</li>
+<li>Configuring the bootloader.</li>
+</ul>
+<h2 id="partitioning-encrypting-and-repartitioning.">Partitioning, encrypting and repartitioning.</h2>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># I like gdisk.</span>
+<span class="ex">gdisk</span> /dev/sdX
+
+<span class="co"># Clear everything</span>
+<span class="ex">-</span><span class="op">&gt;</span> o
+
+<span class="co"># The first 100M efi partition</span>
+<span class="ex">-</span><span class="op">&gt;</span> n -<span class="op">&gt;</span> ... -<span class="op">&gt;</span> +100M -<span class="op">&gt;</span> ... -<span class="op">&gt;</span> EF00
+
+<span class="co"># power through this by always pressing enter.</span>
+<span class="co"># default hex code is 8E00</span>
+<span class="ex">-</span><span class="op">&gt;</span> n -<span class="op">&gt;</span> ...  -<span class="op">&gt;</span> 8E00</code></pre></div>
+<p>Expected gdisk output should be 2 partitions, something along the lines of:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># In the end `p` in gdisk or `gdisk -l` should give you two partitions along the lines of:</span>
+
+<span class="co"># Device      Start       End   Sectors   Size Type</span>
+<span class="co"># /dev/sda1    2048    514047    512000   250M EFI System</span>
+<span class="co"># /dev/sda2  514048 976773134 976259087 465.5G Linux filesystem</span></code></pre></div>
+<h4 id="format-encrypt-repartition-and-format-respectively.">Format, encrypt, repartition and format respectively.</h4>
+<p>The steps would be as follows:</p>
+<ul>
+<li>Format sdX1 in fat32</li>
+<li>Encrypt sdX2
+<ul>
+<li>Decrypt and repartition</li>
+<li>format the partitions in ext4</li>
+</ul></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># EFI only works with FAT32 so we format the 100M patition with FAT 32</span>
+<span class="ex">mkfs.vfat</span> -F32 /dev/sdX1
+
+<span class="co"># Let's encrypt the other partition.</span>
+<span class="ex">cryptsetup</span> -c aes-xts-plain64 -y --use-random luksFormat /dev/sdX2
+
+<span class="co"># Let's access our encrypted partition.</span>
+<span class="ex">cryptsetup</span> luksOpen /dev/sdX2 luks
+
+<span class="co"># Now to create partitions inside the encrypted partition. /root /home and /swap</span>
+<span class="ex">pvcreate</span> /dev/mapper/luks
+<span class="ex">vgcreate</span> vg0 /dev/mapper/luks
+<span class="ex">lvcreate</span> --size 8G vg0 --name swap
+<span class="ex">lvcreate</span> --size 100G vg0 --name root
+<span class="ex">lvcreate</span> -l +100%FREE vg0 --name home
+
+<span class="co"># Your /dev/mapper should now have:</span>
+<span class="co">#   /dev/mapper/vg0-home</span>
+<span class="co">#   /dev/mapper/vg0-root</span>
+<span class="co">#   /dev/mapper/vg0-swap</span>
+
+
+<span class="co"># Create file systems on the encrypted partitions.</span>
+<span class="co"># I don't know much about file systems so I just go with ext4.</span>
+<span class="ex">mkfs.ext4</span> /dev/mapper/vg0-root
+<span class="ex">mkfs.ext4</span> /dev/mapper/vg0-home
+<span class="ex">mkswap</span> /dev/mapper/vg0-swap
+
+
+<span class="co"># Mount the partitions.</span>
+<span class="co"># Make sure to start with the root.</span>
+<span class="fu">mount</span> /dev/mapper/vg0-root /mnt
+<span class="ex">swapon</span> /dev/mapper/vg0-swap    # Not needed but a good thing to test
+
+
+<span class="fu">mkdir</span> /mnt/boot
+<span class="fu">mount</span> /dev/sdX1 /mnt/boot
+
+
+<span class="fu">mkdir</span> /mnt/home
+<span class="fu">mount</span> /dev/mapper/vg0-home /mnt/home</code></pre></div>
+<h2 id="install-arch">Install arch</h2>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Install the base system</span>
+<span class="ex">pacstrap</span> /mnt base base-devel</code></pre></div>
+<h4 id="generate-fstab">Generate fstab</h4>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">genfstab</span> -pU /mnt <span class="op">&gt;&gt;</span> /mnt/etc/fstab
+
+
+<span class="co"># Make /tmp a ramdisk (add the following line to /mnt/etc/fstab)</span>
+<span class="ex">tmpfs</span>	/tmp	tmpfs	defaults,noatime,mode=1777	0	0</code></pre></div>
+<p>Verify that your fstab makes sense.</p>
+<blockquote>
+<p><em>Change relatime on all non-boot partitions to noatime (reduces wear if using an SSD)</em></p>
+</blockquote>
+<p>For example:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#</span>
+<span class="co"># /etc/fstab: static file system information</span>
+<span class="co">#</span>
+<span class="co"># &lt;file system&gt; &lt;dir&gt;   &lt;type&gt;  &lt;options&gt;       &lt;dump&gt;  &lt;pass&gt;</span>
+<span class="co"># /dev/mapper/vg0-root</span>
+<span class="va">UUID=</span>9a180980-d2bf-40d6-a09a-7a95a378f5e3       <span class="ex">/</span>               ext4            rw,relatime,data=ordered        0 1
+
+<span class="co"># /dev/mapper/vg0-home</span>
+<span class="va">UUID=</span>01e98383-e71a-4319-a70c-348783b1fc4c       <span class="ex">/home</span>           ext4            rw,relatime,data=ordered        0 2
+
+<span class="co"># /dev/sda1</span>
+<span class="va">UUID=</span>F679-59DA          <span class="ex">/boot</span>           vfat            rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro    0 2
+
+<span class="co"># make /tmp a ramdisk</span>
+<span class="ex">tmpfs</span>                   /tmp            tmpfs           defaults,noatime,mode=1777                              0 0</code></pre></div>
+<h4 id="chroot">chroot</h4>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># chroot into the new system</span>
+<span class="ex">arch-chroot</span> /mnt
+
+<span class="co"># Setup system clock</span>
+<span class="fu">ln</span> -s /usr/share/zoneinfo/Africa/Nairobi /etc/localtime
+<span class="ex">hwclock</span> --systohc --utc
+
+<span class="co"># Set the hostname</span>
+<span class="bu">echo</span> <span class="op">&lt;</span>cool-comp-name<span class="op">&gt;</span> <span class="op">&gt;</span> /etc/hostname
+
+<span class="co"># Update locale</span>
+<span class="bu">echo</span> LANG=en_US.UTF-8 <span class="op">&gt;&gt;</span> /etc/locale.conf
+
+<span class="co"># set password for root</span>
+<span class="fu">passwd</span>
+
+<span class="co"># add a sudo group because that's cool</span>
+<span class="ex">groupadd</span> sudo
+
+<span class="co"># Add a user</span>
+<span class="ex">useradd</span> -m -g sudo -s /bin/zsh <span class="op">&lt;</span>username<span class="op">&gt;</span>
+<span class="fu">passwd</span> <span class="op">&lt;</span>username<span class="op">&gt;</span>
+
+<span class="co"># add your user to sudoers</span>
+<span class="ex">visudo</span></code></pre></div>
+<h4 id="mkinitcpio">mkinitcpio</h4>
+<p>Configure mkinitcpio with modules needed for the initrd image.</p>
+<p>Add ‘ext4’ to MODULES (or whatever fs you use)</p>
+<p>Add ‘encrypt’, ‘lvm2’ and ‘resume’ to HOOKS before filesystems</p>
+<p><code>MODULES</code> and <code>HOOKS</code> should be something along the following lines:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">less</span> /etc/mkinitcpio.con
+  <span class="va">MODULES=</span><span class="st">&quot;ext4&quot;</span>
+  <span class="ex">.</span>
+  <span class="ex">.</span>
+  <span class="ex">.</span>
+  <span class="va">HOOKS=</span><span class="st">&quot;base udev autodetect modconf block keymap encrypt lvm2 resume filesystems keyboard fsck&quot;</span></code></pre></div>
+<h2 id="configure-the-bootloader.">Configure the bootloader.</h2>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Given you mounted /dev/sdX1 on /mnt/boot</span>
+<span class="ex">bootctl</span> --path=/boot install
+
+
+<span class="co"># Populate the systemd-boot configs</span>
+<span class="ex">blkid</span> /dev/sda2 <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{print $2}'</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">'s/&quot;//g'</span> <span class="op">&gt;</span> /boot/loader/entries/arch.conf</code></pre></div>
+<p>Edit the config generated above. Use <code>allow-discards</code> when using an SSD</p>
+<p>To quote <a href="http://www.brandonkester.com/tech/2014/03/16/full-disk-encryption-in-arch-linux-with-uefi.html">Brandon Kester’s post</a>:</p>
+<p><em>“The resume= option will enable hibernation on the device. The nice thing about having an encrypted swap partition is that your hibernation data will be encrypted just like the rest of the at-rest data. This makes hibernation a very secure alternative to leaving your machine in stand-by mode, which is vulnerable to the cold boot attack.”</em></p>
+<p>Your /boot/loader/entries/arch.conf should be along the lines of:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">title</span>   Arch Linux
+<span class="ex">linux</span>   /vmlinuz-linux
+<span class="ex">initrd</span>  /initramfs-linux.img
+<span class="ex">options</span> cryptdevice=UUID=53f48717-2f23-466d-aad8-ce513286af42:lvm:allow-discards resume=/dev/mapper/vg0-swap root=/dev/mapper/vg0-root home=/dev/mapper/vg0-home rw quiet</code></pre></div>
+<p>/boot/loader/loader.conf should be along the lines of: note default arch refers to the entries/arch.conf from above I like 0 timeout because speed /boot/loader/loader.conf</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">timeout</span> 0
+<span class="ex">default</span> arch
+<span class="ex">editor</span> 0</code></pre></div>
+<p>Finishing up.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># generate the ramdisk</span>
+<span class="ex">mkinitcpio</span> -p linux
+
+<span class="co"># I hope your /boot is sane.</span>
+<span class="co"># Mine is along the lines of:</span>
+$ <span class="ex">tree</span> /boot
+<span class="ex">/boot</span>
+├── <span class="ex">EFI</span>
+│   ├── <span class="ex">BOOT</span>
+│   │   └── <span class="ex">BOOTX64.EFI</span>
+│   └── <span class="ex">systemd</span>
+│       └── <span class="ex">systemd-bootx64.efi</span>
+├── <span class="ex">initramfs-linux-fallback.img</span>
+├── <span class="ex">initramfs-linux.img</span>
+├── <span class="ex">loader</span>
+│   ├── <span class="ex">entries</span>
+│   │   └── <span class="ex">arch.conf</span>
+│   └── <span class="ex">loader.conf</span>
+└── <span class="ex">vmlinuz-linux</span>
+
+<span class="ex">5</span> directories, 7 files
+
+<span class="co"># exit the chroot</span>
+<span class="bu">exit</span>
+
+<span class="co"># unmount the drives</span>
+<span class="fu">umount</span> /mnt/home
+<span class="fu">umount</span> /mnt/boot
+<span class="fu">umount</span> /mnt
+
+<span class="co"># yaaay</span>
+<span class="ex">reboot</span></code></pre></div>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

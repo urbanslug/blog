@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Pass for iOS urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Pass for iOS</h1>
+          <div class="info">
+    Posted on January  7, 2019
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/passwords.html">passwords</a>, <a href="../tags/pass.html">pass</a>, <a href="../tags/iOS.html">iOS</a>, <a href="../tags/password%20management.html">password management</a>
+    
+</div>
+
+<p>If you have a GPG keypair, believe in using strong passwords and are paranoid (don’t trust password management tools), then <a href="https://www.passwordstore.org/">pass</a> is the tool for you. I’ve been using it for so long that I can’t remember when I started using it and I have to say, I really like it.</p>
+<p>Pass is a FOSS tool that lets you roll your own password management tool-chain and if that sounds hard, it’s not. It works by storing your password, security questions etc in version controlled plain text files and encrypting them using your keys. You then clone your passwords repo and copy your GPG keys to the devices which you would like to access your passwords on.</p>
+<blockquote>
+<p>Pass is a FOSS that lets you roll your own password management tool-chain.</p>
+</blockquote>
+<p>A known downside of pass is that it <strong>leaks metadata</strong>. The workaround to this is storing all your passwords in a single file. Guys in the ##crypto on Freenode also recommend <a href="https://keepassxc.org/">keepassxc</a>.</p>
+<p>A short overview of pass:</p>
+<ol style="list-style-type: decimal">
+<li>Have a GPG keypair and (not required but a really good idea) a hosted version control system.</li>
+<li>Set up pass so that it knows which keypair to use.</li>
+<li>Create a git repo (password-store) which will hold your encrypted passwords.</li>
+<li>Start generating and version controlling your passwords.</li>
+</ol>
+<p>However, this isn’t a post about pass; it’s about how to use pass on iOS and there’s a tool, <a href="https://github.com/mssun/passforios">pass for iOS</a>, that does that. Assuming you’re already a pass user the question is how to get pass working on your iPad, iPhone or whatever.</p>
+<h1 id="how-do-we-transfer-our-ssh-and-gpg-keys">How do we transfer our SSH and GPG keys?</h1>
+<p>I think the easiest way would be via iTunes but that doesn’t feel right at all. Why would I trust a 3rd party server with my private key?</p>
+<p>What I decided to go with is a tool, <a href="https://github.com/yishilin14/asc-key-to-qr-code-gif">asc-key-to-qr-code-gif</a>, that converts converts ASCII (amored for GPG) keys to QR codes and then I scan those QR codes on <a href="https://github.com/mssun/passforios">Pass for iOS</a>. It’s all open source tools and no 3rd party servers involved. Tell me what you think about this “convert your keys to QR code” business <a href="https://twitter.com/urbanslug">via a tweet</a>.</p>
+<blockquote>
+<p>It’s all open source tools and no 3rd party servers involved.</p>
+</blockquote>
+<h2 id="setup-and-installing-dependencies">Setup and installing dependencies</h2>
+<p>First, I had to install some dependencies via homebrew. I felt it important to install zbar in case there were any errors during QR code generation.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">brew</span> install libqrencode imagemagick zbar</code></pre></div>
+<p><br />Clone the <a href="https://github.com/yishilin14/asc-key-to-qr-code-gif">asc-key-to-qr-code-gif</a> repo to get the QR code generation script, asc-to-gif.sh.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">git</span> clone git@github.com:yishilin14/asc-key-to-qr-code-gif.git</code></pre></div>
+<h2 id="gpg">GPG</h2>
+<h3 id="export-your-gpg-keys-into-ascii-armored-files">Export your GPG keys into ASCII armored files</h3>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">gpg</span> --export --armor <span class="op">&lt;</span>key id<span class="op">&gt;</span> <span class="op">&gt;</span> public.asc
+<span class="ex">gpg</span> --export-secret-keys --armor <span class="op">&lt;</span>key id<span class="op">&gt;</span> <span class="op">&gt;</span> private.asc</code></pre></div>
+<h3 id="generate-and-scan-the-gpg-gifs">Generate and scan the GPG gifs:</h3>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">asc-to-gif.sh</span> public.asc public.gif
+<span class="ex">asc-to-gif.sh</span> private.asc private.gif</code></pre></div>
+<h2 id="ssh">SSH</h2>
+<p>I prefer to have different SSH keys for different devices that way it’s easy to revoke access for different devices. Moreover, using ed25519 keys on phones often fails because of the versions of OpenSSH they ship with so I just go with RSA which is the default anyway. In this case it even had to be PEM due to the version of GitSSH on iOS. Based on the <a href="https://github.com/mssun/passforios/wiki/Supported-Unsupported-Key-Algorithms">Supported Unsupported Key Algorithms wiki page</a> and <a href="https://github.com/mssun/passforios/issues/218">issue 218</a>, generate device keys with:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">ssh-keygen</span> -t rsa -b 4096 -m PEM -f ~/.ssh/id_rsa_<span class="op">&lt;</span>device<span class="op">&gt;</span> -C <span class="st">&quot;&lt;user&gt;@&lt;device&gt;&quot;</span></code></pre></div>
+<p>Then copy the pubkey to the version control tool of your choice.</p>
+<h3 id="generate-and-scan-the-ssh-gif">Generate and scan the SSH gif:</h3>
+<p>Generate a GIF for it.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">asc-to-gif.sh</span> ~/.ssh/id_rsa_<span class="op">&lt;</span>device<span class="op">&gt;</span> ssh.gif</code></pre></div>
+<h4 id="cloning-your-password-store-repo-into-your-device">Cloning your password-store repo into your device</h4>
+<p>Set the URL in this format:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">ssh</span>://git@gitlab.com/<span class="op">&lt;</span>gitlab username<span class="op">&gt;</span>/<span class="op">&lt;</span>password store repo<span class="op">&gt;</span>.git</code></pre></div>
+<p>and set your username to <code>git</code> according to <a href="https://github.com/mssun/passforios/issues/112#issuecomment-318342043">issue 112</a>.</p>
+<p>I’ll assume you can do the rest, like cloning the password store repository into your device and decrypting your password files, by yourself ;).</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

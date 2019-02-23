@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Progress with wai-devel urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Progress with wai-devel</h1>
+          <div class="info">
+    Posted on August 13, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/Programming.html">Programming</a>, <a href="../tags/Haskell.html">Haskell</a>, <a href="../tags/WAI.html">WAI</a>, <a href="../tags/wai-devel.html">wai-devel</a>
+    
+</div>
+
+<p>wai-devel is a development server for wai compliant haskell web applications.</p>
+<p>Its name changed from yesod-devel (the haskell reddit community suggested this). You can find it at: <a href="https://github.com/urbanslug/wai-devel" class="uri">https://github.com/urbanslug/wai-devel</a></p>
+<h2 id="what-wai-devel-expects-from-your-application">What wai-devel expects from your application</h2>
+<p>Since wai-devel is very loosely coupled to your application it expects mainly two things from your application: a <strong>host:port</strong> pair and a function, <strong>Application.develMain</strong>.</p>
+<p>Due to it’s dependence on ide-backend it also expects you to set the environment variable <code>GHC_PACKAGE_PATH</code>.</p>
+<p>Mine for example is: <code>export GHC_PACKAGE_PATH=~/.stack/snapshots/x86_64-linux/lts-2.22/7.8.4/pkgdb:</code></p>
+<p>The host:port pair is expected to be passed in as two environment variables: wai_host and wai_port for example:</p>
+<ul>
+<li>export wai_host=127.0.0.1</li>
+<li>export wai_port=3001</li>
+</ul>
+<p>Better yet, the application itself should set the environment variables as in the example code below.</p>
+<p>wai-devel looks for a function Application.develMain I have a <a href="https://github.com/urbanslug/yesod">fork of yesod</a>, that builds a yesod binary which generates a scaffold with this function implemented. I recommend using it to generate the scaffold with which to try out wai-devel with.</p>
+<p>The specifics of how to set the port and host within yesod applications will obviously change. The point of this fork is to generate a scaffold that works with wai-devel out of the box.</p>
+<p>Here is a snippet develMain function from my yesod fork.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- | main function for use by yesod devel</span>
+<span class="ot">develMain ::</span> <span class="dt">IO</span> ()
+develMain <span class="fu">=</span> develMainHelper' getApplicationDev
+
+<span class="ot">develMainHelper' ::</span> <span class="dt">IO</span> (<span class="dt">Settings</span>, <span class="dt">Application</span>) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+develMainHelper' getSettingsApp <span class="fu">=</span> <span class="kw">do</span>
+    (settings, app) <span class="ot">&lt;-</span> getSettingsApp
+
+    _ <span class="ot">&lt;-</span> unsetEnv <span class="st">&quot;wai_port&quot;</span> <span class="fu">&gt;&gt;</span> setEnv <span class="st">&quot;wai_port&quot;</span> <span class="st">&quot;3001&quot;</span>
+    _ <span class="ot">&lt;-</span> unsetEnv <span class="st">&quot;wai_host&quot;</span> <span class="fu">&gt;&gt;</span> setEnv <span class="st">&quot;wai_host&quot;</span> <span class="st">&quot;127.0.0.1&quot;</span>
+
+    <span class="kw">let</span> settings'  <span class="fu">=</span> setPort (<span class="dv">3001</span><span class="ot"> ::</span> <span class="dt">Port</span>) settings
+        settings'' <span class="fu">=</span> setHost ((read <span class="st">&quot;127.0.0.1&quot;</span>)<span class="ot"> ::</span> <span class="dt">HostPreference</span>) settings\<span class="ch">'</span>
+
+    sock <span class="ot">&lt;-</span> createSocket
+
+    runSettingsSocket settings'' sock app
+
+    <span class="kw">where</span> <span class="co">-- | Create the socket that we will use to communicate with</span>
+          <span class="co">-- localhost:3001 here.</span>
+<span class="ot">          createSocket ::</span> <span class="dt">IO</span> <span class="dt">Socket</span>
+          createSocket <span class="fu">=</span> <span class="kw">do</span>
+
+            sock <span class="ot">&lt;-</span> socket <span class="dt">AF_INET</span> <span class="dt">Stream</span> defaultProtocol
+
+            <span class="co">-- Tell the OS *not* to reserve the socket after your program exits.</span>
+            setSocketOption sock <span class="dt">ReuseAddr</span> <span class="dv">1</span>
+
+            <span class="co">-- Bind the socket to localhost:3000 and listen.</span>
+            <span class="co">-- I wonder why I can't specify localhost instead of iNADDR_ANY</span>
+            bindSocket sock (<span class="dt">SockAddrInet</span> <span class="dv">3001</span> iNADDR_ANY)
+            listen sock <span class="dv">2</span>
+            return sock</code></pre></div>
+<blockquote>
+<p>During socket creation I made sure that the socket option ReuseAddr has been set to 1.<br />
+This way the operating system doesn’t hold on to the socket after the program exits. This is important for when wai-devel takes note of file changes and the development server is restarted.</p>
+</blockquote>
+<h2 id="ignoring-files-and-directories">Ignoring files and directories</h2>
+<p>wai-devel expects that there will be a single <code>Main.main</code> function. In the case of having more than one, for example with yesod, we ignore all but one. Specifically, we ignore the file app/DevelMain.hs. There is no need for app/devel.hs so it has been removed in my fork.</p>
+<p>Moreover, wai-devel ignores files in your <code>test/</code> directory.<br />
+This is because wai-devel depends on ide-backend which will attempt to build all files in the current working diretory, including your test directory. This leads to a world of hurt because the test/ directory also has a <code>Main.main</code> function.</p>
+<p><em>Please report an issue if you would like any file ignored during builds.</em></p>
+<h1 id="moved-to-stack">Moved to stack</h1>
+<p>Since the Haskell community has moved in this direction, so has wai-devel.<br />
+wai-devel only depends on cabal in that stack and ide-backend depend on Cabal the library. Otherwise, the cabal binary is not used and hasn’t been tested to work with wai-devel.</p>
+<h2 id="compatible-versions-of-ghc">Compatible versions of GHC</h2>
+<p>Currently wai-devel is built and tested against:</p>
+<ul>
+<li>GHC-7.8</li>
+<li>GHC-7.10</li>
+</ul>
+<h2 id="regarding-file-watching">Regarding file watching</h2>
+<p>wai-devel watches for file changes on files with the following extensions:</p>
+<ul>
+<li>hamlet</li>
+<li>shamlet</li>
+<li>julius</li>
+<li>lucius</li>
+<li>hs</li>
+<li>yaml</li>
+</ul>
+<p>When a change takes place wai-devel will recompile and re-run your application on localhost:3001 or display an error if any on the browser at localhost:3000</p>
+<p><em>If you would want another extension added to the list of file extensions to watch for please report it as an issue.</em></p>
+<h2 id="command-line-arguments">Command line arguments</h2>
+<p>Currently wai-devel takes only these two arguments and the two are optional. If you feel the need for more arguments please report it as an issue on github.</p>
+<ul>
+<li><p>-r <em>to turn off reverse proxying</em> If this is turned on you will access your application at an address that is specific to your web application or web framework.</p></li>
+<li><p>–show-iface [hi file] <em>passes this command to ghc</em> Same as ghc –show-iface</p></li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

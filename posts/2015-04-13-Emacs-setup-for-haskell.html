@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Emacs setup for haskell. urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Emacs setup for haskell.</h1>
+          <div class="info">
+    Posted on April 13, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: 
+    
+</div>
+
+<p>This post assumes that you have a little experience with emacs and maybe some experience writing haskell.<br />
+I assume that you’re using emacs and not xemacs or something else and therefore your init file is ~/.emacs. You can also find your init file via <code>M-: RET (find-file user-init-file) RET</code>.<br />
+To set up emacs so that you can install packages add the following to your ~/.emacs:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">require</span> 'package)
+(add-to-list 'package-archives
+  '(<span class="st">&quot;melpa&quot;</span> . <span class="st">&quot;http://melpa.milkbox.net/packages/&quot;</span>) <span class="kw">t</span>)
+(package-initialize)</code></pre></div>
+<p>I personally believe that melpa alone is enough.</p>
+<p>Then to install packages:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET &lt;package-name&gt; RET RET</code></pre></div>
+<p>Every time you make a save your ~/.emacs file instead of restarting emacs to make sure everything is still okay, run</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x eval-buffer RET</code></pre></div>
+<p>To install haskell packages (I assume you already have cabal) use:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">$ cabal install &lt;package-name&gt;</code></pre></div>
+<p>Let’s get started. Here’s a list of all the things that we’ll need.<br />
+You can chose to install them all now or install them as we go on and as you see the need for them.</p>
+<h4 id="haskell-packages-to-install">Haskell packages to install</h4>
+<ul>
+<li><a href="https://github.com/chrisdone/structured-haskell-mode">structured-haskell-mode</a></li>
+<li><a href="http://hackage.haskell.org/package/hasktags">hasktags</a></li>
+</ul>
+<h4 id="emacs-packages-to-install">Emacs packages to install</h4>
+<ul>
+<li><a href="http://www.flycheck.org/">flycheck</a></li>
+<li><a href="https://github.com/chrisdone/haskell-flycheck">flycheck-haskell</a></li>
+<li><a href="https://github.com/haskell/haskell-mode/wiki">haskell-mode</a></li>
+<li><a href="www.emacswiki.org/emacs/RainbowDelimiters">rainbow-delimiters</a></li>
+<li>shm (the emacs package isn’t called structured-haskell-mode but shm)</li>
+<li><a href="http://www.emacswiki.org/emacs/AceJump">ace-jump-mode</a></li>
+<li><a href="http://www.emacswiki.org/emacs/AutoComplete">auto-complete-mode</a></li>
+</ul>
+<h2 id="setting-up-the-path-for-emacs.">Setting up the PATH for emacs.</h2>
+<p>To have emacs point to where your haskell packages are installed add this to your ~/.emacs:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">let</span> ((my-cabal-path (expand-file-name <span class="st">&quot;~/.cabal/bin&quot;</span>)))
+  (setenv <span class="st">&quot;PATH&quot;</span> (concat my-cabal-path <span class="st">&quot;:&quot;</span> (getenv <span class="st">&quot;PATH&quot;</span>)))
+  (add-to-list 'exec-path my-cabal-path))</code></pre></div>
+<p>You can replace <code>&quot;~/.cabal/bin&quot;</code> with a sandbox but I had issues with this when the sandbox cabal version didn’t keep up with the universal packages. So I would recommend you use the user-wide one ~/.cabal/bin.<br />
+<em>Mind you, you can can use this to add anything to your emacs specific PATH.</em></p>
+<h2 id="haskell-mode">Haskell mode</h2>
+<p>I hope you are already using haskell mode but if you aren’t it’s okay. This post is for you. This is going to be the major mode that you will be using. It would be wise to read the <a href="https://github.com/haskell/haskell-mode/wiki">haskell mode wiki</a>.</p>
+<p>Install haskell-mode from within emacs.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET haskell-mode RET RET</code></pre></div>
+<p>To enable the minor mode which activates keybindings associated with interactive mode, add:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">require</span> 'haskell-interactive-mode)
+(<span class="kw">require</span> 'haskell-process)
+(add-hook 'haskell-mode-hook 'interactive-haskell-mode)</code></pre></div>
+<p><em>Make sure to use haskell-interactive-mode as done above and not inferor haskell mode which has been deprecated.</em></p>
+<p>To jump to the import list add this. <em>I prefer to bind this to f12.</em></p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(define-key haskell-mode-map [f12] 'haskell-navigate-imports)</code></pre></div>
+<p>To get import suggestions. For adding, removing or commenting out of imports and a process log use:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(custom-set-variables
+  '(haskell-process-suggest-remove-import-lines <span class="kw">t</span>)
+  '(haskell-process-auto-import-loaded-modules <span class="kw">t</span>)
+  '(haskell-process-log <span class="kw">t</span>))</code></pre></div>
+<p>General emacs haskell-mode bindings from the haskell-mode wiki:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-l&quot;</span>) 'haskell-process-load-or-reload)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-`&quot;</span>) 'haskell-interactive-bring)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-t&quot;</span>) 'haskell-process-do-type)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-i&quot;</span>) 'haskell-process-do-info)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-c&quot;</span>) 'haskell-process-cabal-build)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-k&quot;</span>) 'haskell-interactive-mode-clear)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c c&quot;</span>) 'haskell-process-cabal)
+(define-key haskell-mode-map (kbd <span class="st">&quot;SPC&quot;</span>) 'haskell-mode-contextual-space)</code></pre></div>
+<p><em>It will always prompt to begin a new project. Don’t fight it, just go with it. It won’t create any files.</em></p>
+<p>Same as the ones above but are good to have in cabal-mode i.e when one is in the repl.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-`&quot;</span>) 'haskell-interactive-bring)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c C-k&quot;</span>) 'haskell-interactive-mode-clear)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c C-c&quot;</span>) 'haskell-process-cabal-build)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c c&quot;</span>) 'haskell-process-cabal)</code></pre></div>
+<p>Which GHCi process will we use in our repl? I prefer using cabal-repl instead of ghci because it loads one entire project automatically. If you’re using a modern version of cabal I would go with cabal repl.<br />
+To use cabal-repl as your GHCi process add the following:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(custom-set-variables
+  '(haskell-process-type 'cabal-repl))</code></pre></div>
+<h5 id="tags">Tags</h5>
+<p>You sometimes need to jump to the definition of a function that you are using in the same file. For this we have tags within haskell-mode. It however requires the haskell package hasktags so:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">$ cabal install hasktags</code></pre></div>
+<p>To enable generation of tags when you save a file use:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(custom-set-variables
+  '(haskell-tags-on-save <span class="kw">t</span>))</code></pre></div>
+<p>To use both ghci and tags for jumping to a definition you can use the following. This way when GHCi fails because the code can’t compile it will fall back to tags.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(define-key haskell-mode-map (kbd <span class="st">&quot;M-.&quot;</span>) 'haskell-mode-jump-to-def-or-tag)</code></pre></div>
+<p><em>This will be generating a file with the name TAGS within your projects. It’s a good idea to put this file in your .gitignore</em></p>
+<p>To have what we see in our repl look good we could use, <a href="https://github.com/haskell/haskell-mode/wiki/Haskell-Interactive-Mode-REPL#printing-mode">printing in the repl</a></p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">setq</span> haskell-interactive-mode-eval-mode 'haskell-mode)</code></pre></div>
+<h5 id="debugging">Debugging</h5>
+<p>Check out how to use the <a href="https://github.com/haskell/haskell-mode/wiki/Haskell-Interactive-Mode-Debugger">debugger in haskell mode</a>.</p>
+<h5 id="autocompletion.">Autocompletion.</h5>
+<p>Since ghc version 7.8 you can use the <code>TAB</code> key to auto complete suggestions.</p>
+<h2 id="flycheck-and-haskell-flycheck.">Flycheck and haskell-flycheck.</h2>
+<p>These are gems my friend. GEMS I TELL YA!!</p>
+<p>They compliment each other to compile your code in the background each time you save the file you are working on. If there is an error in your code the line with an error is underlined in red and in case of a warning it’s underlined in yellow. You get a pop up when you hover over the error with the mouse, the minibuffer also shows the error when the cursor is over the line in question. This means you don’t have to wait for compilation to fix those tiny errors.</p>
+<p>Much to my surprise <a href="http://www.flycheck.org/">flycheck</a> and <a href="https://github.com/chrisdone/haskell-flycheck">haskell-flycheck</a> also give style suggestions as I assume HLint would top of error and warning checking.</p>
+<p>I previously used ghc-mod for the purposes for which I am using flycheck now. I prefer flycheck because it does this for many more langauges.</p>
+<p>To install Install flycheck and haskell-flycheck from within emacs.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET flycheck flycheck-haskell RET RET</code></pre></div>
+<p>To use flycheck add this to your .emacs</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(add-hook 'after-init-hook #'global-flycheck-mode)
+(eval-after-load 'flycheck
+  '(add-hook 'flycheck-mode-hook #'flycheck-haskell-setup))</code></pre></div>
+<h2 id="structured-haskell-mode-and-shm">Structured Haskell Mode and shm</h2>
+<p>The emacs package <code>shm</code> depends on the haskell package <code>structured-haskell-mode</code> so you have to install both. {% highlight bash%} $ cabal install structured-haskell-mode ```</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET shm RET RET</code></pre></div>
+<p>It’s the most impressive haskell in emacs “feature” for me. You should definitely read the <a href="https://github.com/chrisdone/structured-haskell-mode#structured-haskell-mode">structured haskell mode README</a> if you want to know how to use it well.</p>
+<p>It helps you write in a clear and consistent style all through. It also helps with those little things that IDEs do and text editors don’t plus much more. You’ll understand what I mean after you use it.</p>
+<p>To enable this I you should add the following to your init file:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(add-hook 'haskell-mode-hook 'structured-haskell-mode)
+(define-key shm-map (kbd <span class="st">&quot;C-c C-s&quot;</span>) 'shm/case-split)</code></pre></div>
+<p>If you try structured haskell mode and you don’t like it replace the above with:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)</code></pre></div>
+<h2 id="rainbow-delimiters.">Rainbow delimiters.</h2>
+<p>I haven’t yet actually felt the value addition of this yet but it’s purpose it to show you brackets in different colours so that it’s simple to identify when you have an open bracket or something.</p>
+<p>You can check it out in the <a href="http://www.emacswiki.org/emacs/RainbowDelimiters">rainbow delimiters wiki page</a>.</p>
+<p>It’s not very useful when I have structured haskell mode which automatically closes brackets. I’ll probably unistall it. You can however try it if you want.</p>
+<p>Installing rainbow delimiters mode:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET rainbow-delimiters RET RET</code></pre></div>
+<p>For usage:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(<span class="kw">require</span> 'rainbow-delimiters)
+(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)</code></pre></div>
+<h2 id="auto-compelete-mode">Auto-compelete mode</h2>
+<p>This does just that. I’m not sure if there’s need for it or haskell-mode already does auto complete but I love it because I get autocomplete in other modes not just haskell mode.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(package-initialize) (global-auto-complete-mode)
+(add-hook 'prog-mode-hook 'auto-complete-mode) <span class="co">;; Added for all programming modes.</span></code></pre></div>
+<h2 id="ace-jump-mode.">Ace jump mode.</h2>
+<p>This also has nothing to do with haskell it’s just really handy and you can use it anywhere. Use it to jump to a letter that is at the start of a word. It eliminates a whole lot of scrolling about.</p>
+<p>Installing ace jump mode:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">M-x RET package-install RET ace-jump-mode RET RET</code></pre></div>
+<p>To use it, add the following to your init file:</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp">(add-to-list 'load-path <span class="st">&quot;which-folder-ace-jump-mode-file-in/&quot;</span>)
+(<span class="kw">require</span> 'ace-jump-mode)
+(define-key global-map (kbd <span class="st">&quot;C-c SPC&quot;</span>) 'ace-jump-mode)
+(<span class="kw">setq</span> ace-jump-mode-gray-background) <span class="co">;; This line makes it work in black background coloured terminals.</span></code></pre></div>
+<p><em>You can use ace-jump mode with other backgrounds not just grey, I use grey because it just worked great for me.</em></p>
+<h4 id="stuff-that-i-think-would-be-fun-to-try-out">Stuff that I think would be fun to try out:</h4>
+<ul>
+<li>present <em>(this failed to install due to ghc 7.10 dependency issues so I will update this post regarding it after I have used it.)</em></li>
+</ul>
+<h2 id="handy-keybindings-to-remember">Handy keybindings to remember:</h2>
+<p>There are many more of course but I really love these:</p>
+<table>
+<colgroup>
+<col width="11%" />
+<col width="88%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Key binding</th>
+<th align="center">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">C-j</td>
+<td align="center">Newline indent, also automatically adds a newline and comma when creating a list.</td>
+</tr>
+<tr class="even">
+<td align="center">M-^</td>
+<td align="center">Delete indentation relative to parent. Opposite of C-j.</td>
+</tr>
+<tr class="odd">
+<td align="center">M-a</td>
+<td align="center">Jump to start of a parent</td>
+</tr>
+<tr class="even">
+<td align="center">)</td>
+<td align="center">Jump to end of a parent</td>
+</tr>
+<tr class="odd">
+<td align="center">M-r</td>
+<td align="center">Raise the current node to replace its parent</td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-s</td>
+<td align="center">Case split.</td>
+</tr>
+<tr class="odd">
+<td align="center">M-;</td>
+<td align="center">Wrap in multiline comment i.e <code>{- &lt;code&gt;  -}</code></td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-q</td>
+<td align="center">Works with C-j to add imports, this qualifies/unqualifies them.</td>
+</tr>
+<tr class="odd">
+<td align="center">M-k</td>
+<td align="center">Kill/paste node taking indentation to account.</td>
+</tr>
+<tr class="even">
+<td align="center">C-k</td>
+<td align="center">Kill/paste line taking indentation to account.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-y</td>
+<td align="center">Yank/copy take indentation into account</td>
+</tr>
+<tr class="even">
+<td align="center">C- `</td>
+<td align="center">Start the REPL buffer. The project not loaded in it.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-c C-l</td>
+<td align="center">Compile and load a Haskell module into your REPL.</td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-c</td>
+<td align="center">Compile the whole Cabal project.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-x `</td>
+<td align="center">Jump to the next error, or you can move your cursor to an error in the REPL and hit <code>RET</code> to jump to it.</td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-k</td>
+<td align="center">Clear screen in REPL.</td>
+</tr>
+<tr class="odd">
+<td align="center">F12</td>
+<td align="center">Jump to import list.</td>
+</tr>
+<tr class="even">
+<td align="center">C-u C-c c</td>
+<td align="center">To run an arbitrary Cabal command.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-c c</td>
+<td align="center">To run some common Cabal commands.</td>
+</tr>
+<tr class="even">
+<td align="center">C-u C-c C-t</td>
+<td align="center">To print the type of the top-level identifier at point.</td>
+</tr>
+<tr class="odd">
+<td align="center">C-c C-t</td>
+<td align="center">To print the type of the top-level identifier at point in the REPL and in the message buffer.</td>
+</tr>
+<tr class="even">
+<td align="center">C-c C-i</td>
+<td align="center">To print the info of the identifier at point in a buffer. Hit q to close.</td>
+</tr>
+<tr class="odd">
+<td align="center">M-.</td>
+<td align="center">Jump to definition or tag.</td>
+</tr>
+<tr class="even">
+<td align="center">C-c SPC</td>
+<td align="center">Use ace jump mode.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="finally">Finally</h2>
+<p>All that init file code in one file that you can conveniently paste in your init file.</p>
+<div class="sourceCode"><pre class="sourceCode lisp"><code class="sourceCode commonlisp"><span class="co">;; --------- Package lists</span>
+(<span class="kw">require</span> 'package)
+(add-to-list 'package-archives
+  '(<span class="st">&quot;melpa&quot;</span> . <span class="st">&quot;http://melpa.milkbox.net/packages/&quot;</span>) <span class="kw">t</span>)
+(package-initialize)
+<span class="co">;; --------- &lt;/ Package lists</span>
+
+
+<span class="co">;; ---------------- Haskell-mode</span>
+(<span class="kw">let</span> ((my-cabal-path (expand-file-name <span class="st">&quot;~/.cabal/bin&quot;</span>)))
+  (setenv <span class="st">&quot;PATH&quot;</span> (concat my-cabal-path <span class="st">&quot;:&quot;</span> (getenv <span class="st">&quot;PATH&quot;</span>)))
+  (add-to-list 'exec-path my-cabal-path))
+
+(<span class="kw">require</span> 'haskell-interactive-mode)
+(<span class="kw">require</span> 'haskell-process)
+(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+  
+<span class="co">; Makes editor focus on imports block in source file</span>
+<span class="co">;; (eval-after-load 'haskell-mode</span>
+<span class="co">;;          '(define-key haskell-mode-map [f12] 'haskell-navigate-imports))</span>
+(define-key haskell-mode-map [f12] 'haskell-navigate-imports)
+
+<span class="co">;;; For module import suggestions.</span>
+(custom-set-variables
+  '(haskell-process-suggest-remove-import-lines <span class="kw">t</span>)
+  '(haskell-process-auto-import-loaded-modules <span class="kw">t</span>)
+  '(haskell-process-log <span class="kw">t</span>))
+
+<span class="co">;; Key bindings from the wiki</span>
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-l&quot;</span>) 'haskell-process-load-or-reload)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-`&quot;</span>) 'haskell-interactive-bring)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-t&quot;</span>) 'haskell-process-do-type)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-i&quot;</span>) 'haskell-process-do-info)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-c&quot;</span>) 'haskell-process-cabal-build)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c C-k&quot;</span>) 'haskell-interactive-mode-clear)
+(define-key haskell-mode-map (kbd <span class="st">&quot;C-c c&quot;</span>) 'haskell-process-cabal)
+(define-key haskell-mode-map (kbd <span class="st">&quot;SPC&quot;</span>) 'haskell-mode-contextual-space)
+
+<span class="co">; The below commands pretty much match the ones above, but are handy to have in cabal-mode, too:</span>
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-`&quot;</span>) 'haskell-interactive-bring)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c C-k&quot;</span>) 'haskell-interactive-mode-clear)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c C-c&quot;</span>) 'haskell-process-cabal-build)
+(define-key haskell-cabal-mode-map (kbd <span class="st">&quot;C-c c&quot;</span>) 'haskell-process-cabal)
+
+<span class="co">; ghci process within emacs</span>
+(custom-set-variables
+  '(haskell-process-type 'cabal-repl))
+
+<span class="co">; Hasktags</span>
+<span class="co">; customization variable to enable tags generation on save</span>
+(custom-set-variables
+  '(haskell-tags-on-save <span class="kw">t</span>))
+
+(define-key haskell-mode-map (kbd <span class="st">&quot;M-.&quot;</span>) 'haskell-mode-jump-to-def-or-tag)
+
+<span class="co">;printing mode</span>
+(<span class="kw">setq</span> haskell-interactive-mode-eval-mode 'haskell-mode)
+<span class="co">;; ---------------- &lt;/ Haskell-mode</span>
+
+<span class="co">;; --------------- flycheck</span>
+(add-hook 'after-init-hook #'global-flycheck-mode)
+(eval-after-load 'flycheck
+  '(add-hook 'flycheck-mode-hook #'flycheck-haskell-setup))
+<span class="co">;; --------------- &lt;/ flycheck</span>
+
+
+<span class="co">;; -------------- structured haskell mode</span>
+(<span class="kw">require</span> 'shm)
+<span class="co">;; use indentation from structured haskell mode</span>
+(add-hook 'haskell-mode-hook 'structured-haskell-mode)
+(define-key shm-map (kbd <span class="st">&quot;C-c C-s&quot;</span>) 'shm/case-split)
+<span class="co">;; -------------- structured haskell mode</span>
+
+
+<span class="co">;; ------------------- Auto complete mode</span>
+(package-initialize) (global-auto-complete-mode)
+(add-hook 'prog-mode-hook 'auto-complete-mode) <span class="co">;; Added for all programming modes.</span>
+<span class="co">;; -------------------- &lt;/ Auto complete mode</span>
+
+
+<span class="co">;; -------------------- Ace jump</span>
+(add-to-list 'load-path <span class="st">&quot;which-folder-ace-jump-mode-file-in/&quot;</span>)
+(<span class="kw">require</span> 'ace-jump-mode)
+(define-key global-map (kbd <span class="st">&quot;C-c SPC&quot;</span>) 'ace-jump-mode)
+(<span class="kw">setq</span> ace-jump-mode-gray-background) <span class="co">;; Otherwise it will set background to same as emacs backgorund in terminal.</span>
+<span class="co">;; ---------------------- &lt;/ ace jump</span>
+
+
+<span class="co">;; --------- Rainbow delimiters</span>
+<span class="co">; show each level of parenthesis or braces in a different color.</span>
+(<span class="kw">require</span> 'rainbow-delimiters)
+(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+<span class="co">;;--------- &lt;/ Rainbow delimiters</span></code></pre></div>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

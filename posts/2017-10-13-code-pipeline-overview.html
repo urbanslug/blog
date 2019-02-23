@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Pipeline as Code - overview urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Pipeline as Code - overview</h1>
+          <div class="info">
+    Posted on October 13, 2017
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/Devops.html">Devops</a>, <a href="../tags/CI.html">CI</a>, <a href="../tags/CD.html">CD</a>
+    
+</div>
+
+<p>Pipeline in this context refers to the collection of steps software goes through from planning to deployment. Pipeline as code is having this pipeline be stored in an executable or/and a version controllable way.</p>
+<p>Why does this matter? A code pipeline that is executable and/or version controllable:</p>
+<ul>
+<li>is easy to keep tracking of as changes occur</li>
+<li>makes it possible to keep track of the actual and all possible agents of change (people and/or hosts)</li>
+<li>reduces repitition and consequently saves time</li>
+<li>is easy to delegate parts of to tools or completely automate</li>
+<li>has clear and consistent history</li>
+<li>has immutable code pipeline history meaning we can revert to previous stable state</li>
+<li>in case of failure, the broken state can be reproduced and post moterms performed</li>
+<li>is much it easier to maintain and keep track of its components in complex architechtures such as microservices</li>
+<li>makes it much easier to build tools that lower the bar of entry into ops such as running ansible plays and chatops bots</li>
+</ul>
+<p>Pipeline as code is the next step in planning, provisioning, configuration management and application deployment, continuous integration and continuous deployment.</p>
+<p>It’s also a great way to manage growing complexity in terms of both the architechture and teams involved. I just threw a number of buzzwords around so let me explain each of them and why they matter.</p>
+<blockquote>
+<p>It’s important to note that the tools used in each step have a lot of overlap between them and a tool is likely to show up in multple sections.</p>
+</blockquote>
+<h3 id="planning">Planning</h3>
+<p>Since we can’t execute plans as code, yet; we have to settle for version controlling them. Save your execution plans as documentation in a <code>docs/</code> directory or a git submodule (or any other format) files and put them in version control.</p>
+<p>You can also commit <code>.org</code> files you created during meetings, export them into <code>.md</code> and add them as docs.</p>
+<blockquote>
+<p>Tools: version control systems</p>
+</blockquote>
+<h3 id="provisioning">Provisioning</h3>
+<p>Provision is the past participle of provide, in this context it means providing everything that your application will need to run.</p>
+<p>It is an implementation of the infrastructure diagram/plan; it involves the to run the software. That is: where to host it, how many servers, OS versions, server requirements, dependencies, file system, directory structure. The answer to whether to use a vendor solution like AWS Lamda, or ECS would lie here.</p>
+<p>You probably need to do this once or at most 3 times <strong>ever</strong> unless you keep changing core infrastructure. You could put this in an ansible script, ECS task definitions, docker images, Amazon Machine Images, virtual machine images et cetera.</p>
+<blockquote>
+<p>Tools: Packer, Terraform, Ansible, Kubernetes pods, ECS clusters.</p>
+</blockquote>
+<h3 id="configuration-management">Configuration management</h3>
+<div class="figure">
+<img src="https://i.giphy.com/media/3oz8xOOWHS2MYEJXXO/giphy.gif" />
+
+</div>
+<p>Applications today are a collection of tools combined to solve a need. In the example of a simple web application we have a database, an app, an app server and a webserver. Configuration management is basically managing the glue that binds these tools together; which commands to run, which services to start and stop and when, arguments, environment variables, order of running them and so forth.</p>
+<blockquote>
+<p>Tools: ansible vars/vault, ansible plays</p>
+</blockquote>
+<h3 id="application-deployment">Application deployment</h3>
+<p>This is putting all the parts of the application that need to run on their respective servers, starting them and making sure they’re all working together and correctly. In this case you have vendor tools such as Identity and Access Management from AWS which you can build on top of. This will mean having the following in an executable and version controllable form: the deploy server, their user, deploy scripts avaible to them, actual deploy commands to run and the order in which to run them. You will only need to this during the first deployment or when something goes terribly wrong and you have to rollback but even then it’s still going to be a few commands or just one. You can also use other tools for deployment such as bots.</p>
+<blockquote>
+<p>Tools: ansible, puppet, chef</p>
+</blockquote>
+<h3 id="continuous-integration">Continuous integration</h3>
+<p>This is running tests and building the application to catch errors either in the code or the way parts of it integrate with each other. Running tests, style checks and catching errors in the code.</p>
+<blockquote>
+<p>Tools: travis ci, circle ci, gitlab ci</p>
+</blockquote>
+<h3 id="continuous-deployment">Continuous deployment</h3>
+<p>Once the continuous integration tests run and pass, have a tool compile a binary or create a commit, push it to a deploy environment and make sure it’s running.</p>
+<p>This is comparable to continuous delivery which accordingo to Wikipedia: <a href="https://en.wikipedia.org/wiki/Continuous_delivery">“Continuous Delivery means that the team ensures every change can be deployed to production but may choose not to do it, usually due to business reasons”</a></p>
+<blockquote>
+<p>Tools: travis-ecs-deploy, deploy scripts, terraformy</p>
+</blockquote>
+<p> </p>
+<p> </p>
+<p>In this post I’ve explained how the pipeline can be presented as code but only as seperate components not how these components can be combined to work as one.</p>
+<p>In the next post I’ll explain how you can use free tools and some open source tools to create a code pipeline that runs from provisioning, configuration management, version control, continuous integration and continuous deployment requiring very little input from devops and with as little complexity as possible.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

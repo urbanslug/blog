@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>wai-devel final submission. urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>wai-devel final submission.</h1>
+          <div class="info">
+    Posted on August 21, 2015
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/Programming.html">Programming</a>, <a href="../tags/Haskell.html">Haskell</a>, <a href="../tags/GSoC.html">GSoC</a>, <a href="../tags/WAI.html">WAI</a>, <a href="../tags/wai-devel.html">wai-devel</a>
+    
+</div>
+
+<p>This is the final day of code submissions to Google for Google Summer of Code. So it’s only fair that I give the community a report on the current state of affairs regarding wai-devel.<br />
+This is more of a very detailed changelog than a blog post about wai-devel.</p>
+<h2 id="what-wai-devel-expects-from-your-application.">What wai-devel expects from your application.</h2>
+<p><strong>NOTHING</strong><br />
+Yes, wai-devel expects nothing from your application. However, your application shall receive a port number through the environment variable <code>PORT</code>.</p>
+<p><em>UPDATE:</em> Due to it’s reliance on ide-backend you also have to set the environment variable <code>GHC_PACKAGE_PATH</code></p>
+<h3 id="what-port-is-used-for">What PORT is used for:</h3>
+<p>Your application shall listen for connections on <code>localhost:&lt;PORT&gt;</code> wai-devel by default creates a reverse proxy from port number 3000 to your application which is listening in on PORT.<br />
+You can change the port from the default port 3000 by setting the environment variable PORT yourself.</p>
+<p>wai-devel takes PORT and then cycles through various port numbers adding 1 to PORT to find a port that is free, sets that as the destination port and changes the PORT environment variable to that destination port. Therefore we can reverse proxy from PORT to a random port.</p>
+<p>Reverse proxying is important for error reporting, future proofing and other ways of abstracting away the services wai-devel provides to your application.</p>
+<h2 id="more-reliable-dirtiness-checking.">More reliable dirtiness checking.</h2>
+<p>wai-devel will use the the module you have chosen to find the files to watch for changes in. It watches the files it imports and their Template Haskell dependencies as well as the cabal file.</p>
+<h2 id="compatibility-with-haskell-wai-applications.">Compatibility with Haskell wai-applications.</h2>
+<p>wai-devel works with your usual yesod scaffold from yesod-bin out of the box and should work with other haskell wai apps as long as they use the PORT environment variable.</p>
+<p>You can pass the filepath and function to run via command line arguments <code>--path</code> or <code>-p</code> and function <code>--function</code> or <code>-f</code>. When these aren’t passed it assumes Application.develMain (borrowed from yesod).</p>
+<h2 id="yet-to-come.">Yet to come.</h2>
+<p>I will be actively developing wai-devel well after Google Summer of Code is over (that is today).</p>
+<p>The following are coming next:</p>
+<ul>
+<li>Show build progress in the browser.</li>
+<li>Provide a dashboard page with compilation status, garbage collection statistics, and other useful meta-information.</li>
+<li>Port to Windows. (This depends on ide-backend getting ported to Windows.)</li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>

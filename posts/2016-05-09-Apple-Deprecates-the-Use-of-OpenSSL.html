@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <link rel="apple-touch-icon" sizes="57x57" href="../images/favicon/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="../images/favicon/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="../images/favicon/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="../images/favicon/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="../images/favicon/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="../images/favicon/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="../images/favicon/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="../images/favicon/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="../images/favicon/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../images/favicon/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/favicon/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <title>Apple Deprecates the Use of OpenSSL. urbanslug</title>
+    </head>
+    <body>
+      <div id="wrapper">
+        <header>
+          <div id="header-content">
+            <nav>
+                <a href="../">Home</a>
+                <a href="../notes.html">Notes</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../subscribe.html">Subscribe</a>
+            </nav>
+          </div><!--header-content-->
+        </header>
+        <article>
+          <h1>Apple Deprecates the Use of OpenSSL.</h1>
+          <div class="info">
+    Posted on May  9, 2016
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="../tags/OpenSSL.html">OpenSSL</a>, <a href="../tags/Apple.html">Apple</a>, <a href="../tags/OSX.html">OSX</a>
+    
+</div>
+
+<p>During a brew upgrade I noticed that apple has deprecated the use of OpenSSL.</p>
+<p>Apple has deprecated use of OpenSSL in favour of its own TLS and crypto libraries</p>
+<pre><code>==&gt; Downloading https://homebrew.bintray.com/bottles/openssl-1.0.2h.el_capitan.bottle.tar.gz
+######################################################################## 100.0%
+==&gt; Pouring openssl-1.0.2h.el_capitan.bottle.tar.gz
+==&gt; Caveats
+A CA file has been bootstrapped using certificates from the system
+keychain. To add additional certificates, place .pem files in
+  /usr/local/etc/openssl/certs
+
+and run
+  /usr/local/opt/openssl/bin/c_rehash
+
+This formula is keg-only, which means it was not symlinked into /usr/local.
+
+Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries
+
+Generally there are no consequences of this for you. If you build your
+own software and it requires this formula, you'll need to add to your
+build variables:
+
+    LDFLAGS:  -L/usr/local/opt/openssl/lib
+    CPPFLAGS: -I/usr/local/opt/openssl/include</code></pre>
+<p>I know people are getting tired of all openSSL holes but this sounds like PR or overkill. Why not use something that exists? Why not name the lib they are favouring over openSSL? Is this security by obscurity or do they assume their users won’t understand it? Notice this: <em>“Generally there are no consequences of this for you.”</em></p>
+<p>I’ve heard good things about libreSSL which I would assume is what they’d use. Since it’s a BSD thing and OSX is BSD.</p>
+<p>I wonder what the future of OpenSSL is though this has been a long time coming. I also wonder whether we’ll start seeing more of this in the Linux server world.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+
+        </article>
+
+        <footer>
+  <p>All work is under the terms of the <a href="http://www.gnu.org/copyleft/fdl.html">GNU Free Documentation License, Version 1.3</a></p>
+  <p>Generated with <a href="https://jaspervdj.be/hakyll/">Hakyll</a>.</p>
+        </footer>
+      </div> <!-- #wrapper -->
+    </body>
+</html>
