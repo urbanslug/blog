@@ -26,6 +26,6 @@ pages:
     - stack exec blog build
   artifacts:
     paths:
-      - _site
+      - public
   only:
     - master
