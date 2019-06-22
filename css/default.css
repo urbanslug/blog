@@ -151,6 +151,10 @@ table, th, td {
     border: 1px solid #DFDFDF;
 }
 
+img {
+    max-width: 800px;
+}
+
 footer {
     color: black;
     text-align: center;
