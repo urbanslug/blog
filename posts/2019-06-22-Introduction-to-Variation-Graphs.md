@@ -96,13 +96,11 @@ and the little that we know about genomes has been an issue.
 
 # Graphs
 A [graph] is a series of vertices (also known as nodes) and edges.
-
 ![all graphs]
 
-For genomic graphs we focus on directed acyclic graphs.  
+For genome graphs we focus on directed acyclic graphs.  
 A **walk** in a directed graph is traversal from one node to another through an
 edge for example, *a* to *b* to *d* or *a* to *c* to *d*.
-
 ![directed graph]
 
 ## The current state of affairs
@@ -167,7 +165,7 @@ variation graph because viruses don’t have proofreading in their genetic code.
 Proofreading is a process in which the cell ensures that it has copied the
 genetic code correctly in preparation for cell division. Without proofreading 
 errors will be common leading to high mutation rates.
-Another big advantage is the size of the organism; the reference stands at
+Another advantage is the size of its genome; the reference stands at
 15,206 bases which translates to 15206 bytes or 14.8 KB of memory.
 
 # Generating a variation graph
