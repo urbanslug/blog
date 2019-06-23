@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Imports and exports as documentation.
+title: Imports and exports as documentation
 date: 2015-08-22 20:16:12
 tags: Programming, Haskell
 ---

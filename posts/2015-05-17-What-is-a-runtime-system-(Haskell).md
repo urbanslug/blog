@@ -1,6 +1,6 @@
 ---
 layout: post
-title: What is a runtime system (Overview).
+title: What is a runtime system (Overview)
 date: 2015-05-22 11:36:45
 Categories: Haskell, RTS
 ---

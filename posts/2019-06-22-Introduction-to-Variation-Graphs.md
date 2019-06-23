@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Introduction to Variation Graphs
+title: An Introduction to Variation Graphs
 date: 2019-06-22 17:57:41
 tags: biology, variation graphs, graphs, bioinformatics, genetics
 ---

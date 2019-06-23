@@ -1,5 +1,5 @@
 ---
-title: wai-devel final submission.
+title: wai-devel final submission
 date: 2015-08-21 19:14:34
 tags: Programming, Haskell, GSoC, WAI, wai-devel
 ---

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Google Summer of Code (2015).
+title: Google Summer of Code (2015)
 date: 2015-07-19 13:30:44
 tags: Programming, GSoC, Yesod, Yesod-Devel
 ---

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Scope in inheritance and composition in C++.
+title: Scope in inheritance and composition in C++
 date: 2014-12-08 18:00:33
 tags: Programming, OOP, C++
 ---

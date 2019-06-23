@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Object Oriented Programming in C++.
+title: Object Oriented Programming in C++
 date: 2014-12-08 17:30:24
 tags: Programming, C++, OOP
 ---

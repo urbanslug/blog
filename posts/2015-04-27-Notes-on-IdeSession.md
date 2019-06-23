@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Notes on IdeSession.
+title: Notes on IdeSession
 date: 2015-04-27 13:23:14
 Categories: Haskell, GHC
 ---

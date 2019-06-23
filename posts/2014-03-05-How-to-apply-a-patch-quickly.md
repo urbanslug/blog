@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  How to quickly apply a patch.
+title:  How to quickly apply a patch
 date: 2014-03-05 15:34:45
 tags: Programming, General
 ---

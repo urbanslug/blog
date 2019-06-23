@@ -1,6 +1,6 @@
 ---
 layout: post
-title: My Gnome 3 experience.
+title: My Gnome 3 experience
 date: 2014-12-09 19:41:23
 Categories: Linux, Gnome
 ---

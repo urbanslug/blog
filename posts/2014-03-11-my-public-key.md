@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  My public key.
+title:  My public key
 date: 2014-03-11 20:34:12
 tags: Cryptography, Email
 ---
