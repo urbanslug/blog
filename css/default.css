@@ -1,10 +1,11 @@
 /* Fonts */
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:100,300,300italic,400,400italic,600,700,700italic);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans|Noto+Serif+SC:100,300,300italic,400,400italic,600,700,700italic);
+
 html,
 body {
     color: rgba(0,0,0,0.87);
     font-size: 100%;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Noto Serif SC', sans-serif;
     margin: 0px;
     padding:0;
     height: 100%;
@@ -21,6 +22,7 @@ header {
     position:fixed;
     padding: 12px 0px 12px 0px;
     width: 100%;
+    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0,0,0,0.26);
@@ -47,6 +49,7 @@ div#blog-title {
     font-size: 75px;
     margin: auto;
     text-align: center;
+    font-family: 'Open Sans', sans-serif;
 }
 
 div#wrapper{
@@ -168,6 +171,8 @@ footer {
     font-weight: 300;
     font-size: small;
 }
+
+
 
 li.carnival-comment.carnival-branding a {color: #E74C3D; box-sizing: inherit;}
 li.carnival-comment.carnival-branding {width: 175px;}
