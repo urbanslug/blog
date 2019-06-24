@@ -6,10 +6,9 @@ tags: biology, variation graphs, graphs, bioinformatics, genetics
 ---
 
 # Background
-This post is aimed at both programmers and biologists; for this reason,
-I will try to bring the reader up to speed on a topic before going into it. 
-If you feel that you’re already familiar with a concept feel free to skip the 
-sentence, paragraph or even section.
+This post is aimed at both programmers and biologists, for this reason,
+I will bring the reader up to speed on a topic before going into it.
+Feel free to skip a sentence, paragraph or even section if you're familiar with a topic.
 
 ## Genome sequencing
 A **[genome]** is the entire genetic code of an organism. While computational data 
