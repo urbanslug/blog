@@ -70,18 +70,24 @@ There are two broad categories of assembly[4]:
 ## The reference genome
 A [reference genome] is a consensus sequence that accepted as the genome of a 
 species [2]. It’s stored as one long sequence of characters/bases.
-You may wonder “How we can have a known genome of an entire species when every
-individual has a unique genetic code?” or  “If everyone is different, how are
-**humans** [99% chimp]?”.  Well, the answer is that most organism’s genetic code
+You may wonder how we can have a known genome of an entire species when every
+individual has a unique genetic code or how [humans are 99% chimp].
+Well, the answer is that genetic code of most organisms
 is similar and this similarity increases as we narrow down taxonomically. 
 When we say that [a human is closer to a chimp than a monkey] what we mean is
-that we can observe greater variation between the genomes of the two, man+chimp
-vs monkey, than man vs chimp alone.
+that we can observe greater variation between the genomes of the two, man+chimp vs monkey, than man vs chimp alone.
+
+This isn't actual math but may help clear things up.
+```
+variation(combine_genomes(man, chimp), monkey) > variation(man, chimp)
+
+```
+
 
 ## Variation in genomes
-However, there are still differences that make us different from one another and
-they shouldn’t be ignored. A better way to describe them is to say that the
-differences are segregating within the population, 
+However, there are still genomic differences and they should not be ignored.
+_The ignoring of differences is implicit in a linear reference._
+A better way to describe them is to say that the differences are segregating within the population.
 We may also want to carry out a comparison between species or between related
 species which is done in [pangenomics].
 
@@ -93,7 +99,7 @@ that are compared in paternity testing.
 [Graph theory] is an area in math that can help us understand variable
 regions within genomes. The idea of representing genomes as graphs isn’t new,
 however, the low number of tools like [vg] which apply graph theory to genomics
-and the little that we know about genomes has been an issue.
+and the little that we know about genomes has been a drawback.
 
 # Graphs
 A [graph] is a series of vertices (also known as nodes) and edges.
@@ -161,7 +167,7 @@ possible sequences from a population.
 
 ## Variation graphs and RSV
 [Human orthopneumovirus], formerly known as Respiratory Syncytial Virus (RSV),
-are a single-stranded RNA virus and a good candidate for exploration using the
+is a single-stranded RNA virus and a good candidate for exploration using the
 variation graph because viruses don’t have proofreading in their genetic code.
 Proofreading is a process in which the cell ensures that it has copied the
 genetic code correctly in preparation for cell division. Without proofreading,
@@ -223,7 +229,7 @@ We export the graph in dot format and visualize via [graphviz]. Serialization is
 
 [aligned]: https://en.wikipedia.org/wiki/Sequence_alignment
 [assembled]: https://en.wikipedia.org/wiki/Sequence_assembly
-[99% chimp]: https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/ 
+[humans are 99% chimp]: https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/
 [a human is closer to a chimp than a monkey]: https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/
 [graphite]: https://github.com/urbanslug/graphite
 [23andMe]: https://www.23andme.com/en-int/
