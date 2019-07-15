@@ -135,7 +135,7 @@ main = hakyllWith config $ do
                 >>= relativizeUrls
 
 staticFiles :: Pattern
-staticFiles = fromList ["sitemap.xml", "404.html"]
+staticFiles = fromList ["sitemap.xml", "404.html", "CNAME"]
 
 --------------------------------------------------------------------------------
 postCtx :: Context String

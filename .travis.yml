@@ -4,26 +4,19 @@ branches:
   only:
     - master
 
-addons:
-  ssh_known_hosts:
-    - git.urbanslug.com
-
 env:
   global:
     - NIX_PATH: nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/b7e4857dd906022e4f996ae13ccb2988f2782de0.tar.gz
-    - GIT_EMAIL: travis@travis-ci.org
-    - GIT_NAME: Travis CI
-
-before_install:
-  - openssl aes-256-cbc -K $encrypted_7f9f7befb56d_key -iv $encrypted_7f9f7befb56d_iv -in travis-ci.enc -out travis-ci -d
 
 script:
   - nix-build release.nix 
-  - ./result/bin/blog build 
+  - ./result/bin/blog build
 
 deploy:
+  provider: pages
+  local_dir: public
   skip_cleanup: true
-  provider: script
-  script: scripts/deploy.sh
+  github_token: $GITHUB_TOKEN
+  keep_history: true
   on:
     branch: master
