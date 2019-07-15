@@ -8,8 +8,136 @@
         <name>Njagi Mwaniki</name>
         <email>njagi@urbanslug.com</email>
     </author>
-    <updated>2019-01-07T20:48:34Z</updated>
+    <updated>2019-06-22T17:57:41Z</updated>
     <entry>
+    <title>An Introduction to Variation Graphs</title>
+    <link href="http://blog.urbanslug.com/posts/2019-06-22-Introduction-to-Variation-Graphs.html" />
+    <id>http://blog.urbanslug.com/posts/2019-06-22-Introduction-to-Variation-Graphs.html</id>
+    <published>2019-06-22T17:57:41Z</published>
+    <updated>2019-06-22T17:57:41Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on June 22, 2019
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/biology.html">biology</a>, <a href="/tags/variation%20graphs.html">variation graphs</a>, <a href="/tags/graphs.html">graphs</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>, <a href="/tags/genetics.html">genetics</a>
+    
+</div>
+
+<h1 id="background">Background</h1>
+<p>This post is aimed at both programmers and biologists, for this reason, I will bring the reader up to speed on a topic before going into it. Feel free to skip a sentence, paragraph or even section if you’re familiar with a topic.</p>
+<h2 id="genome-sequencing">Genome sequencing</h2>
+<p>A <strong><a href="https://en.wikipedia.org/wiki/Genome">genome</a></strong> is the entire genetic code of an organism. While computational data is represented in binary form, ones, and zeros, biochemical data is represented by nitrogenous <a href="https://en.wikipedia.org/wiki/Base_(chemistry)">bases</a> that seem to stick out of a <a href="https://en.wikipedia.org/wiki/DNA">DNA</a> or <a href="https://en.wikipedia.org/wiki/RNA">RNA</a> molecule/strand abbreviated A, T, C, and G for DNA and A, G, C and U for RNA. We care about RNA because some viruses have RNA and not DNA.</p>
+<p>If this is confusing, you can think of a strand of DNA or RNA as a thread with knots where each knot is a base.</p>
+<p>A <strong>sequence</strong> is an <em>ordering</em> of something. A programming analog is a sequence vs a collection. Sequences are ordered, for example lists, and therefore have the potential for a <em>next</em> and a <em>previous</em> element while collections are just data thrown together, for example, a dictionary or a set.</p>
+<p><strong>Genome sequencing</strong> (or sequencing a genome) therefore, is determining the order of bases in all of the DNA or RNA in an organism. What makes this easy is that all the cells in an individual organism have the same DNA so we can get all the DNA in an organism from a single cell. In practice, however, we can’t work with a single cell due to its size. Ignore chromosomes, haplotypes and other things you may know about DNA for now.</p>
+<p>To determine the sequence of bases in an entire genome of an organism we focus on only one of the alleles (a <strong><a href="https://en.wikipedia.org/wiki/Haplotype">haplotype</a></strong>) and only one strand of the double helix. Since 2005 we’ve used methods broadly categorized under <strong>Next Generation Sequencing (NGS)</strong> to perform genome sequencing. There are two main ways of performing NGS:</p>
+<ol style="list-style-type: decimal">
+<li>Shear the DNA into small fragments, sequence those and try to build back the original sequence. An analogy that’s used is shredding a newspaper article then trying to recreate it.</li>
+<li>Run the DNA strand like a train would run through a tunnel through a pore and read the sequence of bases. There are other methods of reading entire strands of DNA but they don’t matter in this context.</li>
+</ol>
+<p>As you would expect, each method has its drawbacks and advantages. What we get out of the machine that does the actual sequencing of DNA is called a read and reads have to be <a href="https://en.wikipedia.org/wiki/Sequence_alignment">aligned</a> and <a href="https://en.wikipedia.org/wiki/Sequence_assembly">assembled</a>[2]. Alignment involves stacking reads on top of each other and assembling is the greater process that involves alignment, algorithmically choosing the best alignment and determining what the original sequence was.</p>
+<p>There are two broad categories of assembly[4]:</p>
+<ul>
+<li><strong>De-novo assembly:</strong> this is where we sequence a genome that has never been sequenced before</li>
+<li><strong>Mapping assembly:</strong> this is sequencing an organism’s unique code despite having the general sequence for the species. What you get from services like <a href="https://www.23andme.com/en-int/">23andMe</a>.</li>
+</ul>
+<h2 id="the-reference-genome">The reference genome</h2>
+<p>A <a href="https://en.wikipedia.org/wiki/Reference_genome">reference genome</a> is a consensus sequence that accepted as the genome of a species [2]. It’s stored as one long sequence of characters/bases. You may wonder “How we can have a known genome of an entire species when every individual has a unique genetic code?” or “If everyone is different, how are <strong>humans</strong> <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">99% chimp</a>?”. Well, the answer is that most organism’s genetic code is similar and this similarity increases as we narrow down taxonomically. When we say that <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">a human is closer to a chimp than a monkey</a> what we mean is that we can observe greater variation between the genomes of the two, man+chimp vs monkey, than man vs chimp alone.</p>
+<h2 id="variation-in-genomes">Variation in genomes</h2>
+<p>However, there are still differences that make us different from one another and they shouldn’t be ignored. A better way to describe them is to say that the differences are segregating within the population, We may also want to carry out a comparison between species or between related species which is done in <a href="https://en.wikipedia.org/wiki/Pan-genome">pangenomics</a>.</p>
+<p>DNA has sections which are identical between individuals (conserved regions), and the number of these sections grow as we narrow down taxonomically and there are sections which vary between individuals, for example, the short sequence repeats that are compared in paternity testing.</p>
+<p><a href="https://en.wikipedia.org/wiki/Graph_theory">Graph theory</a> is an area in math that can help us understand variable regions within genomes. The idea of representing genomes as graphs isn’t new, however, the low number of tools like <a href="https://github.com/vgteam/vg">vg</a> which apply graph theory to genomics and the little that we know about genomes has been an issue.</p>
+<h1 id="graphs">Graphs</h1>
+<p>A <a href="https://en.wikipedia.org/wiki/Graph_theory">graph</a> is a series of vertices (also known as nodes) and edges. <img src="/images/Content/Graphs/all_graphs.png" alt="all graphs" /></p>
+<p>For genome graphs, we focus on directed acyclic graphs.<br />
+A <strong>walk</strong> in a directed graph is traversal from one node to another through an edge, for example, <em>a</em> to <em>b</em> to <em>d</em> or <em>a</em> to <em>c</em> to <em>d</em>. <img src="/images/Content/Graphs/directed_graph.png" alt="directed graph" /></p>
+<h2 id="the-current-state-of-affairs">The current state of affairs</h2>
+<p>Once the reference genome of an organism has been determined, it is stored in <a href="https://en.wikipedia.org/wiki/FASTA_format">fasta format</a> which contains the sequence and metadata. Moving forward, anyone sequencing the same species aligns against this reference. Differences that occur in less than 1% of the reads are usually thrown out; the ones that aren’t thrown out don’t help to update the reference but are stored in <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">Variant Call Format (VCF)</a> which contains the variation data and their positions plus metadata. These VCF files are spread out amongst researchers and aid in the particular thing being researched but generally don’t contribute in and of themselves to the general genomic body of knowledge. However, every once in awhile the reference is updated but not on a fixed schedule [2]. It’s for this reason that the variation graph would be a good way of representing the reference. There is research that confirmed that short reads align better to the variation graph than to a linear reference [3].</p>
+<h1 id="graphs-and-genomes">Graphs and genomes</h1>
+<p>Graphs that are applied to genomes are generally called <strong>genome graphs</strong>. However, there are two more specific categories which are sequence graphs and variation graphs.</p>
+<p>As an example assume that we zoom on a hypothetical reference: <strong>“ACTGAATTTGTA”</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Variation</th>
+<th align="center">Position</th>
+<th align="center">Alternative</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Variation1</td>
+<td align="center">2</td>
+<td align="center">GGGA</td>
+</tr>
+<tr class="even">
+<td align="center">Variation2</td>
+<td align="center">4</td>
+<td align="center">C</td>
+</tr>
+</tbody>
+</table>
+<p>We could recursively insert Variation1 at position 2 and Variation2 at position 4 to generate the graph below:</p>
+<p><img src="/images/Content/Graphs/example.png" alt="sequence graph" /> (generated using <a href="https://github.com/urbanslug/graphite">graphite</a> and <a href="https://github.com/urbanslug/graph">my current fork of graph</a>)</p>
+<p>In this case, a single walk would represent a possible genome. Compared to the reference, this variation information is maintained and the graph still holds the data that was in reference.</p>
+<h2 id="sequence-graphs">Sequence Graphs</h2>
+<p>These are graphs with sequence labels on the nodes or edges.</p>
+<p>Sequence graphs or equivalent structures have been used previously to represent multiple sequences that contain shared differences or ambiguities in a single structure. Related structures used in genome assembly which collapse long repeated sequences, so the same nodes are used for different regions of the genome include the <a href="https://en.wikipedia.org/wiki/De_Bruijn_graph">De Bruijn graph</a>.[5] Graphs to represent genetic variation have previously been used for microbial genomes &amp; localized regions of the human genome such as the major <a href="https://en.wikipedia.org/wiki/Histocompatibility">histocompatibility</a> complex.</p>
+<h2 id="variation-graphs">Variation Graphs</h2>
+<p>A variation graph is a sequence graph together with a set of paths representing possible sequences from a population.</p>
+<h2 id="variation-graphs-and-rsv">Variation graphs and RSV</h2>
+<p><a href="https://en.wikipedia.org/wiki/Human_orthopneumovirus">Human orthopneumovirus</a>, formerly known as Respiratory Syncytial Virus (RSV), are a single-stranded RNA virus and a good candidate for exploration using the variation graph because viruses don’t have proofreading in their genetic code. Proofreading is a process in which the cell ensures that it has copied the genetic code correctly in preparation for cell division. Without proofreading, errors will be commonplace leading to high mutation rates. Another advantage is the size of its genome; the reference stands at 15,206 bases which translate to 15206 bytes or 14.8 KB of memory.</p>
+<h1 id="generating-a-variation-graph">Generating a variation graph</h1>
+<p>I’m going to describe the method used by graphite for building the graph. As of writing this, <a href="https://github.com/urbanslug/graphite">graphite</a> can’t generate a graph out of reads alone. It supports a reference in fasta and a single VCF file.</p>
+<h2 id="algorithm">Algorithm</h2>
+<p>The general idea is:</p>
+<ol style="list-style-type: decimal">
+<li>Read in the entire reference into memory</li>
+<li>Treat this reference as a single string (no streaming, storing as integers, bytestring or any fancy optimizations)</li>
+<li>Create a singleton list that holds this string
+<ul>
+<li>This singleton list is a single node graph</li>
+</ul></li>
+</ol>
+<p>Read a variaton into memory of position <code>p</code> and variation sequence or SNP <code>var</code></p>
+<p>Update the graph by</p>
+<ol style="list-style-type: decimal">
+<li>Create a singleton list holding the variation, <code>var</code>.</li>
+<li>Split the string in the node we are interested in at <code>p</code> into:
+<ol style="list-style-type: lower-alpha">
+<li><code>prev</code></li>
+<li><code>seq-at-pos</code></li>
+<li><code>next</code></li>
+</ol></li>
+<li>Create a new list containing nested lists (dynamic tree?).</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">[
+  prev,
+    [var, [<span class="bu">next</span>]],
+    [[seq<span class="op">-</span>at<span class="op">-</span>pos], <span class="bu">next</span>]
+]</code></pre></div>
+<h2 id="variation">Variation</h2>
+<p>A variation is a struct of <code>position</code> and <code>sequence</code>.</p>
+<p>I’m using the <a href="https://github.com/stchang/graph">racket graph library graph</a> to generate a graph out of the nested lists and treating the graph as a “dynamic tree”.</p>
+<p>We then rely on graph to generate an unweighted directed graph through <a href="https://docs.racket-lang.org/graph/index.html#%28def._%28%28lib._graph%2Fmain..rkt%29._unweighted-graph%2Fdirected%29%29">unweighted-graph/directed</a>. We export the graph in dot format and visualize via <a href="https://en.wikipedia.org/wiki/Graphviz">graphviz</a>. Serialization isn’t implemented yet.</p>
+<h1 id="references">References</h1>
+<ol style="list-style-type: decimal">
+<li>Adam M. Novak, Erik Garrison, Benedict Paten A graph extension of the positional burrows-wheeler transform and its applications bioRxiv 051409; doi: https://doi.org/10.1101/051409</li>
+<li>Church DM, Schneider VA, Graves T, Auger K, Cunningham F, Bouk N, et al. (2011) Modernizing Reference Genome Assemblies. PLoS Biol 9(7): e1001091. https://doi.org/10.1371/journal.pbio.1001091</li>
+<li>Garrison, Erik &amp; Sirén, Jouni &amp; M Novak, Adam &amp; Hickey et al. (2018). Variation graph toolkit improves read mapping by representing genetic variation in the reference. Nature Biotechnology. 36. 10.1038/nbt.4227</li>
+<li>Wolf, Beat. “De novo genome assembly versus mapping to a reference genome” (PDF). University of Applied Sciences Western Switzerland. Retrieved 6 April 2019.</li>
+<li>Holley, Guillaume &amp; Peterlongo, Pierre. (2012). BLASTGRAPH: Intensive approximate pattern matching in sequence graphs and de-Bruijn graphs. Proceedings of the Prague Stringology Conference, PSC 2012.</li>
+</ol>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
     <title>Pass for iOS</title>
     <link href="http://blog.urbanslug.com/posts/2019-01-07-pass-for-ios.html" />
     <id>http://blog.urbanslug.com/posts/2019-01-07-pass-for-ios.html</id>
@@ -266,7 +394,7 @@ To quote them “Travis CI is run as a hosted service, free for Open Source, a p
 ]]></summary>
 </entry>
 <entry>
-    <title>Pipeline as Code - overview</title>
+    <title>Pipeline as Code - an overview</title>
     <link href="http://blog.urbanslug.com/posts/2017-10-13-code-pipeline-overview.html" />
     <id>http://blog.urbanslug.com/posts/2017-10-13-code-pipeline-overview.html</id>
     <published>2017-10-13T14:23:19Z</published>
@@ -349,7 +477,7 @@ To quote them “Travis CI is run as a hosted service, free for Open Source, a p
 ]]></summary>
 </entry>
 <entry>
-    <title>dm-crypt, luks, systemd-boot and UEFI on Archlinux.</title>
+    <title>dm-crypt, luks, systemd-boot and UEFI on Archlinux</title>
     <link href="http://blog.urbanslug.com/posts/2016-09-11-dm-crypt-systemd-boot-and-efi-on-archlinux.html" />
     <id>http://blog.urbanslug.com/posts/2016-09-11-dm-crypt-systemd-boot-and-efi-on-archlinux.html</id>
     <published>2016-09-11T17:45:13Z</published>
@@ -573,7 +701,7 @@ $ <span class="ex">tree</span> /boot
 ]]></summary>
 </entry>
 <entry>
-    <title>Apple Deprecates the Use of OpenSSL.</title>
+    <title>Apple Deprecates the Use of OpenSSL</title>
     <link href="http://blog.urbanslug.com/posts/2016-05-09-Apple-Deprecates-the-Use-of-OpenSSL.html" />
     <id>http://blog.urbanslug.com/posts/2016-05-09-Apple-Deprecates-the-Use-of-OpenSSL.html</id>
     <published>2016-05-09T13:33:13Z</published>
@@ -622,7 +750,7 @@ build variables:
 ]]></summary>
 </entry>
 <entry>
-    <title>Packaging python projects.</title>
+    <title>Packaging python projects</title>
     <link href="http://blog.urbanslug.com/posts/2016-02-14-Packaging-python-projects.html" />
     <id>http://blog.urbanslug.com/posts/2016-02-14-Packaging-python-projects.html</id>
     <published>2016-02-14T17:45:13Z</published>
@@ -848,7 +976,7 @@ My emacs config is in my <a href="https://github.com/urbanslug/dotfiles/blob/mas
 ]]></summary>
 </entry>
 <entry>
-    <title>Imports and exports as documentation.</title>
+    <title>Imports and exports as documentation</title>
     <link href="http://blog.urbanslug.com/posts/2015-08-22-Imports-and-exports-as-documentation.html" />
     <id>http://blog.urbanslug.com/posts/2015-08-22-Imports-and-exports-as-documentation.html</id>
     <published>2015-08-22T20:16:12Z</published>
@@ -972,7 +1100,7 @@ The point of all of this is that well structured and well documented imports and
 ]]></summary>
 </entry>
 <entry>
-    <title>wai-devel final submission.</title>
+    <title>wai-devel final submission</title>
     <link href="http://blog.urbanslug.com/posts/2015-08-21-wai-devel-final-submission.html" />
     <id>http://blog.urbanslug.com/posts/2015-08-21-wai-devel-final-submission.html</id>
     <published>2015-08-21T19:14:34Z</published>
@@ -1010,113 +1138,6 @@ You can change the port from the default port 3000 by setting the environment va
 <li>Show build progress in the browser.</li>
 <li>Provide a dashboard page with compilation status, garbage collection statistics, and other useful meta-information.</li>
 <li>Port to Windows. (This depends on ide-backend getting ported to Windows.)</li>
-</ul>
-
-<script src="https://carnivalapp.io/sites/413/init.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", Carnival.init);
-</script>
-]]></summary>
-</entry>
-<entry>
-    <title>Progress with wai-devel</title>
-    <link href="http://blog.urbanslug.com/posts/2015-08-13-Progress-with-wai-devel.html" />
-    <id>http://blog.urbanslug.com/posts/2015-08-13-Progress-with-wai-devel.html</id>
-    <published>2015-08-13T15:58:24Z</published>
-    <updated>2015-08-13T15:58:24Z</updated>
-    <summary type="html"><![CDATA[<div class="info">
-    Posted on August 13, 2015
-    
-</div>
-<div class="info">
-    
-    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/Haskell.html">Haskell</a>, <a href="/tags/WAI.html">WAI</a>, <a href="/tags/wai-devel.html">wai-devel</a>
-    
-</div>
-
-<p>wai-devel is a development server for wai compliant haskell web applications.</p>
-<p>Its name changed from yesod-devel (the haskell reddit community suggested this). You can find it at: <a href="https://github.com/urbanslug/wai-devel" class="uri">https://github.com/urbanslug/wai-devel</a></p>
-<h2 id="what-wai-devel-expects-from-your-application">What wai-devel expects from your application</h2>
-<p>Since wai-devel is very loosely coupled to your application it expects mainly two things from your application: a <strong>host:port</strong> pair and a function, <strong>Application.develMain</strong>.</p>
-<p>Due to it’s dependence on ide-backend it also expects you to set the environment variable <code>GHC_PACKAGE_PATH</code>.</p>
-<p>Mine for example is: <code>export GHC_PACKAGE_PATH=~/.stack/snapshots/x86_64-linux/lts-2.22/7.8.4/pkgdb:</code></p>
-<p>The host:port pair is expected to be passed in as two environment variables: wai_host and wai_port for example:</p>
-<ul>
-<li>export wai_host=127.0.0.1</li>
-<li>export wai_port=3001</li>
-</ul>
-<p>Better yet, the application itself should set the environment variables as in the example code below.</p>
-<p>wai-devel looks for a function Application.develMain I have a <a href="https://github.com/urbanslug/yesod">fork of yesod</a>, that builds a yesod binary which generates a scaffold with this function implemented. I recommend using it to generate the scaffold with which to try out wai-devel with.</p>
-<p>The specifics of how to set the port and host within yesod applications will obviously change. The point of this fork is to generate a scaffold that works with wai-devel out of the box.</p>
-<p>Here is a snippet develMain function from my yesod fork.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">-- | main function for use by yesod devel</span>
-<span class="ot">develMain ::</span> <span class="dt">IO</span> ()
-develMain <span class="fu">=</span> develMainHelper&#39; getApplicationDev
-
-<span class="ot">develMainHelper&#39; ::</span> <span class="dt">IO</span> (<span class="dt">Settings</span>, <span class="dt">Application</span>) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-develMainHelper&#39; getSettingsApp <span class="fu">=</span> <span class="kw">do</span>
-    (settings, app) <span class="ot">&lt;-</span> getSettingsApp
-
-    _ <span class="ot">&lt;-</span> unsetEnv <span class="st">&quot;wai_port&quot;</span> <span class="fu">&gt;&gt;</span> setEnv <span class="st">&quot;wai_port&quot;</span> <span class="st">&quot;3001&quot;</span>
-    _ <span class="ot">&lt;-</span> unsetEnv <span class="st">&quot;wai_host&quot;</span> <span class="fu">&gt;&gt;</span> setEnv <span class="st">&quot;wai_host&quot;</span> <span class="st">&quot;127.0.0.1&quot;</span>
-
-    <span class="kw">let</span> settings&#39;  <span class="fu">=</span> setPort (<span class="dv">3001</span><span class="ot"> ::</span> <span class="dt">Port</span>) settings
-        settings&#39;&#39; <span class="fu">=</span> setHost ((read <span class="st">&quot;127.0.0.1&quot;</span>)<span class="ot"> ::</span> <span class="dt">HostPreference</span>) settings\<span class="ch">&#39;</span>
-
-    sock <span class="ot">&lt;-</span> createSocket
-
-    runSettingsSocket settings&#39;&#39; sock app
-
-    <span class="kw">where</span> <span class="co">-- | Create the socket that we will use to communicate with</span>
-          <span class="co">-- localhost:3001 here.</span>
-<span class="ot">          createSocket ::</span> <span class="dt">IO</span> <span class="dt">Socket</span>
-          createSocket <span class="fu">=</span> <span class="kw">do</span>
-
-            sock <span class="ot">&lt;-</span> socket <span class="dt">AF_INET</span> <span class="dt">Stream</span> defaultProtocol
-
-            <span class="co">-- Tell the OS *not* to reserve the socket after your program exits.</span>
-            setSocketOption sock <span class="dt">ReuseAddr</span> <span class="dv">1</span>
-
-            <span class="co">-- Bind the socket to localhost:3000 and listen.</span>
-            <span class="co">-- I wonder why I can&#39;t specify localhost instead of iNADDR_ANY</span>
-            bindSocket sock (<span class="dt">SockAddrInet</span> <span class="dv">3001</span> iNADDR_ANY)
-            listen sock <span class="dv">2</span>
-            return sock</code></pre></div>
-<blockquote>
-<p>During socket creation I made sure that the socket option ReuseAddr has been set to 1.<br />
-This way the operating system doesn’t hold on to the socket after the program exits. This is important for when wai-devel takes note of file changes and the development server is restarted.</p>
-</blockquote>
-<h2 id="ignoring-files-and-directories">Ignoring files and directories</h2>
-<p>wai-devel expects that there will be a single <code>Main.main</code> function. In the case of having more than one, for example with yesod, we ignore all but one. Specifically, we ignore the file app/DevelMain.hs. There is no need for app/devel.hs so it has been removed in my fork.</p>
-<p>Moreover, wai-devel ignores files in your <code>test/</code> directory.<br />
-This is because wai-devel depends on ide-backend which will attempt to build all files in the current working diretory, including your test directory. This leads to a world of hurt because the test/ directory also has a <code>Main.main</code> function.</p>
-<p><em>Please report an issue if you would like any file ignored during builds.</em></p>
-<h1 id="moved-to-stack">Moved to stack</h1>
-<p>Since the Haskell community has moved in this direction, so has wai-devel.<br />
-wai-devel only depends on cabal in that stack and ide-backend depend on Cabal the library. Otherwise, the cabal binary is not used and hasn’t been tested to work with wai-devel.</p>
-<h2 id="compatible-versions-of-ghc">Compatible versions of GHC</h2>
-<p>Currently wai-devel is built and tested against:</p>
-<ul>
-<li>GHC-7.8</li>
-<li>GHC-7.10</li>
-</ul>
-<h2 id="regarding-file-watching">Regarding file watching</h2>
-<p>wai-devel watches for file changes on files with the following extensions:</p>
-<ul>
-<li>hamlet</li>
-<li>shamlet</li>
-<li>julius</li>
-<li>lucius</li>
-<li>hs</li>
-<li>yaml</li>
-</ul>
-<p>When a change takes place wai-devel will recompile and re-run your application on localhost:3001 or display an error if any on the browser at localhost:3000</p>
-<p><em>If you would want another extension added to the list of file extensions to watch for please report it as an issue.</em></p>
-<h2 id="command-line-arguments">Command line arguments</h2>
-<p>Currently wai-devel takes only these two arguments and the two are optional. If you feel the need for more arguments please report it as an issue on github.</p>
-<ul>
-<li><p>-r <em>to turn off reverse proxying</em> If this is turned on you will access your application at an address that is specific to your web application or web framework.</p></li>
-<li><p>–show-iface [hi file] <em>passes this command to ghc</em> Same as ghc –show-iface</p></li>
 </ul>
 
 <script src="https://carnivalapp.io/sites/413/init.js"></script>
