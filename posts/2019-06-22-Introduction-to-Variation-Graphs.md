@@ -180,33 +180,7 @@ I’m going to describe the method used by graphite for building the graph.
 As of writing this, [graphite] can’t generate a graph out of reads alone.
 It supports a reference in fasta and a single VCF file.
 
-## Algorithm
-The general idea is:
-
-1. Read in the entire reference into memory
-2. Treat this reference as a single string (no streaming, storing as integers,
-bytestring or any fancy optimizations)
-3. Create a singleton list that holds this string
-     * This singleton list is a single node graph
-
-Read a variaton into memory of position `p` and variation sequence or SNP `var`
-
-Update the graph by
-
-1. Create a singleton list holding the variation, `var`.
-2. Split the string in the node we are interested in at `p` into:
-     a) `prev`
-     b) ` seq-at-pos`
-     c) `next`
-3. Create a new list containing nested lists (dynamic tree?).
-
-```python
-[
-  prev,
-    [var, [next]],
-    [[seq-at-pos], next]
-]
-```
+I'll detail the algorithm in a later post.
 
 ## Variation
 A variation is a struct of `position` and `sequence`.
