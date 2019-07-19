@@ -75,7 +75,7 @@ have constant time lookups in the occasion that we want to get a node given we
 know its sequence and offset. This should come in handy in visualization
 especially on the web.
 
-I also considered the possibility of a clash in the hashes but the likelihood
+I also considered the possibility of collisions in the hashes but the likelihood
 is low especially given we are dealing with approximately 15,000 base pair size
 viruses.
 Moreover, the sha256 hash generates a 256-bit hash which translates to
