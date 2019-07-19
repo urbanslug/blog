@@ -12,7 +12,7 @@ between the stable sequence (or reference) and the graph.
 To do this we have to establish a *coordinate system*, a way to reliably
 associate a section on the graph within the reference and vice versa.
 
-# A coordinate system
+# A Coordinate System
 We use the concepts of  `offset` and  `ref` in each node to maintain a coordinate
 system.
 
@@ -20,9 +20,9 @@ An **offset** is a 1 indexed number of bases from the first node where the
 variation occurs.
 We chose this because it lends itself nicely to how genomes are treated anyway.
 
-The following are some problems that arise from this coordinate system that I 
-shall delve into on a later post because they are a matter of progressive update
-and alignment not a matter of initial graph construction.
+The following are some problems that arise from this coordinate system that I
+shall delve into in a later post. The problems are a matter of progressive
+update and alignment not a matter of initial graph construction.
 
  1. Dealing with nodes that are from alignments i.e. not aligned to a linear
     sequence
@@ -31,12 +31,12 @@ and alignment not a matter of initial graph construction.
 A **ref** is a unique identifier of the stable sequence from which a variation has
 been derived.
 
-# Structure of the graph
+# Structure of the Graph
 
 Properties of our graph:
 
- 1. directed acyclic graph
- 2. offsets are **increasing/ascending** natural numbers as we walk through the graph
+ 1. Directed acyclic graph
+ 2. Offsets are **increasing/ascending** natural numbers as we walk through the graph
 
 ## Node
 A node is built out of a racket `structure`, a `struct` in many
@@ -81,7 +81,7 @@ viruses.
 Moreover, the sha256 hash generates a 256-bit hash which translates to
 2^256 possibilities.
 One thing to note is that [vg] uses UUIDs and they work for
-human genome so I believe graphite can get away with sha256 hashes for more
+human genome so I believe [graphite] can get away with sha256 hashes for more
 complex genomes.
 
 ## Variation
@@ -97,7 +97,7 @@ A variation is extracted from a VCF file.
 A node is what graphite creates and is a vertex in the variation graph. As you
 would expect the variation graph is a graph of variations.
 
-## The graph itself
+## The Graph Itself
 
 Mainly due to the lack of serialization, which is very important for
 progressive updates, in the [racket graph library] I had to implement a graph
@@ -109,12 +109,12 @@ The graph is built out of an adjacency map of `id`, key, to `node`, value.
 
 Using a `hash table` and not a `list` has the following pros:
 
- - no duplicates
- - constant-time lookups if we have a `segment` and its `offset`
+ - No duplicates
+ - Constant-time lookups if we have a `segment` and its `offset`
 
 and cons:
 
- - lacks ordering despite linear offsets which would come in handy for updates
+ - Lacks ordering despite linear offsets which would come in handy for updates
 
 # Construction
 The general idea is:
@@ -132,7 +132,7 @@ We then have a function `gen-directed-graph` that takes this `list` of `pairs`
 and generates a directed graph from it using `foldl`. Graphite creates the graph in the
 3 steps detailed below.
 
-## 1. Generate a node list (of pairs)
+## 1. Generate a Node List (of Pairs)
 *O(n)*; n being the size of the variation list
 ```
 gen-node-list(reference, variations, prev-position = f, prev-nodes = <empty-list>)
@@ -160,7 +160,7 @@ of the nodes is `a -> b` for example a list like `[(a b), (b c), (c d)]` should
 later  translate to `a -> b -> c -> d`.
 
 
-### 1.1 cap
+### 1.1 Cap
 Creates the initial variation i.e "caps" the directed graph.
 It creates a first node that points to the first variations.
 ```
@@ -171,7 +171,7 @@ cap(reference, previous-position, previous-nodes)
     )
 ```
 
-### 1.2 handle unique
+### 1.2 Handle Unique
 Inserts a variation where there isn't an alternative.
 In a case where there's only 1 alternative path so we break the current sequence
 and insert our alternative path, for example,  `a -> b` and `a -> c`.
@@ -180,7 +180,7 @@ handle-unique(reference, variations, previous-position, previous-nodes)
   ...
 ```
 
-### 1.3 handle duplicate
+### 1.3 Handle Duplicate
 Inserts extra alternative variations where they already exist.
 for example `a -> b`, `a -> c` and `a -> d`.
 
@@ -190,7 +190,7 @@ handle-duplicate(reference, variations, previous-position, previous-nodes)
 ```
 
 
-## 2. Generate a directed graph out of a list of pairs
+## 2. Generate a Directed Graph Out of a List of Pairs
 *O(n)*; with n being the size of the list of pairs
 ```
 gen-directed-graph(g, list-of-pairs)
@@ -212,7 +212,7 @@ This is to mean that if there's a relationship like:
 we have to make sure not to lose the edge `a -> b` when creating `a -> c`.
 It, however, does suffice for virus data.
 
-## 3. Return a variation graph
+## 3. Return a Variation Graph
 A composition of `gen-node-list` and `gen-directed-graph`
 
 ```
@@ -222,14 +222,14 @@ gen-vg(reference, variations)
   return graph
 ```
 
-# Visualization and output
+# Visualization and Output
 Graphite supports the generation of graphs in [gfa].
 This is important for interoperability with other tools such as [bandage] and
 [vg]. To quote from [Untangling graphical pangenomics], *The important thing is
 that we learn to read and write the same (text) data.*
 
 
-# Optimization ideas
+# Optimization Ideas
 Representing the alphabet in 2 bits, for example, A as 00, C as 01, T as 10 and
 G as 11. However, most of the optimization would come from graph creation, graph
 update and search so I'm focused on that for now at least.
@@ -241,3 +241,4 @@ update and search so I'm focused on that for now at least.
 [vg]: https://github.com/vgteam/vg
 [bandage]: https://rrwick.github.io/Bandage/
 [add serialization support to graph]: https://github.com/stchang/graph/issues/47
+[graphite]: https://github.com/urbanslug/graphite
