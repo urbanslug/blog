@@ -81,8 +81,8 @@ viruses.
 Moreover, the sha256 hash generates a 256-bit hash which translates to
 2^256 possibilities.
 One thing to note is that [vg] uses UUIDs and they work for
-human genome so I believe [graphite] can get away with sha256 hashes for more
-complex genomes.
+human genome so I believe [graphite], the tool that I'm writing to implement this,
+can get away with sha256 hashes for more complex genomes.
 
 ## Variation
 A `structure` of:
@@ -223,7 +223,7 @@ gen-vg(reference, variations)
 ```
 
 # Visualization and Output
-Graphite supports the generation of graphs in [gfa].
+Graphite supports the generation of graphs in [GFA].
 This is important for interoperability with other tools such as [bandage] and
 [vg]. To quote from [Untangling graphical pangenomics], *The important thing is
 that we learn to read and write the same (text) data.*
@@ -237,7 +237,7 @@ update and search so I'm focused on that for now at least.
 [A proposal of the Graphical Fragment Assembly format]: https://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format
 [Untangling graphical pangenomics]: https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics
 [racket graph library]: https://github.com/stchang/graph
-[gfa]: https://github.com/GFA-spec/GFA-spec
+[GFA]: https://github.com/GFA-spec/GFA-spec
 [vg]: https://github.com/vgteam/vg
 [bandage]: https://rrwick.github.io/Bandage/
 [add serialization support to graph]: https://github.com/stchang/graph/issues/47
