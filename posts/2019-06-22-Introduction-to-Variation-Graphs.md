@@ -163,7 +163,8 @@ genome such as the major [histocompatibility] complex.
 
 ## Variation Graphs
 A variation graph is a sequence graph together with a set of paths representing
-possible sequences from a population.
+possible sequences from a population. However, what makes it so unique is it's
+tight mapping between the graph and the reference.
 
 ## Variation graphs and RSV
 [Human orthopneumovirus], formerly known as Respiratory Syncytial Virus (RSV),
@@ -180,7 +181,7 @@ I’m going to describe the method used by graphite for building the graph.
 As of writing this, [graphite] can’t generate a graph out of reads alone.
 It supports a reference in fasta and a single VCF file.
 
-I'll detail the algorithm in a later post.
+I'll detail the algorithm in a [later post].
 
 ## Variation
 A variation is a struct of `position` and `sequence`.
@@ -229,3 +230,4 @@ We export the graph in dot format and visualize via [graphviz]. Serialization is
 [my current fork of graph]: https://github.com/urbanslug/graph
 [graphviz]: https://en.wikipedia.org/wiki/Graphviz
 [haplotype]: https://en.wikipedia.org/wiki/Haplotype
+[later post]: /posts/2019-07-15-Creating-the-Initial-Variation-Graph.html

@@ -5,9 +5,12 @@ date: 2019-07-15 19:54:49
 tags: variation graphs, graphs, bioinformatics
 ---
 
-First off, a re-cap on variation graphs; a core concept in the variation graph
-is that the graph has to maintain a tight mapping between the stable sequence
-(or reference) and the graph.
+First off, a very good post that explains
+variation graphs was made by the creator of [vg], Erik Garrison:
+[Untangling graphical pangenomics].
+
+A core concept in the variation graph is that there has to be a tight mapping
+between the stable sequence (or reference) and the graph.
 To do this we have to establish a coordinate system, that is, a way to reliably
 associate a section on the graph within the reference and vice versa.
 
@@ -15,7 +18,8 @@ associate a section on the graph within the reference and vice versa.
 We use the concepts of  `offset` and  `ref` in each node to maintain a coordinate
 system.
 
-An **offset** is the number of bases from the first node where the variation occurs.
+An **offset** is the 1 indexed number of bases from the first node where the
+variation occurs.
 We chose this because it lends itself nicely to how genomes are treated anyway.
 There are some problems with this which I shall delve into in a later post
 because  they are more of a matter of progressive graph update not initial
@@ -24,80 +28,116 @@ graph creation.
 They are however:
 
  1. Dealing with nodes that are from a alignments i.e. not aligned to a linear sequence
- 2. Chances in the linear reference which change the coordinate system.
+ 2. Changes in the linear reference which change the coordinate system.
 
-A **ref** is a way of identifying the stable sequence from which a variation has
+A **ref** is a unique identifier of the stable sequence from which a variation has
 been derived.
 
-# Core structure of our graph
+# Structure of the graph
 
 Properties of our graph:
 
- 1. a directed acyclic graph
- 2. offsets are increasing integers as we walk through the graph
+ 1. directed acyclic graph
+ 2. offsets are increasing natural numbers as we walk through the graph
 
 ## Node
-A node is built out of a racket structure, a struct in many languages.
+A node is built out of a racket `structure`, also called a `struct` in many
+languages. It holds the following properties:
 
-| Name     | Description                                                |
-| :------: | :---------------------------------------------------:      |
-| Segment  | a string of alphabet A,T,C and G                       |
-| offset   | offset from zero on the stable sequence                    |
-| id       | sha256 hash of the concatenation of: segment, "+" & offset |
-| ref      | stable sequence from which the segment is derived          |
-| links    | a list of the IDs of the next nodes                        |
+| Name     | Description                                                  |
+| :------: | :----------------------------------------------------------: |
+| segment  | a string of alphabet A,T,C and G                             |
+| offset   | offset from zero on the stable sequence                      |
+| id       | sha256 hash of the concatenation of: segment, "+" and offset |
+| ref      | stable sequence from which the segment is derived            |
+| links    | a list of the IDs of the next nodes                          |
 
-The names segment and links are inspired by [A proposal of the Graphical Fragment Assembly format].
 
+The names `segment` and `links` are inspired by
+[A proposal of the Graphical Fragment Assembly format]\:
 *Due to the historical confusion between vertices and edges, I will avoid using
 these terminologies. I will use a segment for a piece of sequence and a link for
 a connection between segments.*
 
-The possibility of a clash in our hashes is low dealing even with 15,000 size virus
-genomes plus the current vg uses UUIDs so I think graphite can get away with it.
+For the *id* we generate a sha256 hash out of: the segment, a plus
+symbol and the offset.
+For example given a segment *"ATCGATG"* at offset *34* we can generate an ID
+like so:
+```
+compute-id(segment, offset)
+  // take note of the + sign in the concatenation
+  string-and-offset  <- concatenate("ATCGATG", "+","34")
+  hash-as-bytestring <- sha256hash(string-and-offset)
+  id                 <- bytestring-to-hex-string(hash-as-bytestring)
+  return id
+```
+I went with hashes over UUIDs because they are reproducible and therefore we can
+have constant time lookups in the occasion that we want to get a node given we
+know its sequence and offset. This should come in handy in visualization
+especially on the web.
+
+I also considered the possibility of a clash in the hashes but the likelihood
+is low especially given we are dealing with approximately 15,000 base pair size
+viruses.
+Moreover, the sha256 hash generates a 256 bit hash which translates to
+2^256 possibilities.
+One thing to note is that [vg] uses UUIDs and given that they scale of the
+human genome I believe graphite can get away with sha256 hashes for more
+complex genomes.
 
 ## Variation
-A structure of:
+A `structure` of:
 
-| Name       | Description                               |
-| :-------:  | :---------------------------------------: |
-| kmer       | a string of single or multiple bases      |
-| position   | offset from zero on the stable sequence   |
+| Name      | Description                                             |
+| :-------: | :-----------------------------------------------------: |
+| segment   | a string of single of alphabet A,T,C and G              |
+| offset    | offset from zero on the stable sequence                 |
+| ref       | an indentifier of the stable sequence it's derived from |
 
-
+A variation is extracted from a VCF file.
+A node is what graphite creates and is a vertex in the variation graph. As you
+would expect the variation graph is a graph of variations.
 
 ## The graph itself
-The graph is built out of a hash table of ID to a node where a node is a
-structure (struct) in many other langs of
-A hash table of `ID` to `node` where ID is the node's ID repeated.
 
-A `hash table` has the advantage of:
- - not having duplicates
- - O(1) lookup time if I know the `segment` and its `offset` unlike a `hash set`
-   * we can compute the hash
+Mainly due to the lack of serialization, which is very important for
+progressive updates, in the [racket graph library] I had to implement a graph
+in graphite. I would have worked towards contributing to it and  adding it there
+but I felt that could not add generic serialization support and still stay on
+track with graphite.
+
+The graph is built out of a hash table, think of it as an
+"association hash table", of `id` to `node` where the *id* of a node is a
+*key* and the *node* itself is the *value*.
+
+
+Using a `hash table` and not a list has the following pros:
+
+ - no duplicates
+ - constant time lookups if we have a `segment` and its `offset`
+
+and cons:
+
+ - lacks ordering despite linear offsets which would come in handy for updates
 
 # Construction
 The general idea is:
 
- 1. Take a list of variation and a linear reference
- 2. Treat the reference as a single node graph
-    * There's no need to generate an actual node of out it
- 3. Recursively break the reference at the point each variation inserting an
-    alternative node/path.
+ 1. Given a `list` of variation `structures` **sorted** by `offset` and a
+    linear reference (`string`)
+ 2. Loop through each variation and insert an alternative segment into the
+    reference at the position specified in the variation.
 
-We recursively split the reference into a list of pairs/tuples.
+In the case of graphite we recursively split the reference into a *list* of
+*pairs* that imply directionality.
+For example the pair `(a b)` would translate to an edge from node a to node b.
 
-We then have a function `gen-directed-graph` that takes a list of pairs and
-generates a directed graph from it.
-
-
-It can be viewed as occurring in 3 stages:
-
-I chose to go with saving time over saving memory if I had to make a trade-off.
+We then have a function `gen-directed-graph` that takes this `list` of `pairs`
+and generates a directed graph from it using `foldl`. Graphite creates the graph in the
+3 steps detailed below.
 
 ## 1. Generate a node list (of pairs)
-
-O(n) n being the size of the variation list
+*O(n)*; n being the size of the variation list
 ```
 gen-node-list(reference, variations, prev-position = f, prev-nodes = <empty-list>)
   if empty-list? variations
@@ -109,8 +149,6 @@ gen-node-list(reference, variations, prev-position = f, prev-nodes = <empty-list
   else
     // we have just one variation in this position
     handle-unique(reference, variations, previous-position, previous-nodes)
-
-
 ```
 
  - **reference**: the linear reference
@@ -127,7 +165,7 @@ later  translate to `a -> b -> c -> d`.
 
 
 ### a. cap
-`cap` creates the initial variation i.e "caps" the directed graph.
+Creates the initial variation i.e "caps" the directed graph.
 It creates a first node that points to the first variations.
 ```
 cap(reference, previous-position, previous-nodes)
@@ -138,7 +176,7 @@ cap(reference, previous-position, previous-nodes)
 ```
 
 ### b. handle unique
-`handle-unique`  a variation where there isn't an alternative.
+Inserts  a variation where there isn't an alternative.
 In a case where there's only 1 alternative path so we break the current sequence
 and insert our alternative path, for example,  `a -> b` and `a -> c`.
 ```
@@ -147,7 +185,7 @@ handle-unique(reference, variations, previous-position, previous-nodes)
 ```
 
 ### c. handle duplicate
-`handle-duplicate` inserts extra alternative variations where they already exist.
+Inserts extra alternative variations where they already exist.
 for example `a -> b`, `a -> c` and `a -> d`.
 
 ```
@@ -156,33 +194,30 @@ handle-duplicate(reference, variations, previous-position, previous-nodes)
 ```
 
 
-
 ## 2. Generate a directed graph out of a list of pairs
-O(n) with n being the size of the list of pairs
+*O(n)*; with n being the size of the list of pairs
 ```
-gen-directed-graph(g, l)
+gen-directed-graph(g, list-of-pairs)
   foldl(
   // make sure that you're not overwriting the list of edges of a node as you
-  // update it. This check is what makes this function slow more like a running
-  // time of 4n.
-  lambda x: add-adjacent-node(g, (first x), (second x))
-  l // list of pairs
-  )
+  // update it. This check makes `gen-directed-graph` slow approx 4n.
+  lambda pair: add-adjacent-node(g, first(pair), second(pair))
+  g
+  list-of-pairs)
 ```
 
  - **g**: a graph
- - **l**: a list of pairs
+ - **list-of-pairs**: a list of pairs
 
 The reason for the bad performance of `gen-directed-graph` is that it checks to
 avoid overwriting any existing nodes.
 This is to mean that if there's a relationship like:
-`(a -> b)` and `(a -> c)`
+`a -> b` and `a -> c`
 we have to make sure not to lose the edge `a -> b` when creating `a -> c`.
-
-It however, does suffice for virus data.
+It however does suffice for virus data.
 
 ## 3. Return a variation graph
-`gen-vg` is a composition of `gen-node-list` and `gen-directed-graph`
+A composition of `gen-node-list` and `gen-directed-graph`
 
 ```
 gen-vg(reference, variations)
@@ -191,23 +226,21 @@ gen-vg(reference, variations)
   return graph
 ```
 
-# Serialization
-Serialization is important for progressively updating the graph.
-I had to stop using the [racket graph library] and implement the graph natively
-in graphite. This was because:
-
- 1. It didn't implement serialization.
- 2. I didn't feel that I could add generic serialization support and still stay
-    on track with graphite.
-
-
 # Visualization and output
-Graphite supports the output of files in [gfa].
-This is important for interoperability with other tools such as bandage and vg.
-A quite from [Untangling graphical pangenomics], *The important thing is that
-we learn to read and write the same (text) data.*
+Graphite supports the generation of graphs in [gfa].
+This is important for interoperability with other tools such as [bandage] and
+[vg]. To quote from [Untangling graphical pangenomics], *The important thing is
+that we learn to read and write the same (text) data.*
+
+
+# Optimization ideas
+Representing the alphabet in 2 bits for example A as 00, C as 01, T as 10 and
+G as 11. However, most of the optimization would come from graph creation, graph
+update and search so I'm focused on that for now at least.
 
 [A proposal of the Graphical Fragment Assembly format]: https://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format
 [Untangling graphical pangenomics]: https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics
 [racket graph library]: https://github.com/stchang/graph
 [gfa]: https://github.com/GFA-spec/GFA-spec
+[vg]: https://github.com/vgteam/vg
+[bandage]: https://rrwick.github.io/Bandage/
