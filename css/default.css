@@ -166,6 +166,8 @@ table, th, td {
 
 img {
     max-width: 800px;
+    display: block;
+    margin: auto;
 }
 
 footer {

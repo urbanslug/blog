@@ -4,39 +4,48 @@ title: Creating the Intial Variation Graph
 date: 2019-07-15 19:54:49
 tags: variation graphs, graphs, bioinformatics
 ---
-First off, Erik Garrison, the creator of [vg], wrote  a very good post on
-variation graphs titled [Untangling graphical pangenomics].
 
-A core concept in the variation graph is that there has to be a tight mapping
-between the stable sequence (or reference) and the graph.
-To do this we have to establish a *coordinate system*, a way to reliably
+Variation graphs are a way to represent the reference genome in a graph.
+For an introduction, read my previous post [An Introduction to Variation Graphs]
+or [Untangling graphical pangenomics] by Erik Garrison.
+
+Core to the variation graph is the maintenance of a tight mapping
+between the reference and the graph.
+To maintain this mapping we establish a *coordinate system*, a way to reliably
 associate a section on the graph within the reference and vice versa.
 
 # A Coordinate System
-We use the concepts of  `offset` and  `ref` in each node to maintain a coordinate
-system.
+To maintain a coordinate system we use the concepts of **offset** and **ref**.
 
 An **offset** is a 1 indexed number of bases from the first node where the
-variation occurs.
-We chose this because it lends itself nicely to how genomes are treated anyway.
+variation occurs. They lend themselves nicely to graphs and it's how variations
+are viewed traditionally.
+
+For example, we could represent a variation "A" occuring at position 3 in the 
+reference "ATCGAT" as:
+![offsets]
+
+*Notice how we start counting from 0 in the graph? We call that being 0 indexed.*
+
+A **ref** is a unique identifier of the reference from which a variation
+has been derived.
 
 The following are some problems that arise from this coordinate system that I
-shall delve into in a later post. The problems are a matter of progressive
-update and alignment not a matter of initial graph construction.
+shall delve into in a later post. They are a matter of progressive
+update and alignment not a matter of initial graph construction and are
+therefore beyond the scope of this post.
 
  1. Dealing with nodes that are from alignments i.e. not aligned to a linear
     sequence
  2. Changes in the linear reference which change the coordinate system.
 
-A **ref** is a unique identifier of the stable sequence from which a variation has
-been derived.
 
 # Structure of the Graph
-
 Properties of our graph:
 
  1. Directed acyclic graph
- 2. Offsets are **increasing/ascending** natural numbers as we walk through the graph
+ 2. Offsets are **increasing/ascending** natural numbers as we walk through the
+    graph
 
 ## Node
 A node is built out of a racket `structure`, a `struct` in many
@@ -45,18 +54,15 @@ languages, with the following fields:
 | Name     | Description                                                  |
 | :------: | :----------------------------------------------------------: |
 | segment  | a string of alphabet A, T, C, and G                          |
-| offset   | offset from zero on the stable sequence                      |
+| offset   | offset from zero on the reference                            |
 | id       | sha256 hash of the concatenation of segment, "+" and offset  |
-| ref      | stable sequence from which the segment is derived            |
+| ref      | reference from which the segment is derived                  |
 | links    | a list of the IDs of the next nodes                          |
 |          |                                                              |
 
 
-The names `segment` and `links` are inspired by
-[A proposal of the Graphical Fragment Assembly format]\:
-*Due to the historical confusion between vertices and edges, I will avoid using
-these terminologies. I will use a segment for a piece of sequence and a link for
-a connection between segments.*
+The names `segment` and `links` to mean `vertices` and `edges` are inspired by
+[A proposal of the Graphical Fragment Assembly format].
 
 For the *id* we generate a sha256 hash out of the segment, a plus
 symbol and the offset.
@@ -81,8 +87,8 @@ viruses.
 Moreover, the sha256 hash generates a 256-bit hash which translates to
 2^256 possibilities.
 One thing to note is that [vg] uses UUIDs and they work for
-human genome so I believe [graphite], the tool that I'm writing to implement this,
-can get away with sha256 hashes for more complex genomes.
+human genome so I believe [graphite], the tool that I'm writing to implement
+this, can get away with sha256 hashes for more complex genomes.
 
 ## Variation
 A `structure` of:
@@ -90,16 +96,16 @@ A `structure` of:
 | Name      | Description                                             |
 | :-------: | :-----------------------------------------------------: |
 | segment   | a string of single of alphabet A, T, C, and G           |
-| offset    | offset from zero on the stable sequence                 |
-| ref       | an identifier of the stable sequence it's derived from  |
+| offset    | offset from zero on the reference                       |
+| ref       | an identifier of the reference it's derived from        |
 
-A variation is extracted from a VCF file.
+A variation is extracted from a VCF file, the main file format for genomic
+variation data.
 A node is what graphite creates and is a vertex in the variation graph. As you
 would expect the variation graph is a graph of variations.
 
-## The Graph Itself
-
-Mainly due to the lack of serialization, which is very important for
+## The Graph
+Due to the lack of serialization, which is very important for
 progressive updates, in the [racket graph library] I had to implement a graph
 in graphite. I would have preferred to [add serialization support to graph]
 but I could not do that and still stay on track with graphite.
@@ -129,8 +135,8 @@ In the case of graphite, we recursively split the reference into a *list* of
 For example, the pair `(a b)` would translate to an edge from *node a* to *node b*.
 
 We then have a function `gen-directed-graph` that takes this `list` of `pairs`
-and generates a directed graph from it using `foldl`. Graphite creates the graph in the
-3 steps detailed below.
+and generates a directed graph from it using `foldl`. Graphite creates the graph
+in the 3 steps detailed below.
 
 ## 1. Generate a Node List (of Pairs)
 *O(n)*; n being the size of the variation list
@@ -223,15 +229,18 @@ gen-vg(reference, variations)
 ```
 
 # Visualization and Output
-Graphite supports the generation of graphs in [GFA].
-This is important for interoperability with other tools such as [bandage] and
-[vg]. To quote from [Untangling graphical pangenomics], *The important thing is
-that we learn to read and write the same (text) data.*
-
+Graphite supports the generation of graphs in [GFA] which is important for
+interoperability with other tools such as [vg].
 
 # Optimization Ideas
-Representing the alphabet in 2 bits, for example, A as 00, C as 01, T as 10 and
-G as 11. However, most of the optimization would come from graph creation, graph
+Representing the alphabet in 2 bits, for example:
+
+ - A as 00
+ - C as 01
+ - T as 10
+ - G as 11
+
+However, most of the optimization would come from graph creation, graph
 update and search so I'm focused on that for now at least.
 
 [A proposal of the Graphical Fragment Assembly format]: https://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format
@@ -242,3 +251,5 @@ update and search so I'm focused on that for now at least.
 [bandage]: https://rrwick.github.io/Bandage/
 [add serialization support to graph]: https://github.com/stchang/graph/issues/47
 [graphite]: https://github.com/urbanslug/graphite
+[An Introduction to Variation Graphs]: posts/2019-06-22-Introduction-to-Variation-Graphs.md
+[offsets]: /images/Content/Graphs/offsets.svg
