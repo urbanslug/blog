@@ -125,9 +125,16 @@ p {
 
 p code {
     background: #e8edf2;
-    color: #bd4147;
-    padding: 0;
+    color: #57484d;
+    padding: 0 5px 0 5px;
 }
+
+li code {
+    background: #e8edf2;
+    color: #57484d;
+    padding: 0 5px 0 5px;
+}
+
 body a {
     text-decoration: none;
 }
@@ -159,6 +166,8 @@ table, th, td {
 
 img {
     max-width: 800px;
+    display: block;
+    margin: auto;
 }
 
 footer {
