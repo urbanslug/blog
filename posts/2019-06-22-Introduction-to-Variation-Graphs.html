@@ -67,11 +67,14 @@
 <li><strong>Mapping assembly:</strong> this is sequencing an organism’s unique code despite having the general sequence for the species. What you get from services like <a href="https://www.23andme.com/en-int/">23andMe</a>.</li>
 </ul>
 <h2 id="the-reference-genome">The reference genome</h2>
-<p>A <a href="https://en.wikipedia.org/wiki/Reference_genome">reference genome</a> is a consensus sequence that accepted as the genome of a species [2]. It’s stored as one long sequence of characters/bases. You may wonder “How we can have a known genome of an entire species when every individual has a unique genetic code?” or “If everyone is different, how are <strong>humans</strong> <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">99% chimp</a>?”. Well, the answer is that most organism’s genetic code is similar and this similarity increases as we narrow down taxonomically. When we say that <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">a human is closer to a chimp than a monkey</a> what we mean is that we can observe greater variation between the genomes of the two, man+chimp vs monkey, than man vs chimp alone.</p>
+<p>A <a href="https://en.wikipedia.org/wiki/Reference_genome">reference genome</a> is a consensus sequence that accepted as the genome of a species [2]. It’s stored as one long sequence of characters/bases. You may wonder how we can have a known genome of an entire species when every individual has a unique genetic code or how <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">humans are 99% chimp</a>. Well, the answer is that genetic code of most organisms is similar and this similarity increases as we narrow down taxonomically. When we say that <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">a human is closer to a chimp than a monkey</a> what we mean is that we can observe greater variation between the genomes of the two, man+chimp vs monkey, than man vs chimp alone.</p>
+<p>This isn’t actual math but may help clear things up.</p>
+<pre><code>variation(combine_genomes(man, chimp), monkey) &gt; variation(man, chimp)
+</code></pre>
 <h2 id="variation-in-genomes">Variation in genomes</h2>
-<p>However, there are still differences that make us different from one another and they shouldn’t be ignored. A better way to describe them is to say that the differences are segregating within the population, We may also want to carry out a comparison between species or between related species which is done in <a href="https://en.wikipedia.org/wiki/Pan-genome">pangenomics</a>.</p>
+<p>However, there are still genomic differences and they should not be ignored. <em>The ignoring of differences is implicit in a linear reference.</em> A better way to describe them is to say that the differences are segregating within the population. We may also want to carry out a comparison between species or between related species which is done in <a href="https://en.wikipedia.org/wiki/Pan-genome">pangenomics</a>.</p>
 <p>DNA has sections which are identical between individuals (conserved regions), and the number of these sections grow as we narrow down taxonomically and there are sections which vary between individuals, for example, the short sequence repeats that are compared in paternity testing.</p>
-<p><a href="https://en.wikipedia.org/wiki/Graph_theory">Graph theory</a> is an area in math that can help us understand variable regions within genomes. The idea of representing genomes as graphs isn’t new, however, the low number of tools like <a href="https://github.com/vgteam/vg">vg</a> which apply graph theory to genomics and the little that we know about genomes has been an issue.</p>
+<p><a href="https://en.wikipedia.org/wiki/Graph_theory">Graph theory</a> is an area in math that can help us understand variable regions within genomes. The idea of representing genomes as graphs isn’t new, however, the low number of tools like <a href="https://github.com/vgteam/vg">vg</a> which apply graph theory to genomics and the little that we know about genomes has been a drawback.</p>
 <h1 id="graphs">Graphs</h1>
 <p>A <a href="https://en.wikipedia.org/wiki/Graph_theory">graph</a> is a series of vertices (also known as nodes) and edges. <img src="../images/Content/Graphs/all_graphs.png" alt="all graphs" /></p>
 <p>For genome graphs, we focus on directed acyclic graphs.<br />
@@ -109,38 +112,12 @@ A <strong>walk</strong> in a directed graph is traversal from one node to anothe
 <p>These are graphs with sequence labels on the nodes or edges.</p>
 <p>Sequence graphs or equivalent structures have been used previously to represent multiple sequences that contain shared differences or ambiguities in a single structure. Related structures used in genome assembly which collapse long repeated sequences, so the same nodes are used for different regions of the genome include the <a href="https://en.wikipedia.org/wiki/De_Bruijn_graph">De Bruijn graph</a>.[5] Graphs to represent genetic variation have previously been used for microbial genomes &amp; localized regions of the human genome such as the major <a href="https://en.wikipedia.org/wiki/Histocompatibility">histocompatibility</a> complex.</p>
 <h2 id="variation-graphs">Variation Graphs</h2>
-<p>A variation graph is a sequence graph together with a set of paths representing possible sequences from a population.</p>
+<p>A variation graph is a sequence graph together with a set of paths representing possible sequences from a population. However, what makes it so unique is it’s tight mapping between the graph and the reference.</p>
 <h2 id="variation-graphs-and-rsv">Variation graphs and RSV</h2>
-<p><a href="https://en.wikipedia.org/wiki/Human_orthopneumovirus">Human orthopneumovirus</a>, formerly known as Respiratory Syncytial Virus (RSV), are a single-stranded RNA virus and a good candidate for exploration using the variation graph because viruses don’t have proofreading in their genetic code. Proofreading is a process in which the cell ensures that it has copied the genetic code correctly in preparation for cell division. Without proofreading, errors will be commonplace leading to high mutation rates. Another advantage is the size of its genome; the reference stands at 15,206 bases which translate to 15206 bytes or 14.8 KB of memory.</p>
+<p><a href="https://en.wikipedia.org/wiki/Human_orthopneumovirus">Human orthopneumovirus</a>, formerly known as Respiratory Syncytial Virus (RSV), is a single-stranded RNA virus and a good candidate for exploration using the variation graph because viruses don’t have proofreading in their genetic code. Proofreading is a process in which the cell ensures that it has copied the genetic code correctly in preparation for cell division. Without proofreading, errors will be commonplace leading to high mutation rates. Another advantage is the size of its genome; the reference stands at 15,206 bases which translate to 15206 bytes or 14.8 KB of memory.</p>
 <h1 id="generating-a-variation-graph">Generating a variation graph</h1>
 <p>I’m going to describe the method used by graphite for building the graph. As of writing this, <a href="https://github.com/urbanslug/graphite">graphite</a> can’t generate a graph out of reads alone. It supports a reference in fasta and a single VCF file.</p>
-<h2 id="algorithm">Algorithm</h2>
-<p>The general idea is:</p>
-<ol style="list-style-type: decimal">
-<li>Read in the entire reference into memory</li>
-<li>Treat this reference as a single string (no streaming, storing as integers, bytestring or any fancy optimizations)</li>
-<li>Create a singleton list that holds this string
-<ul>
-<li>This singleton list is a single node graph</li>
-</ul></li>
-</ol>
-<p>Read a variaton into memory of position <code>p</code> and variation sequence or SNP <code>var</code></p>
-<p>Update the graph by</p>
-<ol style="list-style-type: decimal">
-<li>Create a singleton list holding the variation, <code>var</code>.</li>
-<li>Split the string in the node we are interested in at <code>p</code> into:
-<ol style="list-style-type: lower-alpha">
-<li><code>prev</code></li>
-<li><code>seq-at-pos</code></li>
-<li><code>next</code></li>
-</ol></li>
-<li>Create a new list containing nested lists (dynamic tree?).</li>
-</ol>
-<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">[
-  prev,
-    [var, [<span class="bu">next</span>]],
-    [[seq<span class="op">-</span>at<span class="op">-</span>pos], <span class="bu">next</span>]
-]</code></pre></div>
+<p>I’ll detail the algorithm in a <a href="../posts/2019-07-15-Creating-the-Initial-Variation-Graph.html">later post</a>.</p>
 <h2 id="variation">Variation</h2>
 <p>A variation is a struct of <code>position</code> and <code>sequence</code>.</p>
 <p>I’m using the <a href="https://github.com/stchang/graph">racket graph library graph</a> to generate a graph out of the nested lists and treating the graph as a “dynamic tree”.</p>

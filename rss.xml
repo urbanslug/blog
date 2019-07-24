@@ -7,8 +7,209 @@
         <description><![CDATA[Programming haskell clojure life]]></description>
         <atom:link href="http://blog.urbanslug.com/rss.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Sat, 22 Jun 2019 17:57:41 UT</lastBuildDate>
+        <lastBuildDate>Mon, 15 Jul 2019 19:54:49 UT</lastBuildDate>
         <item>
+    <title>Creating the Intial Variation Graph</title>
+    <link>http://blog.urbanslug.com/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html</link>
+    <description><![CDATA[<div class="info">
+    Posted on July 15, 2019
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/variation%20graphs.html">variation graphs</a>, <a href="/tags/graphs.html">graphs</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>
+    
+</div>
+
+<p>Variation graphs are a way to represent the reference genome as a graph. For an introduction, read my previous post <a href="posts/2019-06-22-Introduction-to-Variation-Graphs.md">An Introduction to Variation Graphs</a> or <a href="https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics">Untangling graphical pangenomics</a> by Erik Garrison.</p>
+<p>Core to the variation graph is the maintenance of a tight mapping between the reference and the graph. To maintain this mapping we establish a <em>coordinate system</em>, a way to reliably associate a section on the graph, within the reference and vice versa. <img src="/images/Content/Graphs/coordinate_system.png" alt="coordinate systems" /></p>
+<h1 id="a-coordinate-system">A Coordinate System</h1>
+<p>We use the concepts of <strong>offset</strong> and <strong>ref</strong> to maintain a coordinate system.</p>
+<p>An <strong>offset</strong> is a 1 indexed number of bases from the first node where the variation occurs. They lend themselves nicely to graphs and it’s how variations are viewed traditionally.</p>
+<p>For example, we could represent a variation “A” occuring at position 3 in the reference “ATCGAT” as: <img src="/images/Content/Graphs/offsets.svg" alt="offsets" /></p>
+<p><em>Notice how we start counting from 0 in the graph? We call that being 0 indexed.</em></p>
+<p>A <strong>ref</strong> is a unique identifier of the reference from which a variation has been derived.</p>
+<p>The following are some problems that arise from this coordinate system that I shall delve into in a later post. They are a matter of progressive update and alignment not a matter of initial graph construction and are therefore beyond the scope of this post.</p>
+<ol style="list-style-type: decimal">
+<li>Dealing with nodes that are from alignments i.e. not aligned to a linear sequence</li>
+<li>Changes in the linear reference which change the coordinate system.</li>
+</ol>
+<h1 id="structure-of-the-graph">Structure of the Graph</h1>
+<p>Properties of our graph:</p>
+<ol style="list-style-type: decimal">
+<li>Directed acyclic graph</li>
+<li>Offsets are <strong>increasing/ascending</strong> natural numbers as we walk through the graph</li>
+</ol>
+<h2 id="node">Node</h2>
+<p>A node is built out of a racket <code>structure</code>, a <code>struct</code> in many languages, with the following fields:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Name</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">segment</td>
+<td align="center">a string of alphabet A, T, C, and G</td>
+</tr>
+<tr class="even">
+<td align="center">offset</td>
+<td align="center">offset from zero on the reference</td>
+</tr>
+<tr class="odd">
+<td align="center">id</td>
+<td align="center">sha256 hash of the concatenation of segment, “+” and offset</td>
+</tr>
+<tr class="even">
+<td align="center">ref</td>
+<td align="center">reference from which the segment is derived</td>
+</tr>
+<tr class="odd">
+<td align="center">links</td>
+<td align="center">a list of the IDs of the next nodes</td>
+</tr>
+</tbody>
+</table>
+<p>The use of <code>segment</code> and <code>links</code> to mean <code>vertices</code> and <code>edges</code> are inspired by <a href="https://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format">A proposal of the Graphical Fragment Assembly format</a>.</p>
+<p>We generate a sha256 hash out of the segment, a plus symbol and the offset to come with the <em>id</em>.</p>
+<p>For example, given a segment <em>“ATCGATG”</em> at offset <em>34</em> we can generate an ID like so:</p>
+<pre><code>compute-id(segment, offset)
+  // take note of the + sign in the concatenation
+  string-and-offset  &lt;- concatenate(&quot;ATCGATG&quot;, &quot;+&quot;,&quot;34&quot;)
+  hash-as-bytestring &lt;- sha256hash(string-and-offset)
+  id                 &lt;- bytestring-to-hex-string(hash-as-bytestring)
+  return id</code></pre>
+<p>I went with hashes over UUIDs because they are reproducible and will have constant time lookups in the occasion that we want to <em>get a node</em> given we know its sequence and offset. This should come in handy in visualization especially on the web.</p>
+<p>I also considered the likelihood of collisions in the hashes. I expect it to be low when dealing with 15,000 base pair size viruses. I shall expound on this in a later post. One thing to note is that <a href="https://github.com/vgteam/vg">vg</a> uses UUIDs and they work for human genome so I believe <a href="https://github.com/urbanslug/graphite">graphite</a>, the tool that I’m writing to implement this, can get away with sha256 hashes for more complex genomes.</p>
+<h2 id="variation">Variation</h2>
+<p>A variation is a <code>structure</code> containing the following fields:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Name</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">segment</td>
+<td align="center">a string of single of alphabet A, T, C, and G</td>
+</tr>
+<tr class="even">
+<td align="center">offset</td>
+<td align="center">offset from zero on the reference</td>
+</tr>
+<tr class="odd">
+<td align="center">ref</td>
+<td align="center">an identifier of the reference it’s derived from</td>
+</tr>
+</tbody>
+</table>
+<p>It is extracted from a VCF file, the main file format for genomic variation data.</p>
+<h2 id="the-graph">The Graph</h2>
+<p>Due to the lack of serialization, an important feature for progressive updates, in the <a href="https://github.com/stchang/graph">racket graph library</a> I had to implement a graph in graphite. I would have preferred to <a href="https://github.com/stchang/graph/issues/47">add serialization support to graph</a> but I could not do that and still stay on track with graphite.</p>
+<p>The graph is built out of an adjacency map of <code>id</code>, key, to <code>node</code>, value.</p>
+<p>Using a <code>hash table</code> and not a <code>list</code> has the following pros:</p>
+<ul>
+<li>No duplicates</li>
+<li>Constant-time lookups if we have a <code>segment</code> and its <code>offset</code></li>
+</ul>
+<p>and cons:</p>
+<ul>
+<li>Lacks ordering despite linear offsets which would come in handy for updates</li>
+</ul>
+<h1 id="construction">Construction</h1>
+<p>The general idea is:</p>
+<ol style="list-style-type: decimal">
+<li>Given a <code>list</code> of variation <code>structures</code> <strong>sorted</strong> by <code>offset</code> and a linear reference (<code>string</code>)</li>
+<li>Loop through each variation and insert an alternative segment into the reference at the position specified in the variation.</li>
+</ol>
+<p>In the case of graphite, we recursively split the reference into a <em>list</em> of <em>pairs</em> that imply directionality. For example, the pair <code>(a b)</code> would translate to an edge from <em>node a</em> to <em>node b</em>.</p>
+<p>We then have a function <code>gen-directed-graph</code> that takes this <code>list</code> of <code>pairs</code> and generates a directed graph from it using <code>foldl</code>. Graphite creates the graph in the 3 steps detailed below.</p>
+<h2 id="generate-a-node-list-of-pairs">1. Generate a Node List (of Pairs)</h2>
+<p><em>O(n)</em>; n being the size of the variation list</p>
+<pre><code>gen-node-list(reference, variations, prev-position = f, prev-nodes = &lt;empty-list&gt;)
+  if empty-list? variations
+    // the base case of gen node list
+    cap(reference, previous-position, previous-nodes)
+  else if (is-number previous-position) and (previous-position = current-offset)
+    // we have more than one variation in this position
+    handle-duplicate(reference, variations, previous-position, previous-nodes)
+  else
+    // we have just one variation in this position
+    handle-unique(reference, variations, previous-position, previous-nodes)</code></pre>
+<ul>
+<li><strong>reference</strong>: the linear reference</li>
+<li><strong>variations</strong>: a list of variations</li>
+<li><strong>prev-position</strong>: the offset of the previous variation
+<ul>
+<li>the default value is false. (I wish I used an int here)</li>
+</ul></li>
+<li><strong>prev-nodes</strong>: the previous node or nodes with relation to the current one
+<ul>
+<li>the default value is an empty list.</li>
+</ul></li>
+</ul>
+<p>A mutually recursive function takes from the <code>tail</code> of variation list, <code>variations</code>, and returns a list of pair of nodes <code>(a, b)</code> where the direction of the nodes is <code>a -&gt; b</code> for example a list like <code>[(a b), (b c), (c d)]</code> should later translate to <code>a -&gt; b -&gt; c -&gt; d</code>.</p>
+<h3 id="cap">1.1 Cap</h3>
+<p>Creates the initial variation i.e “caps” the directed graph. It creates a first node that points to the first variations.</p>
+<pre><code>cap(reference, previous-position, previous-nodes)
+  map(
+    lambda node: (substring(reference, 0, previous-position), node)
+    previous-nodes
+    )</code></pre>
+<h3 id="handle-unique">1.2 Handle Unique</h3>
+<p>Inserts a variation where there isn’t an alternative. In a case where there’s only 1 alternative path so we break the current sequence and insert our alternative path, for example, <code>a -&gt; b</code> and <code>a -&gt; c</code>.</p>
+<pre><code>handle-unique(reference, variations, previous-position, previous-nodes)
+  ...</code></pre>
+<h3 id="handle-duplicate">1.3 Handle Duplicate</h3>
+<p>Inserts extra alternative variations where they already exist. for example <code>a -&gt; b</code>, <code>a -&gt; c</code> and <code>a -&gt; d</code>.</p>
+<pre><code>handle-duplicate(reference, variations, previous-position, previous-nodes)
+  ...</code></pre>
+<h2 id="generate-a-directed-graph-out-of-a-list-of-pairs">2. Generate a Directed Graph Out of a List of Pairs</h2>
+<p><em>O(n)</em>; with n being the size of the list of pairs</p>
+<pre><code>gen-directed-graph(g, list-of-pairs)
+  foldl(
+  // make sure that you&#39;re not overwriting the list of edges of a node as you
+  // update it. This check makes `gen-directed-graph` slow approx 4n.
+  lambda pair: add-adjacent-node(g, first(pair), second(pair))
+  g
+  list-of-pairs)</code></pre>
+<ul>
+<li><strong>g</strong>: a graph</li>
+<li><strong>list-of-pairs</strong>: a list of pairs</li>
+</ul>
+<p>The reason for the bad performance of <code>gen-directed-graph</code> is that it checks to avoid overwriting any existing nodes. This is to mean that if there’s a relationship like: <code>a -&gt; b</code> and <code>a -&gt; c</code> we have to make sure not to lose the edge <code>a -&gt; b</code> when creating <code>a -&gt; c</code>. It, however, does suffice for virus data.</p>
+<h2 id="return-a-variation-graph">3. Return a Variation Graph</h2>
+<p>A composition of <code>gen-node-list</code> and <code>gen-directed-graph</code></p>
+<pre><code>gen-vg(reference, variations)
+  node-list &lt;- gen-node-list(reference, variation)
+  graph     &lt;- gen-directed-graph(node-list)
+  return graph</code></pre>
+<h1 id="visualization-and-output">Visualization and Output</h1>
+<p>Graphite supports the generation of graphs in <a href="https://github.com/GFA-spec/GFA-spec">GFA</a> which is important for interoperability with other tools such as <a href="https://github.com/vgteam/vg">vg</a>.</p>
+<h1 id="optimization-ideas">Optimization Ideas</h1>
+<p>Representing the alphabet in 2 bits, for example:</p>
+<ul>
+<li>A as 00</li>
+<li>C as 01</li>
+<li>T as 10</li>
+<li>G as 11</li>
+</ul>
+<p>However, most of the optimization would come from graph creation, graph update and search so I’m focused on that for now at least.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></description>
+    <pubDate>Mon, 15 Jul 2019 19:54:49 UT</pubDate>
+    <guid>http://blog.urbanslug.com/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html</guid>
+    <dc:creator>Njagi Mwaniki</dc:creator>
+</item>
+<item>
     <title>An Introduction to Variation Graphs</title>
     <link>http://blog.urbanslug.com/posts/2019-06-22-Introduction-to-Variation-Graphs.html</link>
     <description><![CDATA[<div class="info">
@@ -40,11 +241,14 @@
 <li><strong>Mapping assembly:</strong> this is sequencing an organism’s unique code despite having the general sequence for the species. What you get from services like <a href="https://www.23andme.com/en-int/">23andMe</a>.</li>
 </ul>
 <h2 id="the-reference-genome">The reference genome</h2>
-<p>A <a href="https://en.wikipedia.org/wiki/Reference_genome">reference genome</a> is a consensus sequence that accepted as the genome of a species [2]. It’s stored as one long sequence of characters/bases. You may wonder “How we can have a known genome of an entire species when every individual has a unique genetic code?” or “If everyone is different, how are <strong>humans</strong> <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">99% chimp</a>?”. Well, the answer is that most organism’s genetic code is similar and this similarity increases as we narrow down taxonomically. When we say that <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">a human is closer to a chimp than a monkey</a> what we mean is that we can observe greater variation between the genomes of the two, man+chimp vs monkey, than man vs chimp alone.</p>
+<p>A <a href="https://en.wikipedia.org/wiki/Reference_genome">reference genome</a> is a consensus sequence that accepted as the genome of a species [2]. It’s stored as one long sequence of characters/bases. You may wonder how we can have a known genome of an entire species when every individual has a unique genetic code or how <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">humans are 99% chimp</a>. Well, the answer is that genetic code of most organisms is similar and this similarity increases as we narrow down taxonomically. When we say that <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">a human is closer to a chimp than a monkey</a> what we mean is that we can observe greater variation between the genomes of the two, man+chimp vs monkey, than man vs chimp alone.</p>
+<p>This isn’t actual math but may help clear things up.</p>
+<pre><code>variation(combine_genomes(man, chimp), monkey) &gt; variation(man, chimp)
+</code></pre>
 <h2 id="variation-in-genomes">Variation in genomes</h2>
-<p>However, there are still differences that make us different from one another and they shouldn’t be ignored. A better way to describe them is to say that the differences are segregating within the population, We may also want to carry out a comparison between species or between related species which is done in <a href="https://en.wikipedia.org/wiki/Pan-genome">pangenomics</a>.</p>
+<p>However, there are still genomic differences and they should not be ignored. <em>The ignoring of differences is implicit in a linear reference.</em> A better way to describe them is to say that the differences are segregating within the population. We may also want to carry out a comparison between species or between related species which is done in <a href="https://en.wikipedia.org/wiki/Pan-genome">pangenomics</a>.</p>
 <p>DNA has sections which are identical between individuals (conserved regions), and the number of these sections grow as we narrow down taxonomically and there are sections which vary between individuals, for example, the short sequence repeats that are compared in paternity testing.</p>
-<p><a href="https://en.wikipedia.org/wiki/Graph_theory">Graph theory</a> is an area in math that can help us understand variable regions within genomes. The idea of representing genomes as graphs isn’t new, however, the low number of tools like <a href="https://github.com/vgteam/vg">vg</a> which apply graph theory to genomics and the little that we know about genomes has been an issue.</p>
+<p><a href="https://en.wikipedia.org/wiki/Graph_theory">Graph theory</a> is an area in math that can help us understand variable regions within genomes. The idea of representing genomes as graphs isn’t new, however, the low number of tools like <a href="https://github.com/vgteam/vg">vg</a> which apply graph theory to genomics and the little that we know about genomes has been a drawback.</p>
 <h1 id="graphs">Graphs</h1>
 <p>A <a href="https://en.wikipedia.org/wiki/Graph_theory">graph</a> is a series of vertices (also known as nodes) and edges. <img src="/images/Content/Graphs/all_graphs.png" alt="all graphs" /></p>
 <p>For genome graphs, we focus on directed acyclic graphs.<br />
@@ -82,38 +286,12 @@ A <strong>walk</strong> in a directed graph is traversal from one node to anothe
 <p>These are graphs with sequence labels on the nodes or edges.</p>
 <p>Sequence graphs or equivalent structures have been used previously to represent multiple sequences that contain shared differences or ambiguities in a single structure. Related structures used in genome assembly which collapse long repeated sequences, so the same nodes are used for different regions of the genome include the <a href="https://en.wikipedia.org/wiki/De_Bruijn_graph">De Bruijn graph</a>.[5] Graphs to represent genetic variation have previously been used for microbial genomes &amp; localized regions of the human genome such as the major <a href="https://en.wikipedia.org/wiki/Histocompatibility">histocompatibility</a> complex.</p>
 <h2 id="variation-graphs">Variation Graphs</h2>
-<p>A variation graph is a sequence graph together with a set of paths representing possible sequences from a population.</p>
+<p>A variation graph is a sequence graph together with a set of paths representing possible sequences from a population. However, what makes it so unique is it’s tight mapping between the graph and the reference.</p>
 <h2 id="variation-graphs-and-rsv">Variation graphs and RSV</h2>
-<p><a href="https://en.wikipedia.org/wiki/Human_orthopneumovirus">Human orthopneumovirus</a>, formerly known as Respiratory Syncytial Virus (RSV), are a single-stranded RNA virus and a good candidate for exploration using the variation graph because viruses don’t have proofreading in their genetic code. Proofreading is a process in which the cell ensures that it has copied the genetic code correctly in preparation for cell division. Without proofreading, errors will be commonplace leading to high mutation rates. Another advantage is the size of its genome; the reference stands at 15,206 bases which translate to 15206 bytes or 14.8 KB of memory.</p>
+<p><a href="https://en.wikipedia.org/wiki/Human_orthopneumovirus">Human orthopneumovirus</a>, formerly known as Respiratory Syncytial Virus (RSV), is a single-stranded RNA virus and a good candidate for exploration using the variation graph because viruses don’t have proofreading in their genetic code. Proofreading is a process in which the cell ensures that it has copied the genetic code correctly in preparation for cell division. Without proofreading, errors will be commonplace leading to high mutation rates. Another advantage is the size of its genome; the reference stands at 15,206 bases which translate to 15206 bytes or 14.8 KB of memory.</p>
 <h1 id="generating-a-variation-graph">Generating a variation graph</h1>
 <p>I’m going to describe the method used by graphite for building the graph. As of writing this, <a href="https://github.com/urbanslug/graphite">graphite</a> can’t generate a graph out of reads alone. It supports a reference in fasta and a single VCF file.</p>
-<h2 id="algorithm">Algorithm</h2>
-<p>The general idea is:</p>
-<ol style="list-style-type: decimal">
-<li>Read in the entire reference into memory</li>
-<li>Treat this reference as a single string (no streaming, storing as integers, bytestring or any fancy optimizations)</li>
-<li>Create a singleton list that holds this string
-<ul>
-<li>This singleton list is a single node graph</li>
-</ul></li>
-</ol>
-<p>Read a variaton into memory of position <code>p</code> and variation sequence or SNP <code>var</code></p>
-<p>Update the graph by</p>
-<ol style="list-style-type: decimal">
-<li>Create a singleton list holding the variation, <code>var</code>.</li>
-<li>Split the string in the node we are interested in at <code>p</code> into:
-<ol style="list-style-type: lower-alpha">
-<li><code>prev</code></li>
-<li><code>seq-at-pos</code></li>
-<li><code>next</code></li>
-</ol></li>
-<li>Create a new list containing nested lists (dynamic tree?).</li>
-</ol>
-<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">[
-  prev,
-    [var, [<span class="bu">next</span>]],
-    [[seq<span class="op">-</span>at<span class="op">-</span>pos], <span class="bu">next</span>]
-]</code></pre></div>
+<p>I’ll detail the algorithm in a <a href="/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html">later post</a>.</p>
 <h2 id="variation">Variation</h2>
 <p>A variation is a struct of <code>position</code> and <code>sequence</code>.</p>
 <p>I’m using the <a href="https://github.com/stchang/graph">racket graph library graph</a> to generate a graph out of the nested lists and treating the graph as a “dynamic tree”.</p>
