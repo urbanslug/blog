@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Creating the Intial Variation Graph
+title: Creating the Initial Variation Graph
 date: 2019-07-15 19:54:49
 tags: variation graphs, graphs, bioinformatics
 ---
@@ -226,16 +226,22 @@ gen-vg(reference, variations)
 ```
 
 # Visualization and Output
-Graphite supports the generation of graphs in [GFA] which is important for
-interoperability with other tools such as [vg].
+Graphite supports the generation of graphs in [GFA], [DOT], and the racket
+serialization format which I save under the extension .gra.
+[GFA] is important for interoperability with other tools such as [vg].
 
 # Optimization Ideas
-Representing the alphabet in 2 bits, for example:
+Represent the alphabet in 4 bits, [as is done in BioD], because:
 
- - A as 00
- - C as 01
- - T as 10
- - G as 11
+ - the extra bits accommodate ambiguous bases
+ - we could then perform fast and efficient complimenting though bit shifting
+
+The alphabet would be:
+
+ - A as 0001
+ - C as 0010
+ - T as 0100
+ - G as 1000
 
 However, most of the optimization would come from graph creation, graph
 update and search so I'm focused on that for now at least.
@@ -251,3 +257,5 @@ update and search so I'm focused on that for now at least.
 [An Introduction to Variation Graphs]: posts/2019-06-22-Introduction-to-Variation-Graphs.md
 [offsets]: /images/Content/Graphs/offsets.svg
 [coordinate systems]: /images/Content/Graphs/coordinate_system.png
+[as is done in BioD]: https://github.com/biod/BioD/blob/57c81f275faab5cdec4746bfc7af81e31bac0f69/bio/core/base.d#L64
+[DOT]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
