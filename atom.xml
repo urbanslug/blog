@@ -10,7 +10,7 @@
     </author>
     <updated>2019-07-15T19:54:49Z</updated>
     <entry>
-    <title>Creating the Intial Variation Graph</title>
+    <title>Creating the Initial Variation Graph</title>
     <link href="http://blog.urbanslug.com/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html" />
     <id>http://blog.urbanslug.com/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html</id>
     <published>2019-07-15T19:54:49Z</published>
@@ -193,14 +193,19 @@
   graph     &lt;- gen-directed-graph(node-list)
   return graph</code></pre>
 <h1 id="visualization-and-output">Visualization and Output</h1>
-<p>Graphite supports the generation of graphs in <a href="https://github.com/GFA-spec/GFA-spec">GFA</a> which is important for interoperability with other tools such as <a href="https://github.com/vgteam/vg">vg</a>.</p>
+<p>Graphite supports the generation of graphs in <a href="https://github.com/GFA-spec/GFA-spec">GFA</a>, <a href="https://en.wikipedia.org/wiki/DOT_(graph_description_language)">DOT</a>, and the racket serialization format which I save under the extension .gra. <a href="https://github.com/GFA-spec/GFA-spec">GFA</a> is important for interoperability with other tools such as <a href="https://github.com/vgteam/vg">vg</a>.</p>
 <h1 id="optimization-ideas">Optimization Ideas</h1>
-<p>Representing the alphabet in 2 bits, for example:</p>
+<p>Represent the alphabet in 4 bits, <a href="https://github.com/biod/BioD/blob/57c81f275faab5cdec4746bfc7af81e31bac0f69/bio/core/base.d#L64">as is done in BioD</a>, because:</p>
 <ul>
-<li>A as 00</li>
-<li>C as 01</li>
-<li>T as 10</li>
-<li>G as 11</li>
+<li>the extra bits accommodate ambiguous bases</li>
+<li>we could then perform fast and efficient complimenting though bit shifting</li>
+</ul>
+<p>The alphabet would be:</p>
+<ul>
+<li>A as 0001</li>
+<li>C as 0010</li>
+<li>T as 0100</li>
+<li>G as 1000</li>
 </ul>
 <p>However, most of the optimization would come from graph creation, graph update and search so I’m focused on that for now at least.</p>
 
