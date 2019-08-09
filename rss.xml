@@ -22,14 +22,14 @@
 </div>
 
 <p>Variation graphs are a way to represent the reference genome as a graph. For an introduction, read my previous post <a href="posts/2019-06-22-Introduction-to-Variation-Graphs.md">An Introduction to Variation Graphs</a> or <a href="https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics">Untangling graphical pangenomics</a> by Erik Garrison.</p>
-<p>Core to the variation graph is the maintenance of a tight mapping between the reference and the graph. To maintain this mapping we establish a <em>coordinate system</em>, a way to reliably associate a section on the graph, within the reference and vice versa. <img src="/images/Content/Graphs/coordinate_system.png" alt="coordinate systems" /></p>
+<p>Core to variation graphs is the maintenance of a tight mapping between the reference and the graph. To maintain this mapping we establish a <em>coordinate system</em> — a way to reliably associate a node in the graph, with a position in the reference and vice versa. <img src="/images/Content/Graphs/coordinate_system.png" alt="coordinate systems" /></p>
 <h1 id="a-coordinate-system">A Coordinate System</h1>
-<p>We use the concepts of <strong>offset</strong> and <strong>ref</strong> to maintain a coordinate system.</p>
-<p>An <strong>offset</strong> is a 1 indexed number of bases from the first node where the variation occurs. They lend themselves nicely to graphs and it’s how variations are viewed traditionally.</p>
+<p>We use the concepts <strong>offset</strong> and <strong>ref</strong> to maintain a coordinate system.</p>
+<p>An <strong>offset</strong> is the number of bases from the first node where the variation occurs; offsets are one-indexed in the reference but zero-indexed in the graph. Offsets are suited to translating linear reference to graphs because it’s how variations are viewed within the reference anyway.</p>
 <p>For example, we could represent a variation “A” occuring at position 3 in the reference “ATCGAT” as: <img src="/images/Content/Graphs/offsets.svg" alt="offsets" /></p>
-<p><em>Notice how we start counting from 0 in the graph? We call that being 0 indexed.</em></p>
-<p>A <strong>ref</strong> is a unique identifier of the reference from which a variation has been derived.</p>
-<p>The following are some problems that arise from this coordinate system that I shall delve into in a later post. They are a matter of progressive update and alignment not a matter of initial graph construction and are therefore beyond the scope of this post.</p>
+<p><em>Notice how we start counting from 0 in the graph? We call that being zero-indexed.</em></p>
+<p>A <strong>ref</strong> is a unique identifier which we get from the reference <a href="https://en.wikipedia.org/wiki/FASTA_format#Description_line">description line</a>. A graph created from just one reference will have all nodes contain the same value in the <code>ref</code> field.</p>
+<p>As you may have suspected, some problems arise from this coordinate system. They are a matter of <em>progressive update</em> and <em>read alignment</em> but not a matter of initial graph construction and are therefore beyond the scope of this post. They include:</p>
 <ol style="list-style-type: decimal">
 <li>Dealing with nodes that are from alignments i.e. not aligned to a linear sequence</li>
 <li>Changes in the linear reference which change the coordinate system.</li>
@@ -73,15 +73,15 @@
 </tbody>
 </table>
 <p>The use of <code>segment</code> and <code>links</code> to mean <code>vertices</code> and <code>edges</code> are inspired by <a href="https://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format">A proposal of the Graphical Fragment Assembly format</a>.</p>
-<p>We generate a sha256 hash out of the segment, a plus symbol and the offset to come with the <em>id</em>.</p>
+<p>We generate a sha256 hash out of the segment, a plus symbol and the offset to generate a value for <code>id</code>.</p>
 <p>For example, given a segment <em>“ATCGATG”</em> at offset <em>34</em> we can generate an ID like so:</p>
-<pre><code>compute-id(segment, offset)
+<pre><code>generate-id(&lt;string&gt; segment, &lt;natural-number&gt; offset)
   // take note of the + sign in the concatenation
   string-and-offset  &lt;- concatenate(&quot;ATCGATG&quot;, &quot;+&quot;,&quot;34&quot;)
   hash-as-bytestring &lt;- sha256hash(string-and-offset)
   id                 &lt;- bytestring-to-hex-string(hash-as-bytestring)
   return id</code></pre>
-<p>I went with hashes over UUIDs because they are reproducible and will have constant time lookups in the occasion that we want to <em>get a node</em> given we know its sequence and offset. This should come in handy in visualization especially on the web.</p>
+<p>I chose hashes over UUIDs because they are reproducible and will have constant time lookups in the occasion that we want to retrieve a node from the graph given its sequence and offset. This should come in handy in visualization especially on the web.</p>
 <p>I also considered the likelihood of collisions in the hashes. I expect it to be low when dealing with 15,000 base pair size viruses. I shall expound on this in a later post. One thing to note is that <a href="https://github.com/vgteam/vg">vg</a> uses UUIDs and they work for human genome so I believe <a href="https://github.com/urbanslug/graphite">graphite</a>, the tool that I’m writing to implement this, can get away with sha256 hashes for more complex genomes.</p>
 <h2 id="variation">Variation</h2>
 <p>A variation is a <code>structure</code> containing the following fields:</p>
@@ -107,7 +107,7 @@
 </tr>
 </tbody>
 </table>
-<p>It is extracted from a VCF file, the main file format for genomic variation data.</p>
+<p>It is extracted from a <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">Variant Call Format</a> file, the main file format for genomic variation data.</p>
 <h2 id="the-graph">The Graph</h2>
 <p>Due to the lack of serialization, an important feature for progressive updates, in the <a href="https://github.com/stchang/graph">racket graph library</a> I had to implement a graph in graphite. I would have preferred to <a href="https://github.com/stchang/graph/issues/47">add serialization support to graph</a> but I could not do that and still stay on track with graphite.</p>
 <p>The graph is built out of an adjacency map of <code>id</code>, key, to <code>node</code>, value.</p>
@@ -189,9 +189,9 @@
   graph     &lt;- gen-directed-graph(node-list)
   return graph</code></pre>
 <h1 id="visualization-and-output">Visualization and Output</h1>
-<p>Graphite supports the generation of graphs in <a href="https://github.com/GFA-spec/GFA-spec">GFA</a>, <a href="https://en.wikipedia.org/wiki/DOT_(graph_description_language)">DOT</a>, and the racket serialization format which I save under the extension .gra. <a href="https://github.com/GFA-spec/GFA-spec">GFA</a> is important for interoperability with other tools such as <a href="https://github.com/vgteam/vg">vg</a>.</p>
-<h1 id="optimization-ideas">Optimization Ideas</h1>
-<p>Represent the alphabet in 4 bits, <a href="https://github.com/biod/BioD/blob/57c81f275faab5cdec4746bfc7af81e31bac0f69/bio/core/base.d#L64">as is done in BioD</a>, because:</p>
+<p>Graphite supports the generation of graphs in: <a href="https://github.com/GFA-spec/GFA-spec">GFA</a>, for interoperability with tools such as <a href="https://github.com/vgteam/vg">vg</a> and <a href="https://rrwick.github.io/Bandage/">bandage</a>; <a href="https://en.wikipedia.org/wiki/DOT_(graph_description_language)">DOT</a>, for visualization; and a serialized form, .gra.</p>
+<h1 id="optimization-idea">Optimization Idea</h1>
+<p>Representing the alphabet in 4 bits, <a href="https://github.com/biod/BioD/blob/57c81f275faab5cdec4746bfc7af81e31bac0f69/bio/core/base.d#L64">as is done in BioD</a>, because:</p>
 <ul>
 <li>the extra bits accommodate ambiguous bases</li>
 <li>we could then perform fast and efficient complimenting though bit shifting</li>
@@ -203,7 +203,7 @@
 <li>T as 0100</li>
 <li>G as 1000</li>
 </ul>
-<p>However, most of the optimization would come from graph creation, graph update and search so I’m focused on that for now at least.</p>
+<p>However, most of the optimization would come from graph creation, graph update and search which is what I’m focused on for now.</p>
 
 <script src="https://carnivalapp.io/sites/413/init.js"></script>
 <script>
