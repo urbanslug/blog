@@ -9,32 +9,34 @@ Variation graphs are a way to represent the reference genome as a graph.
 For an introduction, read my previous post [An Introduction to Variation Graphs]
 or [Untangling graphical pangenomics] by Erik Garrison.
 
-Core to the variation graph is the maintenance of a tight mapping
+Core to variation graphs is the maintenance of a tight mapping
 between the reference and the graph.
-To maintain this mapping we establish a *coordinate system*, a way to reliably
-associate a section on the graph, within the reference and vice versa.
+To maintain this mapping we establish a *coordinate system* — a way to reliably
+associate a node in the graph, with a position in the reference and vice versa.
 ![coordinate systems]
 
 # A Coordinate System
-We use the concepts of **offset** and **ref** to maintain a coordinate system.
+We use the concepts **offset** and **ref** to maintain a coordinate system.
 
-An **offset** is a 1 indexed number of bases from the first node where the
-variation occurs. They lend themselves nicely to graphs and it's how variations
-are viewed traditionally.
+An **offset** is the number of bases from the first node where the
+variation occurs; offsets are one-indexed in the reference but zero-indexed in
+the graph. Offsets are suited to translating linear reference to graphs because
+it's how variations are viewed within the reference anyway.
 
 For example, we could represent a variation "A" occuring at position 3 in the 
 reference "ATCGAT" as:
 ![offsets]
 
-*Notice how we start counting from 0 in the graph? We call that being 0 indexed.*
+*Notice how we start counting from 0 in the graph? We call that being zero-indexed.*
 
-A **ref** is a unique identifier of the reference from which a variation
-has been derived.
+A **ref** is a unique identifier which we get from the reference
+[description line]. A graph created from just one reference will have all nodes
+contain the same value in the `ref` field.
 
-The following are some problems that arise from this coordinate system that I
-shall delve into in a later post. They are a matter of progressive
-update and alignment not a matter of initial graph construction and are
-therefore beyond the scope of this post.
+As you may have suspected, some problems arise from this coordinate system.
+They are a matter of *progressive update* and *read alignment* but not a matter
+of initial graph construction and are therefore beyond the scope of this post.
+They include:
 
  1. Dealing with nodes that are from alignments i.e. not aligned to a linear
     sequence
@@ -64,22 +66,22 @@ The use of `segment` and `links` to mean `vertices` and `edges` are inspired by
 [A proposal of the Graphical Fragment Assembly format].
 
 We generate a sha256 hash out of the segment, a plus symbol and the offset to
-come with the *id*.
+generate a value for `id`.
 
 For example, given a segment *"ATCGATG"* at offset *34* we can generate an ID
 like so:
 ```
-compute-id(segment, offset)
+generate-id(<string> segment, <natural-number> offset)
   // take note of the + sign in the concatenation
   string-and-offset  <- concatenate("ATCGATG", "+","34")
   hash-as-bytestring <- sha256hash(string-and-offset)
   id                 <- bytestring-to-hex-string(hash-as-bytestring)
   return id
 ```
-I went with hashes over UUIDs because they are reproducible and will
-have constant time lookups in the occasion that we want to *get a node* given we
-know its sequence and offset. This should come in handy in visualization
-especially on the web.
+I chose hashes over UUIDs because they are reproducible and will
+have constant time lookups in the occasion that we want to retrieve a node from
+the graph given its sequence and offset. This should come in handy in
+visualization especially on the web.
 
 I also considered the likelihood of collisions in the hashes. I  expect it to be
 low when dealing with 15,000 base pair size viruses.
@@ -97,7 +99,7 @@ A variation is a `structure` containing the following fields:
 | offset    | offset from zero on the reference                       |
 | ref       | an identifier of the reference it's derived from        |
 
-It is extracted from a VCF file, the main file format for genomic
+It is extracted from a [Variant Call Format] file, the main file format for genomic
 variation data.
 
 
@@ -226,12 +228,13 @@ gen-vg(reference, variations)
 ```
 
 # Visualization and Output
-Graphite supports the generation of graphs in [GFA], [DOT], and the racket
-serialization format which I save under the extension .gra.
-[GFA] is important for interoperability with other tools such as [vg].
+Graphite supports the generation of graphs in:
+[GFA], for interoperability with tools such as [vg] and [bandage];
+[DOT], for visualization; and a serialized form, .gra.
 
-# Optimization Ideas
-Represent the alphabet in 4 bits, [as is done in BioD], because:
+
+# Optimization Idea
+Representing the alphabet in 4 bits, [as is done in BioD], because:
 
  - the extra bits accommodate ambiguous bases
  - we could then perform fast and efficient complimenting though bit shifting
@@ -244,7 +247,7 @@ The alphabet would be:
  - G as 1000
 
 However, most of the optimization would come from graph creation, graph
-update and search so I'm focused on that for now at least.
+update and search which is what I'm focused on for now.
 
 [A proposal of the Graphical Fragment Assembly format]: https://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format
 [Untangling graphical pangenomics]: https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics
@@ -259,3 +262,5 @@ update and search so I'm focused on that for now at least.
 [coordinate systems]: /images/Content/Graphs/coordinate_system.png
 [as is done in BioD]: https://github.com/biod/BioD/blob/57c81f275faab5cdec4746bfc7af81e31bac0f69/bio/core/base.d#L64
 [DOT]: https://en.wikipedia.org/wiki/DOT_(graph_description_language)
+[description line]: https://en.wikipedia.org/wiki/FASTA_format#Description_line
+[Variant Call Format]: https://en.wikipedia.org/wiki/Variant_Call_Format
