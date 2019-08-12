@@ -6,9 +6,9 @@ tags: probability, cryptography, variation
 ---
 
 The underlying graph implementation in graphite uses a [hash table] to implement
-something like an adjacency hash table
+an adjacency hash table
 This is to eliminate duplicate variations/nodes and have constant time lookups
-for some , albeit rare, queries.
+for some, albeit rare, queries.
 The keys in the hash table are SHA256 hashes of  the sequence, a plus symbol,
 and the offset.
 The hashes also serve as internal outgoing edge representations.
@@ -17,7 +17,7 @@ The hashes also serve as internal outgoing edge representations.
 I couldn't find any useful cost data on either the [SHA-2 racket implementation]
 or SHA-2 the algorithm.
 
-## Tim
+## Time
 This isn't worrying to me because hashing is a one off cost which hasn't proved
 expensive with the data I've tested it on so far.
 
@@ -86,26 +86,23 @@ For SHA 256 the halfway probability of a hash collision occurs at 2<sup>128</sup
 *This may be hard to interpret because exponential functions grow very quickly.*
 
 # Applied to variation
-For a 256 bit hash we have 2<sup>256</sup> as our sample size.
+For a 256 bit hash we have 2<sup>256</sup> as our bucket size.
 We then have the square root of that being
 2<sup>(256/2)</sup> = 2<sup>128</sup> approximately 3.4\*10<sup>38</sup> as
-the sample size which has 0.5 chance of collision.
+the sample size which has 0.5 chance of collision and the number of variations
+I expect is much smaller than 2<sup>128</sup>.
 
-The number of variations I expect to deal with is much
-smaller than the square root of 2<sup>256</sup> or 2<sup>128</sup>.
-
-# The human genome
-Even with the human genome that is approximately 3 giga (billion) base pairs in
-length 3*10<sup>6</sup> which is much much smaller than 3.4\*10<sup>38</sup>.
+For comparison consider the human genome which is approximately 3 giga (billion)
+nucleotides in length. 3*10<sup>6</sup> is much much smaller than 3.4\*10<sup>38</sup>.
 
 # Viruses
-Viruses have much shorter genomes in the length of kilo base
-pairs, that is, tens of thousands of base pairs.
-For RSV this is 15,000 which is also much smaller than 3.4*10<sup>38</sup>.
+Viruses have much shorter genomes in the length of kilo (thousand) nucleotides.
+For example RSV is approximately 15*10<sup>3</sup> which is even a lot less than
+than 3.4*10<sup>38</sup> compared to the human genome.
 
 
 # How much variation can actually occur
-The short answer is we don't know for sure but we can estimate it's upper bound.
+The short answer is we don't know for sure but we can estimate its upper bound.
 
 Given we look at genomes that are in the same species or quasi species we expect
 99% similarity. 1% of the human genome would be 3\*10<sup>4</sup> and for RSV
