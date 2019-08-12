@@ -104,13 +104,12 @@ variation data.
 
 
 ## The Graph
-Due to the lack of serialization, an important feature for
-progressive updates, in the [racket graph library] I had to implement a graph
-in graphite. I would have preferred to [add serialization support to graph]
-but I could not do that and still stay on track with graphite.
+I had to implement a graph in graphite due to the lack of serialization (a
+required feature for progressive updates) in the [racket graph library];
+I would have preferred to [add serialization support to graph] but couldn't
+do that and still stay on track with graphite.
 
 The graph is built out of an adjacency map of `id`, key, to `node`, value.
-
 
 Using a `hash table` and not a `list` has the following pros:
 

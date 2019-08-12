@@ -12,7 +12,7 @@ This post is aimed at both programmers and biologists, for this reason,
 I will bring the reader up to speed on a topic before going into it.
 Feel free to skip a sentence, paragraph or even section if you're familiar with a topic.
 
-## Genome sequencing
+# Genome sequencing
 A **[genome]** is the entire genetic code of an organism. While computational data 
 is  represented in binary form, ones, and zeros, biochemical data is represented
 by nitrogenous [bases] that seem to stick out of a [DNA] or [RNA] molecule/strand
@@ -54,12 +54,12 @@ There are two main ways of performing NGS:
 As you would expect, each method has its drawbacks and advantages.
 What we get out of the machine that does the actual sequencing of DNA is called 
 a read and reads have to be [aligned] and
-[assembled](https://en.wikipedia.org/wiki/Sequence_assembly)[2].
+[assembled](https://en.wikipedia.org/wiki/Sequence_assembly)<sup>2</sup>.
 Alignment involves stacking reads on top of each other and assembling is the 
 greater process that involves alignment, algorithmically choosing the best
 alignment and determining what the original sequence was.
 
-There are two broad categories of assembly[4]:
+There are two broad categories of assembly<sup>4</sup>:
 
  * **De-novo assembly:** this is where we sequence a genome that has never been
    sequenced before
@@ -69,7 +69,7 @@ There are two broad categories of assembly[4]:
 
 ## The reference genome
 A [reference genome] is a consensus sequence that accepted as the genome of a 
-species [2]. It’s stored as one long sequence of characters/bases.
+species<sup>2</sup>. It’s stored as one long sequence of characters/bases.
 You may wonder how we can have a known genome of an entire species when every
 individual has a unique genetic code or how [humans are 99% chimp].
 Well, the answer is that genetic code of most organisms
@@ -84,7 +84,7 @@ variation(combine_genomes(man, chimp), monkey) > variation(man, chimp)
 ```
 
 
-## Variation in genomes
+# Variation in genomes
 However, there are still genomic differences and they should not be ignored.
 _The ignoring of differences is implicit in a linear reference._
 A better way to describe them is to say that the differences are segregating within the population.
@@ -110,7 +110,7 @@ A **walk** in a directed graph is traversal from one node to another through an
 edge, for example, *a* to *b* to *d* or *a* to *c* to *d*.
 ![directed graph]
 
-## The current state of affairs
+# The current state of affairs
 Once the reference genome of an organism has been determined, it is stored in
 [fasta format] which contains the sequence and metadata. Moving forward, anyone
 sequencing the same species aligns against this reference. Differences that occur
@@ -121,10 +121,10 @@ positions plus metadata. These VCF files are spread out amongst researchers and
 aid in the particular thing being researched but generally don’t contribute in
 and of themselves to the general genomic body of knowledge.
 However, every once in awhile the reference is updated but not on a fixed
-schedule [2].
+schedule<sup>2</sup>.
 It’s for this reason that the variation graph would be a good way of
 representing the reference. There is research that confirmed that short
-reads align better to the variation graph than to a linear reference [3].
+reads align better to the variation graph than to a linear reference<sup>3</sup>.
 
 
 # Graphs and genomes
@@ -157,7 +157,7 @@ Sequence graphs or equivalent structures have been used previously to represent
 multiple sequences that contain shared differences or ambiguities in a single
 structure. Related structures used in genome assembly which collapse long
 repeated sequences, so the same nodes are used for different regions of the
-genome include the [De Bruijn graph].[5] Graphs to represent genetic variation
+genome include the [De Bruijn graph]<sup>5</sup>. Graphs to represent genetic variation
 have previously been used for microbial genomes & localized regions of the human
 genome such as the major [histocompatibility] complex.
 
@@ -177,11 +177,26 @@ Another advantage is the size of its genome; the reference stands at
 15,206 bases which translate to 15206 bytes or 14.8 KB of memory.
 
 # Generating a variation graph
-I’m going to describe the method used by graphite for building the graph.
-As of writing this, [graphite] can’t generate a graph out of reads alone.
-It supports a reference in fasta and a single VCF file.
+As of writing this, [graphite] can’t generate a graph out of reads alone
+(perform an alignment). It supports a reference in fasta and a single VCF file.
 
-I'll detail the algorithm in a [later post].
+I'll detail the algorithm in a [later post] but the gist of it is this:
+
+ 1. Load the reference into memory or read a chunk of it if you wish
+ 2. Load your variation data from a VCF
+ 4. Organize variations into structs containing
+    * variation
+    * position
+    * reference
+ 3. Sort the variations in ascending order by position
+ 4. Using a right fold function - for support of streams
+    1. fold through the list of variations
+    2. At each variation position split the reference and create a list of:
+        * the string to the left
+        * string to the right
+        * a list of the variation and the base that was there originally (this will be a list of lists)
+ 5.  Create directed graph out of the list of lists generated by the fold
+    * `'((a b) (a c)) to become a node with edges from a to b and c to be and a->b and a->b`
 
 ## Variation
 A variation is a struct of `position` and `sequence`.
@@ -214,6 +229,7 @@ We export the graph in dot format and visualize via [graphviz]. Serialization is
 [all graphs]: /images/Content/Graphs/all_graphs.png
 [directed graph]: /images/Content/Graphs/directed_graph.png
 [sequence graph]: /images/Content/Graphs/example.png
+
 [Human orthopneumovirus]: https://en.wikipedia.org/wiki/Human_orthopneumovirus 
 [unweighted-graph/directed]: https://docs.racket-lang.org/graph/index.html#%28def._%28%28lib._graph%2Fmain..rkt%29._unweighted-graph%2Fdirected%29%29
 [racket graph library graph]: https://github.com/stchang/graph
