@@ -113,7 +113,7 @@
 </table>
 <p>It is extracted from a <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">Variant Call Format</a> file, the main file format for genomic variation data.</p>
 <h2 id="the-graph">The Graph</h2>
-<p>Due to the lack of serialization, an important feature for progressive updates, in the <a href="https://github.com/stchang/graph">racket graph library</a> I had to implement a graph in graphite. I would have preferred to <a href="https://github.com/stchang/graph/issues/47">add serialization support to graph</a> but I could not do that and still stay on track with graphite.</p>
+<p>I had to implement a graph in graphite due to the lack of serialization (a required feature for progressive updates) in the <a href="https://github.com/stchang/graph">racket graph library</a>; I would have preferred to <a href="https://github.com/stchang/graph/issues/47">add serialization support to graph</a> but couldn’t do that and still stay on track with graphite.</p>
 <p>The graph is built out of an adjacency map of <code>id</code>, key, to <code>node</code>, value.</p>
 <p>Using a <code>hash table</code> and not a <code>list</code> has the following pros:</p>
 <ul>
@@ -233,7 +233,7 @@
 
 <h1 id="background">Background</h1>
 <p>This post is aimed at both programmers and biologists, for this reason, I will bring the reader up to speed on a topic before going into it. Feel free to skip a sentence, paragraph or even section if you’re familiar with a topic.</p>
-<h2 id="genome-sequencing">Genome sequencing</h2>
+<h1 id="genome-sequencing">Genome sequencing</h1>
 <p>A <strong><a href="https://en.wikipedia.org/wiki/Genome">genome</a></strong> is the entire genetic code of an organism. While computational data is represented in binary form, ones, and zeros, biochemical data is represented by nitrogenous <a href="https://en.wikipedia.org/wiki/Base_(chemistry)">bases</a> that seem to stick out of a <a href="https://en.wikipedia.org/wiki/DNA">DNA</a> or <a href="https://en.wikipedia.org/wiki/RNA">RNA</a> molecule/strand abbreviated A, T, C, and G for DNA and A, G, C and U for RNA. We care about RNA because some viruses have RNA and not DNA.</p>
 <p>If this is confusing, you can think of a strand of DNA or RNA as a thread with knots where each knot is a base.</p>
 <p>A <strong>sequence</strong> is an <em>ordering</em> of something. A programming analog is a sequence vs a collection. Sequences are ordered, for example lists, and therefore have the potential for a <em>next</em> and a <em>previous</em> element while collections are just data thrown together, for example, a dictionary or a set.</p>
@@ -243,18 +243,18 @@
 <li>Shear the DNA into small fragments, sequence those and try to build back the original sequence. An analogy that’s used is shredding a newspaper article then trying to recreate it.</li>
 <li>Run the DNA strand like a train would run through a tunnel through a pore and read the sequence of bases. There are other methods of reading entire strands of DNA but they don’t matter in this context.</li>
 </ol>
-<p>As you would expect, each method has its drawbacks and advantages. What we get out of the machine that does the actual sequencing of DNA is called a read and reads have to be <a href="https://en.wikipedia.org/wiki/Sequence_alignment">aligned</a> and <a href="https://en.wikipedia.org/wiki/Sequence_assembly">assembled</a>[2]. Alignment involves stacking reads on top of each other and assembling is the greater process that involves alignment, algorithmically choosing the best alignment and determining what the original sequence was.</p>
-<p>There are two broad categories of assembly[4]:</p>
+<p>As you would expect, each method has its drawbacks and advantages. What we get out of the machine that does the actual sequencing of DNA is called a read and reads have to be <a href="https://en.wikipedia.org/wiki/Sequence_alignment">aligned</a> and <a href="https://en.wikipedia.org/wiki/Sequence_assembly">assembled</a><sup>2</sup>. Alignment involves stacking reads on top of each other and assembling is the greater process that involves alignment, algorithmically choosing the best alignment and determining what the original sequence was.</p>
+<p>There are two broad categories of assembly<sup>4</sup>:</p>
 <ul>
 <li><strong>De-novo assembly:</strong> this is where we sequence a genome that has never been sequenced before</li>
 <li><strong>Mapping assembly:</strong> this is sequencing an organism’s unique code despite having the general sequence for the species. What you get from services like <a href="https://www.23andme.com/en-int/">23andMe</a>.</li>
 </ul>
 <h2 id="the-reference-genome">The reference genome</h2>
-<p>A <a href="https://en.wikipedia.org/wiki/Reference_genome">reference genome</a> is a consensus sequence that accepted as the genome of a species [2]. It’s stored as one long sequence of characters/bases. You may wonder how we can have a known genome of an entire species when every individual has a unique genetic code or how <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">humans are 99% chimp</a>. Well, the answer is that genetic code of most organisms is similar and this similarity increases as we narrow down taxonomically. When we say that <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">a human is closer to a chimp than a monkey</a> what we mean is that we can observe greater variation between the genomes of the two, man+chimp vs monkey, than man vs chimp alone.</p>
+<p>A <a href="https://en.wikipedia.org/wiki/Reference_genome">reference genome</a> is a consensus sequence that accepted as the genome of a species<sup>2</sup>. It’s stored as one long sequence of characters/bases. You may wonder how we can have a known genome of an entire species when every individual has a unique genetic code or how <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">humans are 99% chimp</a>. Well, the answer is that genetic code of most organisms is similar and this similarity increases as we narrow down taxonomically. When we say that <a href="https://www.scientificamerican.com/article/tiny-genetic-differences-between-humans-and-other-primates-pervade-the-genome/">a human is closer to a chimp than a monkey</a> what we mean is that we can observe greater variation between the genomes of the two, man+chimp vs monkey, than man vs chimp alone.</p>
 <p>This isn’t actual math but may help clear things up.</p>
 <pre><code>variation(combine_genomes(man, chimp), monkey) &gt; variation(man, chimp)
 </code></pre>
-<h2 id="variation-in-genomes">Variation in genomes</h2>
+<h1 id="variation-in-genomes">Variation in genomes</h1>
 <p>However, there are still genomic differences and they should not be ignored. <em>The ignoring of differences is implicit in a linear reference.</em> A better way to describe them is to say that the differences are segregating within the population. We may also want to carry out a comparison between species or between related species which is done in <a href="https://en.wikipedia.org/wiki/Pan-genome">pangenomics</a>.</p>
 <p>DNA has sections which are identical between individuals (conserved regions), and the number of these sections grow as we narrow down taxonomically and there are sections which vary between individuals, for example, the short sequence repeats that are compared in paternity testing.</p>
 <p><a href="https://en.wikipedia.org/wiki/Graph_theory">Graph theory</a> is an area in math that can help us understand variable regions within genomes. The idea of representing genomes as graphs isn’t new, however, the low number of tools like <a href="https://github.com/vgteam/vg">vg</a> which apply graph theory to genomics and the little that we know about genomes has been a drawback.</p>
@@ -262,8 +262,8 @@
 <p>A <a href="https://en.wikipedia.org/wiki/Graph_theory">graph</a> is a series of vertices (also known as nodes) and edges. <img src="/images/Content/Graphs/all_graphs.png" alt="all graphs" /></p>
 <p>For genome graphs, we focus on directed acyclic graphs.<br />
 A <strong>walk</strong> in a directed graph is traversal from one node to another through an edge, for example, <em>a</em> to <em>b</em> to <em>d</em> or <em>a</em> to <em>c</em> to <em>d</em>. <img src="/images/Content/Graphs/directed_graph.png" alt="directed graph" /></p>
-<h2 id="the-current-state-of-affairs">The current state of affairs</h2>
-<p>Once the reference genome of an organism has been determined, it is stored in <a href="https://en.wikipedia.org/wiki/FASTA_format">fasta format</a> which contains the sequence and metadata. Moving forward, anyone sequencing the same species aligns against this reference. Differences that occur in less than 1% of the reads are usually thrown out; the ones that aren’t thrown out don’t help to update the reference but are stored in <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">Variant Call Format (VCF)</a> which contains the variation data and their positions plus metadata. These VCF files are spread out amongst researchers and aid in the particular thing being researched but generally don’t contribute in and of themselves to the general genomic body of knowledge. However, every once in awhile the reference is updated but not on a fixed schedule [2]. It’s for this reason that the variation graph would be a good way of representing the reference. There is research that confirmed that short reads align better to the variation graph than to a linear reference [3].</p>
+<h1 id="the-current-state-of-affairs">The current state of affairs</h1>
+<p>Once the reference genome of an organism has been determined, it is stored in <a href="https://en.wikipedia.org/wiki/FASTA_format">fasta format</a> which contains the sequence and metadata. Moving forward, anyone sequencing the same species aligns against this reference. Differences that occur in less than 1% of the reads are usually thrown out; the ones that aren’t thrown out don’t help to update the reference but are stored in <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">Variant Call Format (VCF)</a> which contains the variation data and their positions plus metadata. These VCF files are spread out amongst researchers and aid in the particular thing being researched but generally don’t contribute in and of themselves to the general genomic body of knowledge. However, every once in awhile the reference is updated but not on a fixed schedule<sup>2</sup>. It’s for this reason that the variation graph would be a good way of representing the reference. There is research that confirmed that short reads align better to the variation graph than to a linear reference<sup>3</sup>.</p>
 <h1 id="graphs-and-genomes">Graphs and genomes</h1>
 <p>Graphs that are applied to genomes are generally called <strong>genome graphs</strong>. However, there are two more specific categories which are sequence graphs and variation graphs.</p>
 <p>As an example assume that we zoom on a hypothetical reference: <strong>“ACTGAATTTGTA”</strong></p>
@@ -293,14 +293,39 @@ A <strong>walk</strong> in a directed graph is traversal from one node to anothe
 <p>In this case, a single walk would represent a possible genome. Compared to the reference, this variation information is maintained and the graph still holds the data that was in reference.</p>
 <h2 id="sequence-graphs">Sequence Graphs</h2>
 <p>These are graphs with sequence labels on the nodes or edges.</p>
-<p>Sequence graphs or equivalent structures have been used previously to represent multiple sequences that contain shared differences or ambiguities in a single structure. Related structures used in genome assembly which collapse long repeated sequences, so the same nodes are used for different regions of the genome include the <a href="https://en.wikipedia.org/wiki/De_Bruijn_graph">De Bruijn graph</a>.[5] Graphs to represent genetic variation have previously been used for microbial genomes &amp; localized regions of the human genome such as the major <a href="https://en.wikipedia.org/wiki/Histocompatibility">histocompatibility</a> complex.</p>
+<p>Sequence graphs or equivalent structures have been used previously to represent multiple sequences that contain shared differences or ambiguities in a single structure. Related structures used in genome assembly which collapse long repeated sequences, so the same nodes are used for different regions of the genome include the <a href="https://en.wikipedia.org/wiki/De_Bruijn_graph">De Bruijn graph</a><sup>5</sup>. Graphs to represent genetic variation have previously been used for microbial genomes &amp; localized regions of the human genome such as the major <a href="https://en.wikipedia.org/wiki/Histocompatibility">histocompatibility</a> complex.</p>
 <h2 id="variation-graphs">Variation Graphs</h2>
 <p>A variation graph is a sequence graph together with a set of paths representing possible sequences from a population. However, what makes it so unique is it’s tight mapping between the graph and the reference.</p>
 <h2 id="variation-graphs-and-rsv">Variation graphs and RSV</h2>
 <p><a href="https://en.wikipedia.org/wiki/Human_orthopneumovirus">Human orthopneumovirus</a>, formerly known as Respiratory Syncytial Virus (RSV), is a single-stranded RNA virus and a good candidate for exploration using the variation graph because viruses don’t have proofreading in their genetic code. Proofreading is a process in which the cell ensures that it has copied the genetic code correctly in preparation for cell division. Without proofreading, errors will be commonplace leading to high mutation rates. Another advantage is the size of its genome; the reference stands at 15,206 bases which translate to 15206 bytes or 14.8 KB of memory.</p>
 <h1 id="generating-a-variation-graph">Generating a variation graph</h1>
-<p>I’m going to describe the method used by graphite for building the graph. As of writing this, <a href="https://github.com/urbanslug/graphite">graphite</a> can’t generate a graph out of reads alone. It supports a reference in fasta and a single VCF file.</p>
-<p>I’ll detail the algorithm in a <a href="/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html">later post</a>.</p>
+<p>As of writing this, <a href="https://github.com/urbanslug/graphite">graphite</a> can’t generate a graph out of reads alone (perform an alignment). It supports a reference in fasta and a single VCF file.</p>
+<p>I’ll detail the algorithm in a <a href="/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html">later post</a> but the gist of it is this:</p>
+<ol style="list-style-type: decimal">
+<li>Load the reference into memory or read a chunk of it if you wish</li>
+<li>Load your variation data from a VCF</li>
+<li>Organize variations into structs containing
+<ul>
+<li>variation</li>
+<li>position</li>
+<li>reference</li>
+</ul></li>
+<li>Sort the variations in ascending order by position</li>
+<li>Using a right fold function - for support of streams
+<ol style="list-style-type: decimal">
+<li>fold through the list of variations</li>
+<li>At each variation position split the reference and create a list of:
+<ul>
+<li>the string to the left</li>
+<li>string to the right</li>
+<li>a list of the variation and the base that was there originally (this will be a list of lists)</li>
+</ul></li>
+</ol></li>
+<li>Create directed graph out of the list of lists generated by the fold
+<ul>
+<li><code>'((a b) (a c)) to become a node with edges from a to b and c to be and a-&gt;b and a-&gt;b</code></li>
+</ul></li>
+</ol>
 <h2 id="variation">Variation</h2>
 <p>A variation is a struct of <code>position</code> and <code>sequence</code>.</p>
 <p>I’m using the <a href="https://github.com/stchang/graph">racket graph library graph</a> to generate a graph out of the nested lists and treating the graph as a “dynamic tree”.</p>
