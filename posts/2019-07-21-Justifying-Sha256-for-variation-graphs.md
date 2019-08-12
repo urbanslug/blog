@@ -5,11 +5,12 @@ date: 2019-07-21 10:12:30
 tags: probability, cryptography, variation
 ---
 
-The underlying graph implementation in graphite uses a [hash table] to implement
-an adjacency hash table.
-The keys in the hash table are SHA256 hashes of: the sequence, a plus symbol,
-and the offset.
-Hashes grant us outgoing edge representations, constant time lookups for
+Graphite's underlying graph implementation is an adjacency hash table, a
+technical way of saying that graphite uses a [hash table] to implement the graph.
+The keys of the hash table are SHA256 hashes of the concatenation of the
+sequence, a plus symbol, and the offset.
+
+Hashes also grant us outgoing edge representations, constant time lookups for
 some queries, and eliminate duplicates.
 
 # Cost of hashing
@@ -33,17 +34,16 @@ A nice effect from hashing is that we can compare simple graphs derived from the
 same reference by comparing their hashes.
 
 # Probability of collision
-An approximation for the probability of a collision is
+We can approximate the probability of a collision using the function
+P(n) = 1-e<sup>-n<sup>2</sup>/(2d)</sup>. Where *n is the sample size* and *d
+is the total number of "buckets"*.
+For more about calculating this probability check out [Birthday Problem Approximations].
 
-
-P(n) = 1-e<sup>-n<sup>2</sup>/(2d)</sup>
-
-Where *n is the sample size* and *d is the total number of "buckets"*.
 To avoid a collision we need to make sure that our variations are fewer than the
 square root of the bucket size--the point at which we get 0.5 chance of having
 two different strings sharing the same hash.
-
-Read more about it on [Birthday Problem Approximations].
+We can see it as the halfway point in a [binomial distribution] where past 0.5 we
+consider a collision to have occurred.
 
 Here's the Racket code I used to generate plots and approximate collision
 probability.
@@ -83,9 +83,8 @@ For SHA 256 the halfway probability of a hash collision occurs at 2<sup>128</sup
 ## The birthday attack
 Hashing collisions are studied in cryptography where an attacker comes up with
 a string that will generate the same hash (cause a collision).
-I won't go more into collisions but [birthday attack] and [birthday problem] can
-provide further reading. The [birthday attack] wikipedia page even contains a
-table showing the sample size and the probability of random collision.
+They are out of the scope of this post but [birthday attack] and [birthday problem]
+can provide further reading.
 There's also this lecture on YouTube from the Coursera cryptography course
 [Cryptography generic birthday attack (collision resistance)].
 
@@ -94,8 +93,7 @@ There's also this lecture on YouTube from the Coursera cryptography course
 For a 256 bit hash we have 2<sup>256</sup> as our bucket size.
 We then have the square root of that being
 2<sup>(256/2)</sup> = 2<sup>128</sup> approximately 3.4\*10<sup>38</sup> as
-the sample size which has 0.5 chance of collision. The number of variations
-we expect is much smaller than 2<sup>128</sup>.
+the sample size which has 0.5 chance of collision.
 
 For comparison, consider the human genome which is approximately 3 giga (billion)
 nucleotides in length. As you can see, 3*10<sup>6</sup> is much much smaller
@@ -105,8 +103,9 @@ Viruses have much shorter genomes ranging in kilo (thousand) nucleotides.
 For example RSV is approximately 15\*10<sup>3</sup> which is even much than
 than 3.4*10<sup>38</sup> compared to the human genome.
 
-As a side note, SHA256 is [used to uniquely identify bitcoin] which there are a
-lot of.
+The number of variations we expect in these genomes is therefore much smaller
+than 2<sup>128</sup>. As a side note, SHA256 is
+[used to uniquely identify bitcoin] which there are a lot of.
 
 # How much variation can actually occur
 The short answer is we don't know for sure but we can estimate its upper bound.
@@ -139,3 +138,4 @@ hashing in terms of both disk and/or memory.
 [hash table]: https://en.wikipedia.org/wiki/Hash_table
 [SHA-2 racket implementation]: https://docs.racket-lang.org/sha/index.html
 [used to uniquely identify bitcoin]:  https://youtu.be/bBC-nXj3Ng4?t=343
+[binomial distribution]: https://en.wikipedia.org/wiki/Binomial_distribution
