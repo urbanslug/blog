@@ -2,7 +2,7 @@
 layout: post
 title: Jusifying SHA256 in variation graphs
 date: 2019-07-21 10:12:30
-tags: probability, cryptography, variation
+tags: probability, cryptography, variation, bioinformatics
 ---
 
 Graphite's underlying graph implementation is an adjacency hash table, a
@@ -42,7 +42,7 @@ is the total number of "buckets"*.
 For more about calculating this probability check out [Birthday Problem Approximations].
 
 To avoid a collision we need to make sure that our variations are fewer than the
-square root of the bucket sizethe point at which we get 0.5 chance of having
+square root of the bucket size—the point at which we get 0.5 chance of having
 two different strings sharing the same hash.
 Think of it as the halfway point in a [binomial distribution] where past 0.5 we
 consider a collision to have occurred. In reality the halfway point occurs
