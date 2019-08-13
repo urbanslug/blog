@@ -5,7 +5,7 @@ date: 2019-07-15 19:54:49
 tags: variation graphs, graphs, bioinformatics
 ---
 
-Variation graphs are a way to represent the reference genome as a graph.
+Variation graphs are a way of representing the reference genome as a graph.
 For an introduction, read my previous post [An Introduction to Variation Graphs]
 or [Untangling graphical pangenomics] by Erik Garrison.
 
