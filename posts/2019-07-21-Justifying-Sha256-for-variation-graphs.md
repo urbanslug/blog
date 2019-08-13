@@ -24,10 +24,10 @@ This isn't worrying to me because hashing is a one off cost which hasn't proved
 expensive with the data I've tested it on so far.
 
 ## Space
-This is more of a concern because we expect graphs to grow with time. 
+This is more of a concern because we expect graphs to grow with time.
 
 A SHA 256 hash takes the same amount of space as a 32 characters string
-(8*32=256) therefore in variations containing sequences below 32 nucleotides 
+(8*32=256) therefore in variations containing sequences below 32 nucleotides
 long we store a hash that is larger than the variation we are hashing.
 This is exemplified in SNP data.
 
@@ -42,18 +42,17 @@ is the total number of "buckets"*.
 For more about calculating this probability check out [Birthday Problem Approximations].
 
 To avoid a collision we need to make sure that our variations are fewer than the
-square root of the bucket size--the point at which we get 0.5 chance of having
+square root of the bucket sizethe point at which we get 0.5 chance of having
 two different strings sharing the same hash.
-
-
-We can see it as the halfway point in a [binomial distribution] where past 0.5 we
+Think of it as the halfway point in a [binomial distribution] where past 0.5 we
 consider a collision to have occurred. In reality the halfway point occurs
 **above** the square root but it's still an easy way of verifying that your
 sample size is within a safe range.
 
 
 
-Here's a Racket function I used to approximate collision probability
+Here's a Racket function derived from the one above that I used to approximate
+collision probability.
 ```
 (define (probability-of-collision  d n)
   (- 1 (/ 1 (exp (/ (expt n 2) (* 2 d))))))
@@ -61,8 +60,9 @@ Here's a Racket function I used to approximate collision probability
 
 ## The birthday paradox
 Using the approximation function above we calculate that for every group of 23
-randomly selected people the probability that two of them share a birthday is
-0.5 and the probability is 1 for 357 individuals.
+randomly selected people, the probability that two of them share a birthday is
+0.5; and in a sample of 357 people the probability that two of them share a
+birthday is 1.
 ![birthday plot]
 
 ## SHA 256
@@ -108,10 +108,12 @@ Here's the Racket code I used to generate these plots
 ```
 
 ## The birthday attack
-Hashing collisions are studied in cryptography where an attacker comes up with
-a string that will generate the same hash (cause a collision).
-They are out of the scope of this post but [birthday attack] and [birthday problem]
-can provide further reading.
+Hash collisions are studied in cryptography. In the [birthday attack] an attacker
+comes up with a string that will generate the same hash as an unknown or
+different but known string causing a collision.
+
+This is out of the scope of this post but [birthday attack] and
+[birthday problem] wikipedia pages can provide further reading.
 There's also this lecture on YouTube from the Coursera cryptography course
 [Cryptography generic birthday attack (collision resistance)].
 
@@ -120,7 +122,7 @@ There's also this lecture on YouTube from the Coursera cryptography course
 For a 256 bit hash we have 2<sup>256</sup> as our bucket size.
 We then have the square root of that being
 2<sup>(256/2)</sup> = 2<sup>128</sup> approximately 3.4\*10<sup>38</sup> as
-the sample size which has 0.5 chance of collision.
+the sample size below which we have 0.5 chance of collision.
 
 For context, consider the human genome which is approximately 3 giga (billion)
 nucleotides in length. As you can see, 3*10<sup>6</sup> is much much smaller
