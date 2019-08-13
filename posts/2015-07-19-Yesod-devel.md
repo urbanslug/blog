@@ -1,7 +1,6 @@
-
 ---
 layout: post
-title: Yesod-devel
+title: yesod-devel
 date: 2015-07-19 15:35:14
 tags: Programming, GSoC, Yesod, Yesod-Devel
 ---

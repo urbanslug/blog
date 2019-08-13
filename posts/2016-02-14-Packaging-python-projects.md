@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Packaging python projects
+title: Packaging Python Projects
 date: 2016-02-14 17:45:13
 tags: Python, packaging
 ---

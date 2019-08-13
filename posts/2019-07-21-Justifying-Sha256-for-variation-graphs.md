@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Jusifying SHA256 in graphite
+title: Jusifying SHA256 in Graphite
 date: 2019-07-21 10:12:30
 tags: probability, cryptography, variation, bioinformatics
 ---

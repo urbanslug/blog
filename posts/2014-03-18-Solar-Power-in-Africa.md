@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Solar power in Africa
+title: Solar Power in Africa
 date: 2014-03-18 17:34:23
 tags: Energy, Africa
 ---

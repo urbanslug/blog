@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Emacs cheatsheet
+title: Emacs Cheatsheet
 date: 2015-09-11 01:33:45
 tags: Emacs
 ---

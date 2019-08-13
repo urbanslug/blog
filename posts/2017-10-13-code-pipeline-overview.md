@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Pipeline as Code - an overview
+title: Pipeline as Code—Overview
 date:  2017-10-13 14:23:19
 tags: Devops, CI, CD
 ---

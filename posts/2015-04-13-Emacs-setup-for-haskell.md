@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Emacs setup for haskell
+title: Emacs Setup for Haskell
 date: 2015-04-13 03:15:33
 Categories: Emacs, Haskell
 ---

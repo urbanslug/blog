@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  ThreadScope patch
+title:  ThreadScope Patch
 date: 2014-03-05 22:45:12
 tags: Programming, Haskell
 ---
