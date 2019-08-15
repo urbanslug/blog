@@ -35,7 +35,7 @@ A SHA 256 hash takes the same amount of space as a 32 characters string
 we store a hash that is larger than the variation we are hashing
 (ignoring the plus symbol and offset). This is exemplified in SNP data.
 
-## Graph comparison
+## Graph Comparison
 A nice effect from hashing is that we can compare simple graphs derived from the
 same reference by comparing their hashes. It goes without saying that there are
 better or more general ways to perform graph comparison.
