@@ -48,7 +48,7 @@
     
 </div>
 
-<p>Graphite’s underlying graph implementation is an adjacency hash table, a complicated way of saying that graphite uses a <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a> to implement the graph. The keys of the hash table are SHA256 hashes of the concatenation of: the <em>sequence</em>, a <em>plus symbol(+)</em>, and the <em>offset</em>.</p>
+<p><a href="https://github.com/urbanslug/graphite">Graphite’s</a> underlying graph implementation is an adjacency hash table, a complicated way of saying that graphite uses a <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a> to implement the graph. The keys of the hash table are SHA256 hashes of the concatenation of: the <em>sequence</em>, a <em>plus symbol(+)</em>, and the <em>offset</em>.</p>
 <p>Hashes also grant us outgoing edge representations, constant time lookups for queries of known sequence and position, and eliminate duplicates.</p>
 <h1 id="computational-cost-of-hashing">Computational Cost of Hashing</h1>
 <p>We have to compute a hash to uniquely identify each variation and we have to store each hash twice: first, as a <em>key</em> in the adjacency hash table; and second, as a field in the variation <code>structure</code> <em>value</em>. We must therefore examine the time and space costs of hashing.</p>
