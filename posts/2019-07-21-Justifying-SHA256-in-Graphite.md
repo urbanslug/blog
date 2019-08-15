@@ -5,7 +5,7 @@ date: 2019-07-21 10:12:30
 tags: probability, cryptography, variation, bioinformatics
 ---
 
-Graphite's underlying graph implementation is an adjacency hash table, a
+[Graphite's] underlying graph implementation is an adjacency hash table, a
 complicated way of saying that graphite uses a [hash table] to implement the
 graph. The keys of the hash table are SHA256 hashes of the concatenation of: the
 *sequence*, a *plus symbol(+)*, and the *offset*.
@@ -173,3 +173,4 @@ hashing in terms of both disk and/or memory.
 [used to uniquely identify bitcoin]:  https://youtu.be/bBC-nXj3Ng4?t=343
 [binomial distribution]: https://en.wikipedia.org/wiki/Binomial_distribution
 [SHA-2]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+[Graphite's]: https://github.com/urbanslug/graphite
