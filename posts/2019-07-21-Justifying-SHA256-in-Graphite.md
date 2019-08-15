@@ -7,35 +7,40 @@ tags: probability, cryptography, variation, bioinformatics
 
 Graphite's underlying graph implementation is an adjacency hash table, a
 complicated way of saying that graphite uses a [hash table] to implement the
-graph. The keys of the hash table are SHA256 hashes of the concatenation of the
-sequence, a plus symbol, and the offset.
+graph. The keys of the hash table are SHA256 hashes of the concatenation of: the
+*sequence*, a *plus symbol(+)*, and the *offset*.
 
 Hashes also grant us outgoing edge representations, constant time lookups for
-some queries, and eliminate duplicates.
+queries of known sequence and position, and eliminate duplicates.
 
-# Cost of hashing
+# Computational Cost of Hashing
+We have to compute a hash to uniquely identify each variation and we have to
+store each hash twice: first, as a *key* in the adjacency hash table; and second,
+as  a field in the variation `structure` *value*.
+We must therefore examine the time and space costs of hashing.
 
 ## Time
 I couldn't find any useful cost data on either the [SHA-2 racket implementation]
-or SHA-2 the algorithm but being a string algorithm you can assume
+or [SHA-2], the algorithm itself, but being a string algorithm you can assume
 it works in O(n) time, n being the length of the string being hashed.
 
-This isn't worrying to me because hashing is a one off cost which hasn't proved
-expensive with the data I've tested it on so far.
+This isn't worrying because hashing is a one off cost which has proved
+inexpensive with the current variation data-set.
 
 ## Space
 This is more of a concern because we expect graphs to grow with time.
 
 A SHA 256 hash takes the same amount of space as a 32 characters string
-(8*32=256) therefore in variations containing sequences below 32 nucleotides
-long we store a hash that is larger than the variation we are hashing.
-This is exemplified in SNP data.
+(8*32=256). Therefore, for variations with sequences fewer than 32 nucleotides,
+we store a hash that is larger than the variation we are hashing
+(ignoring the plus symbol and offset). This is exemplified in SNP data.
 
 ## Graph comparison
 A nice effect from hashing is that we can compare simple graphs derived from the
-same reference by comparing their hashes.
+same reference by comparing their hashes. It goes without saying that there are
+better or more general ways to perform graph comparison.
 
-# Probability of collision
+# Probability of Collision
 We can approximate the probability of a collision using the function
 P(n) = 1-e<sup>-n<sup>2</sup>/(2d)</sup>. Where *n is the sample size* and *d
 is the total number of "buckets"*.
@@ -58,11 +63,11 @@ collision probability.
   (- 1 (/ 1 (exp (/ (expt n 2) (* 2 d))))))
 ```
 
-## The birthday paradox
-Using the approximation function above we calculate that for every group of 23
-randomly selected people, the probability that two of them share a birthday is
-0.5; and in a sample of 357 people the probability that two of them share a
-birthday is 1.
+## The Birthday Paradox
+Using the approximation function above, we estimate that for every group of 23
+randomly selected people (n=23, d=356), the probability that two of them share a
+birthday is 0.5; and in a sample of 357 people (n=357, d=356), the probability
+that two of them share a birthday is 1.
 ![birthday plot]
 
 ## SHA 256
@@ -107,10 +112,11 @@ Here's the Racket code I used to generate these plots
 (plot-probability-of-collison (expt 2 256) "SHA 256")
 ```
 
-## The birthday attack
-Hash collisions are studied in cryptography. In the [birthday attack] an attacker
-comes up with a string that will generate the same hash as an unknown or
-different but known string causing a collision.
+## The Birthday Attack
+In the [birthday attack], an attacker when given a hash, guesses a string that
+will generate the same hash. If there no collisions the attacker would have to
+come up with the exact string that generated the hash. If there are collisions
+the attacker could get away with guessing a different string.
 
 This is out of the scope of this post but [birthday attack] and
 [birthday problem] wikipedia pages can provide further reading.
@@ -118,26 +124,24 @@ There's also this lecture on YouTube from the Coursera cryptography course
 [Cryptography generic birthday attack (collision resistance)].
 
 
-# Applied to variation
+# Applied to Variation
 For a 256 bit hash we have 2<sup>256</sup> as our bucket size.
 We then have the square root of that being
 2<sup>(256/2)</sup> = 2<sup>128</sup> approximately 3.4\*10<sup>38</sup> as
 the sample size below which we have 0.5 chance of collision.
 
-For context, consider the human genome which is approximately 3 giga (billion)
-nucleotides in length. As you can see, 3*10<sup>6</sup> is much much smaller
-than  3.4\*10<sup>38</sup>.
-
-Viruses have much shorter genomes ranging in kilo (thousand) nucleotides.
-For example RSV is approximately 15\*10<sup>3</sup> which is even much than
-than 3.4*10<sup>38</sup> compared to the human genome.
+For context, the human genome is approximately 3\*10<sup>6</sup> (billion)
+nucleotides long, which is much smaller than  3.4\*10<sup>38</sup>.
+Viruses have even shorter genomes, ranging in kilo (thousand) nucleotides,
+for example, the RSV genome is approximately 15\*10<sup>3</sup> nucleotides long
+which is even shorter than 3.4*10<sup>38</sup> when compared to the human genome.
 
 The number of variations we expect in these genomes is therefore much smaller
 than 2<sup>128</sup>. As a side note, SHA256 is
 [used to uniquely identify bitcoin] which there are a lot of.
 
-# How much variation can actually occur
-The short answer is we don't know for sure but we can estimate its upper bound.
+# How Much Variation Can Actually Occur?
+The short answer is: we don't know for sure but we can estimate its upper bound.
 
 Given we look at genomes that are in the same species or quasi species we expect
 99% similarity.
@@ -168,3 +172,4 @@ hashing in terms of both disk and/or memory.
 [SHA-2 racket implementation]: https://docs.racket-lang.org/sha/index.html
 [used to uniquely identify bitcoin]:  https://youtu.be/bBC-nXj3Ng4?t=343
 [binomial distribution]: https://en.wikipedia.org/wiki/Binomial_distribution
+[SHA-2]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
