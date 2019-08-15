@@ -3,7 +3,7 @@
 
 html,
 body {
-    color: rgba(0,0,0,0.87);
+    color: rgb(36, 41, 46);;
     font-size: 100%;
     font-family: 'Noto Serif SC', sans-serif;
     margin: 0px;
@@ -125,13 +125,11 @@ p {
 
 p code {
     background: rgba(27,31,35,.06);
-    color: #57484d;
     padding: 0 5px 0 5px;
 }
 
 li code {
     background: rgba(27,31,35,.06);
-    color: #57484d;
     padding: 0 5px 0 5px;
 }
 
@@ -246,7 +244,6 @@ td.sourceCode { padding-left: 5px; }
 
 pre[class],
 code {
-    color: #57484d;
     text-shadow: 0 1px white;
     font-family: SFMono-Regular, Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     direction: ltr;
