@@ -3,6 +3,13 @@
 
 
 <url>
+	<loc>http://blog.urbanslug.com/posts/2019-07-21-Justifying-SHA256-in-Graphite.html</loc>
+	<lastmod>2019-07-21</lastmod>
+	<changefreq>weekly</changefreq>
+	<priority>0.5</priority>
+</url>
+
+<url>
 	<loc>http://blog.urbanslug.com/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html</loc>
 	<lastmod>2019-07-15</lastmod>
 	<changefreq>weekly</changefreq>
@@ -87,14 +94,14 @@
 </url>
 
 <url>
-	<loc>http://blog.urbanslug.com/posts/2015-07-19-Google-Summer-of-Code-%282015%29.html</loc>
+	<loc>http://blog.urbanslug.com/posts/2015-07-19-Yesod-devel.html</loc>
 	<lastmod>2015-07-19</lastmod>
 	<changefreq>weekly</changefreq>
 	<priority>0.5</priority>
 </url>
 
 <url>
-	<loc>http://blog.urbanslug.com/posts/2015-07-19-Yesod-devel.html</loc>
+	<loc>http://blog.urbanslug.com/posts/2015-07-19-Google-Summer-of-Code-%282015%29.html</loc>
 	<lastmod>2015-07-19</lastmod>
 	<changefreq>weekly</changefreq>
 	<priority>0.5</priority>

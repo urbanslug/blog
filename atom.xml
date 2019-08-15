@@ -8,8 +8,103 @@
         <name>Njagi Mwaniki</name>
         <email>njagi@urbanslug.com</email>
     </author>
-    <updated>2019-07-15T19:54:49Z</updated>
+    <updated>2019-07-21T10:12:30Z</updated>
     <entry>
+    <title>Jusifying SHA256 in Graphite</title>
+    <link href="http://blog.urbanslug.com/posts/2019-07-21-Justifying-SHA256-in-Graphite.html" />
+    <id>http://blog.urbanslug.com/posts/2019-07-21-Justifying-SHA256-in-Graphite.html</id>
+    <published>2019-07-21T10:12:30Z</published>
+    <updated>2019-07-21T10:12:30Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on July 21, 2019
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/probability.html">probability</a>, <a href="/tags/cryptography.html">cryptography</a>, <a href="/tags/variation.html">variation</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>
+    
+</div>
+
+<p>Graphite’s underlying graph implementation is an adjacency hash table, a complicated way of saying that graphite uses a <a href="https://en.wikipedia.org/wiki/Hash_table">hash table</a> to implement the graph. The keys of the hash table are SHA256 hashes of the concatenation of: the <em>sequence</em>, a <em>plus symbol(+)</em>, and the <em>offset</em>.</p>
+<p>Hashes also grant us outgoing edge representations, constant time lookups for queries of known sequence and position, and eliminate duplicates.</p>
+<h1 id="computational-cost-of-hashing">Computational Cost of Hashing</h1>
+<p>We have to compute a hash to uniquely identify each variation and we have to store each hash twice: first, as a <em>key</em> in the adjacency hash table; and second, as a field in the variation <code>structure</code> <em>value</em>. We must therefore examine the time and space costs of hashing.</p>
+<h2 id="time">Time</h2>
+<p>I couldn’t find any useful cost data on either the <a href="https://docs.racket-lang.org/sha/index.html">SHA-2 racket implementation</a> or <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">SHA-2</a>, the algorithm itself, but being a string algorithm you can assume it works in O(n) time, n being the length of the string being hashed.</p>
+<p>This isn’t worrying because hashing is a one off cost which has proved inexpensive with the current variation data-set.</p>
+<h2 id="space">Space</h2>
+<p>This is more of a concern because we expect graphs to grow with time.</p>
+<p>A SHA 256 hash takes the same amount of space as a 32 characters string (8*32=256). Therefore, for variations with sequences fewer than 32 nucleotides, we store a hash that is larger than the variation we are hashing (ignoring the plus symbol and offset). This is exemplified in SNP data.</p>
+<h2 id="graph-comparison">Graph Comparison</h2>
+<p>A nice effect from hashing is that we can compare simple graphs derived from the same reference by comparing their hashes. It goes without saying that there are better or more general ways to perform graph comparison.</p>
+<h1 id="probability-of-collision">Probability of Collision</h1>
+<p>We can approximate the probability of a collision using the function P(n) = 1-e<sup>-n<sup>2</sup>/(2d)</sup>. Where <em>n is the sample size</em> and <em>d is the total number of “buckets”</em>. For more about calculating this probability check out <a href="https://en.wikipedia.org/wiki/Birthday_problem#Approximations">Birthday Problem Approximations</a>.</p>
+<p>To avoid a collision we need to make sure that our variations are fewer than the square root of the bucket size—the point at which we get 0.5 chance of having two different strings sharing the same hash. Think of it as the halfway point in a <a href="https://en.wikipedia.org/wiki/Binomial_distribution">binomial distribution</a> where past 0.5 we consider a collision to have occurred. In reality the halfway point occurs <strong>above</strong> the square root but it’s still an easy way of verifying that your sample size is within a safe range.</p>
+<p>Here’s a Racket function derived from the one above that I used to approximate collision probability.</p>
+<pre><code>(define (probability-of-collision  d n)
+  (- 1 (/ 1 (exp (/ (expt n 2) (* 2 d))))))</code></pre>
+<h2 id="the-birthday-paradox">The Birthday Paradox</h2>
+<p>Using the approximation function above, we estimate that for every group of 23 randomly selected people (n=23, d=356), the probability that two of them share a birthday is 0.5; and in a sample of 357 people (n=357, d=356), the probability that two of them share a birthday is 1. <img src="/images/Content/Graphs/birthday.png" alt="birthday plot" /></p>
+<h2 id="sha-256">SHA 256</h2>
+<p>For SHA 256 the halfway probability of a hash collision occurs at a point above 2<sup>128</sup> <img src="/images/Content/Graphs/sha256.png" alt="sha256 plot" /></p>
+<p><em>This may be hard to interpret because exponential functions grow very quickly.</em></p>
+<p>Here’s the Racket code I used to generate these plots</p>
+<pre><code>#lang racket
+
+(require plot)
+
+(define (probability-of-collision  d x)
+  (- 1 (/ 1 (exp (/ (expt x 2) (* 2 d))))))
+
+(define (label-point-at x y)
+  (let* ([fn (lambda (v) (if (&gt; v (expt 10 6)) &#39;exponential &#39;positional))]
+        [x* (~r #:precision 4 #:notation fn x)]
+        [y* (~r #:precision 4 y)])
+    (list (vrule x 0 y #:style &#39;long-dash)
+          (hrule y 0 x #:style &#39;long-dash)
+          (point-label (vector x y) (format &quot;x = ~a    y = ~a&quot; x* y*)))))
+
+(define (plot-probability-of-collison bucket-size label [halfway-probability #f])
+  (let ([g (if halfway-probability halfway-probability (sqrt bucket-size))]
+        [bucket-size-root (sqrt bucket-size)]
+        [fn               ((curry probability-of-collision) bucket-size)])
+    (parameterize ([plot-x-transform  log-transform]
+                   [plot-width 750])
+      (plot
+       (list
+        (function fn 1  bucket-size #:label label)
+        (label-point-at g (fn g)))
+       #:x-label &quot;Sample size&quot;
+       #:y-label &quot;Probability of collision&quot;))))
+
+(plot-probability-of-collison 365 &quot;Birthday&quot; 23)
+
+(plot-probability-of-collison (expt 2 256) &quot;SHA 256&quot;)</code></pre>
+<h2 id="the-birthday-attack">The Birthday Attack</h2>
+<p>In the <a href="https://en.wikipedia.org/wiki/Birthday_attack">birthday attack</a>, an attacker when given a hash, guesses a string that will generate the same hash. If there no collisions the attacker would have to come up with the exact string that generated the hash. If there are collisions the attacker could get away with guessing a different string.</p>
+<p>This is out of the scope of this post but <a href="https://en.wikipedia.org/wiki/Birthday_attack">birthday attack</a> and <a href="https://en.wikipedia.org/wiki/Birthday_problem">birthday problem</a> wikipedia pages can provide further reading. There’s also this lecture on YouTube from the Coursera cryptography course <a href="https://www.youtube.com/watch?v=5VY2KEh9WrE">Cryptography generic birthday attack (collision resistance)</a>.</p>
+<h1 id="applied-to-variation">Applied to Variation</h1>
+<p>For a 256 bit hash we have 2<sup>256</sup> as our bucket size. We then have the square root of that being 2<sup>(256/2)</sup> = 2<sup>128</sup> approximately 3.4*10<sup>38</sup> as the sample size below which we have 0.5 chance of collision.</p>
+<p>For context, the human genome is approximately 3*10<sup>6</sup> (billion) nucleotides long, which is much smaller than 3.4*10<sup>38</sup>. Viruses have even shorter genomes, ranging in kilo (thousand) nucleotides, for example, the RSV genome is approximately 15*10<sup>3</sup> nucleotides long which is even shorter than 3.4*10<sup>38</sup> when compared to the human genome.</p>
+<p>The number of variations we expect in these genomes is therefore much smaller than 2<sup>128</sup>. As a side note, SHA256 is <a href="https://youtu.be/bBC-nXj3Ng4?t=343">used to uniquely identify bitcoin</a> which there are a lot of.</p>
+<h1 id="how-much-variation-can-actually-occur">How Much Variation Can Actually Occur?</h1>
+<p>The short answer is: we don’t know for sure but we can estimate its upper bound.</p>
+<p>Given we look at genomes that are in the same species or quasi species we expect 99% similarity.</p>
+<ul>
+<li><p>1% of the human genome would be approximately 3*10<sup>4</sup> (thirty thousand) nucleotides long.</p></li>
+<li><p>1% of RSV would be approximately 15*10<sup>3</sup> (a hundred and fifty) nucleotides long.</p></li>
+</ul>
+<p>This is the space within which we expect the variation to occur.</p>
+<p>Granted, we still don’t know just how much variation could occur, which in reality would depend on the organism, we have reduced the problem space by orders of magnitude below 2<sup>128</sup> making SHA256 look really good.</p>
+<p>I expect the biggest problem with SHA256 to come from the space cost of hashing in terms of both disk and/or memory.</p>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
     <title>Creating the Initial Variation Graph</title>
     <link href="http://blog.urbanslug.com/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html" />
     <id>http://blog.urbanslug.com/posts/2019-07-15-Creating-the-Initial-Variation-Graph.html</id>
@@ -25,7 +120,7 @@
     
 </div>
 
-<p>Variation graphs are a way to represent the reference genome as a graph. For an introduction, read my previous post <a href="posts/2019-06-22-Introduction-to-Variation-Graphs.md">An Introduction to Variation Graphs</a> or <a href="https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics">Untangling graphical pangenomics</a> by Erik Garrison.</p>
+<p>Variation graphs represent the reference genome as a graph. For an introduction, read my previous post <a href="posts/2019-06-22-Introduction-to-Variation-Graphs.md">An Introduction to Variation Graphs</a> or <a href="https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics">Untangling graphical pangenomics</a> by Erik Garrison.</p>
 <p>Core to variation graphs is the maintenance of a tight mapping between the reference and the graph. To maintain this mapping we establish a <em>coordinate system</em> — a way to reliably associate a node in the graph, with a position in the reference and vice versa. <img src="/images/Content/Graphs/coordinate_system.png" alt="coordinate systems" /></p>
 <h1 id="a-coordinate-system">A Coordinate System</h1>
 <p>We use the concepts <strong>offset</strong> and <strong>ref</strong> to maintain a coordinate system.</p>
@@ -231,8 +326,7 @@
     
 </div>
 
-<h1 id="background">Background</h1>
-<p>This post is aimed at both programmers and biologists, for this reason, I will bring the reader up to speed on a topic before going into it. Feel free to skip a sentence, paragraph or even section if you’re familiar with a topic.</p>
+<p>I expect the audience of this post to be both programmers and biologists so I’ll bring you up to speed on a topic before going into it. Feel free to skip a sentence, paragraph or even section if you’re familiar with a topic.</p>
 <h1 id="genome-sequencing">Genome sequencing</h1>
 <p>A <strong><a href="https://en.wikipedia.org/wiki/Genome">genome</a></strong> is the entire genetic code of an organism. While computational data is represented in binary form, ones, and zeros, biochemical data is represented by nitrogenous <a href="https://en.wikipedia.org/wiki/Base_(chemistry)">bases</a> that seem to stick out of a <a href="https://en.wikipedia.org/wiki/DNA">DNA</a> or <a href="https://en.wikipedia.org/wiki/RNA">RNA</a> molecule/strand abbreviated A, T, C, and G for DNA and A, G, C and U for RNA. We care about RNA because some viruses have RNA and not DNA.</p>
 <p>If this is confusing, you can think of a strand of DNA or RNA as a thread with knots where each knot is a base.</p>
@@ -260,8 +354,7 @@
 <p><a href="https://en.wikipedia.org/wiki/Graph_theory">Graph theory</a> is an area in math that can help us understand variable regions within genomes. The idea of representing genomes as graphs isn’t new, however, the low number of tools like <a href="https://github.com/vgteam/vg">vg</a> which apply graph theory to genomics and the little that we know about genomes has been a drawback.</p>
 <h1 id="graphs">Graphs</h1>
 <p>A <a href="https://en.wikipedia.org/wiki/Graph_theory">graph</a> is a series of vertices (also known as nodes) and edges. <img src="/images/Content/Graphs/all_graphs.png" alt="all graphs" /></p>
-<p>For genome graphs, we focus on directed acyclic graphs.<br />
-A <strong>walk</strong> in a directed graph is traversal from one node to another through an edge, for example, <em>a</em> to <em>b</em> to <em>d</em> or <em>a</em> to <em>c</em> to <em>d</em>. <img src="/images/Content/Graphs/directed_graph.png" alt="directed graph" /></p>
+<p>For genome graphs, we focus on directed acyclic graphs. A <strong>walk</strong> in a directed graph is traversal from one node to another through an edge, for example, <em>a</em> to <em>b</em> to <em>d</em> or <em>a</em> to <em>c</em> to <em>d</em>. <img src="/images/Content/Graphs/directed_graph.png" alt="directed graph" /></p>
 <h1 id="the-current-state-of-affairs">The current state of affairs</h1>
 <p>Once the reference genome of an organism has been determined, it is stored in <a href="https://en.wikipedia.org/wiki/FASTA_format">fasta format</a> which contains the sequence and metadata. Moving forward, anyone sequencing the same species aligns against this reference. Differences that occur in less than 1% of the reads are usually thrown out; the ones that aren’t thrown out don’t help to update the reference but are stored in <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">Variant Call Format (VCF)</a> which contains the variation data and their positions plus metadata. These VCF files are spread out amongst researchers and aid in the particular thing being researched but generally don’t contribute in and of themselves to the general genomic body of knowledge. However, every once in awhile the reference is updated but not on a fixed schedule<sup>2</sup>. It’s for this reason that the variation graph would be a good way of representing the reference. There is research that confirmed that short reads align better to the variation graph than to a linear reference<sup>3</sup>.</p>
 <h1 id="graphs-and-genomes">Graphs and genomes</h1>
@@ -413,7 +506,7 @@ A <strong>walk</strong> in a directed graph is traversal from one node to anothe
 ]]></summary>
 </entry>
 <entry>
-    <title>Pipeline as Code - putting everything together</title>
+    <title>Pipeline as Code—Putting Everything Together</title>
     <link href="http://blog.urbanslug.com/posts/2017-10-16-code-pipeline-putting-everything-together.html" />
     <id>http://blog.urbanslug.com/posts/2017-10-16-code-pipeline-putting-everything-together.html</id>
     <published>2017-10-16T20:10:18Z</published>
@@ -602,7 +695,7 @@ To quote them “Travis CI is run as a hosted service, free for Open Source, a p
 ]]></summary>
 </entry>
 <entry>
-    <title>Pipeline as Code - an overview</title>
+    <title>Pipeline as Code—Overview</title>
     <link href="http://blog.urbanslug.com/posts/2017-10-13-code-pipeline-overview.html" />
     <id>http://blog.urbanslug.com/posts/2017-10-13-code-pipeline-overview.html</id>
     <published>2017-10-13T14:23:19Z</published>
@@ -958,7 +1051,7 @@ build variables:
 ]]></summary>
 </entry>
 <entry>
-    <title>Packaging python projects</title>
+    <title>Packaging Python Projects</title>
     <link href="http://blog.urbanslug.com/posts/2016-02-14-Packaging-python-projects.html" />
     <id>http://blog.urbanslug.com/posts/2016-02-14-Packaging-python-projects.html</id>
     <published>2016-02-14T17:45:13Z</published>
@@ -1022,7 +1115,7 @@ Incidentally, it also happens to be an example of <strong>functional programming
 ]]></summary>
 </entry>
 <entry>
-    <title>Emacs cheatsheet</title>
+    <title>Emacs Cheatsheet</title>
     <link href="http://blog.urbanslug.com/posts/2015-09-11-Emacs-cheatsheet.html" />
     <id>http://blog.urbanslug.com/posts/2015-09-11-Emacs-cheatsheet.html</id>
     <published>2015-09-11T01:33:45Z</published>
@@ -1176,130 +1269,6 @@ My emacs config is in my <a href="https://github.com/urbanslug/dotfiles/blob/mas
 <li><strong>Installing packages</strong>: “i” mark for install. “x” to install</li>
 <li><code>M-x</code> to run any command. e.g <code>M-x erc</code> to IRC from emacs.</li>
 </ul>
-
-<script src="https://carnivalapp.io/sites/413/init.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", Carnival.init);
-</script>
-]]></summary>
-</entry>
-<entry>
-    <title>Imports and exports as documentation</title>
-    <link href="http://blog.urbanslug.com/posts/2015-08-22-Imports-and-exports-as-documentation.html" />
-    <id>http://blog.urbanslug.com/posts/2015-08-22-Imports-and-exports-as-documentation.html</id>
-    <published>2015-08-22T20:16:12Z</published>
-    <updated>2015-08-22T20:16:12Z</updated>
-    <summary type="html"><![CDATA[<div class="info">
-    Posted on August 22, 2015
-    
-</div>
-<div class="info">
-    
-    Tags: <a href="/tags/Programming.html">Programming</a>, <a href="/tags/Haskell.html">Haskell</a>
-    
-</div>
-
-<p>Lately I’ve been reading huge haskell code bases quite a lot. One thing that I have noted to be helpful when documentated has been the imports section as well as the code having a list of the code it exports.</p>
-<p>I don’t know whether this is just a non-experienced programmer issue or it cuts across the board.</p>
-<p>Documenting imports can happen:</p>
-<ul>
-<li>explicitly through:
-<ul>
-<li>comments</li>
-</ul></li>
-<li>implicity through:
-<ul>
-<li><p>uniquely qualified imports.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">A</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span>
-<span class="kw">import </span><span class="dt">B</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">Y</span></code></pre></div>
-<p>over</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">A</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span>
-<span class="kw">import </span><span class="dt">B</span> <span class="kw">qualified</span> <span class="kw">as</span> <span class="dt">X</span></code></pre></div></li>
-<li><p>importing of specific instances (i.e using brackets to specify what one wants to import)</p></li>
-</ul></li>
-</ul>
-<p>Basically anything that saves the programmer effort or time in:</p>
-<ul>
-<li>Understanding what you’re importing</li>
-<li>Why you’re importing it</li>
-<li>See the usage of a function and quickly know where it’s from</li>
-</ul>
-<p>I can’t quantify or explain exactly how this helps me understand the code but it really does. Especially when I can’t hoogle a function name (the internet connections aren’t too fast in these parts). It saves me the time of have to go through several modules trying to figure out where this import is from.</p>
-<p>Most of time we are in just too much of a hurry to do this I understand. I’m a victim of some terrible coding practices but I think it’s a good habit to adopt.</p>
-<p>Well, the user can use tools like the repl to query where these imports are from but again when you can save the user time and effort of querying for meta information please do so. I know it’s not possible to do it all the time and everywhere but please do it when and where you can.</p>
-<p>Let me illustrate this in some example code:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-|</span>
-<span class="co">Module      : Devel.Build</span>
-<span class="co">Description : Attempts to compile the WAI application.</span>
-<span class="co">Copyright   : (c)</span>
-<span class="co">License     : GPL-3</span>
-<span class="co">Maintainer  : njagi@urbanslug.com</span>
-<span class="co">Stability   : experimental</span>
-<span class="co">Portability : POSIX</span>
-
-<span class="co">compile compiles the app to give:</span>
-<span class="co">Either a list of source errors or an ide-backend session.</span>
-<span class="co">-}</span>
-
-<span class="ot">{-# LANGUAGE PackageImports, OverloadedStrings #-}</span>
-
-<span class="kw">module</span> <span class="dt">Devel.Compile</span> (compile) <span class="kw">where</span>
-
-<span class="co">-- Almost everything is dependent on ide-backend.</span>
-<span class="kw">import </span><span class="dt">IdeSession</span>
-
-<span class="co">-- From Cabal-ide-backend</span>
-<span class="co">-- for parsing the cabal file and extracting lang extensions used.</span>
-<span class="kw">import </span><span class="dt">Distribution.PackageDescription</span>
-<span class="kw">import </span><span class="dt">Distribution.PackageDescription.Parse</span>
-<span class="kw">import </span><span class="dt">Distribution.PackageDescription.Configuration</span>
-<span class="kw">import </span><span class="dt">Language.Haskell.Extension</span>
-
-<span class="co">-- Used internally for showing errors.</span>
-<span class="kw">import </span><span class="dt">Data.Text</span> (unpack)
-
-<span class="co">-- Utility functions</span>
-<span class="kw">import </span><span class="dt">Data.Monoid</span> ((&lt;&gt;))
-<span class="kw">import </span><span class="dt">System.Directory</span> (createDirectoryIfMissing, getCurrentDirectory)
-
-<span class="co">-- Local imports</span>
-<span class="kw">import </span><span class="dt">Devel.Paths</span>
-<span class="kw">import </span><span class="dt">Devel.Types</span></code></pre></div>
-<p>Compare with this which I wrote in a hurry.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="co">{-|</span>
-<span class="co">Module      : Devel.Paths</span>
-<span class="co">Description : For filepath related matters.</span>
-<span class="co">Copyright   : (c)</span>
-<span class="co">License     : GPL-3</span>
-<span class="co">Maintainer  : njagi@urbanslug.com</span>
-<span class="co">Stability   : experimental</span>
-<span class="co">Portability : POSIX</span>
-
-<span class="co">Uses the GHC package to parse .hi files.</span>
-<span class="co">Will hopefully be moved upstream to ide-backend.</span>
-<span class="co">-}</span>
-
-<span class="ot">{-# LANGUAGE OverloadedStrings #-}</span>
-
-<span class="kw">module</span> <span class="dt">Devel.Paths</span> <span class="kw">where</span>
-
-<span class="kw">import </span><span class="dt">System.Directory</span> (getCurrentDirectory, doesDirectoryExist, getDirectoryContents)
-<span class="kw">import </span><span class="dt">Control.Monad</span> (forM)
-<span class="kw">import </span><span class="dt">Control.Concurrent</span> (forkIO)
-<span class="kw">import </span><span class="dt">System.FilePath.Glob</span>
-<span class="kw">import </span><span class="dt">System.FilePath</span> ((&lt;/&gt;))
-<span class="kw">import </span><span class="dt">Data.List</span>
-<span class="kw">import </span><span class="dt">IdeSession</span>
-<span class="kw">import </span><span class="dt">Devel.Modules</span>
-<span class="kw">import </span><span class="dt">System.FilePath.Posix</span> (replaceExtension, dropExtension, takeExtensions)
-<span class="kw">import qualified</span> <span class="dt">Data.ByteString.Char8</span> <span class="kw">as</span> <span class="dt">C8</span>
-<span class="kw">import </span><span class="dt">Control.Monad.IO.Class</span>
-<span class="kw">import </span><span class="dt">System.FilePath</span> (pathSeparator)
-<span class="kw">import </span><span class="dt">System.Directory</span> (removeFile)</code></pre></div>
-<p>As you can see one can learn quite a bit just from looking at the imports and module documentation alone.</p>
-<p>The issue is that it sometimes takes a while for one to clean up their code like this so it’s okay if your imports aren’t legible before refactoring.</p>
-<p>Another thing, I don’t know if it’s just an emacs thing but I can just to my imports and jump between sections of imports with f12. This is both advantageous to both the one writing the code and the one reading it.<br />
-The point of all of this is that well structured and well documented imports and exports are a win for both the programmer and the one reading the code.</p>
 
 <script src="https://carnivalapp.io/sites/413/init.js"></script>
 <script>

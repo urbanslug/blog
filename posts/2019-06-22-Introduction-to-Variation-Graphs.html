@@ -48,8 +48,7 @@
     
 </div>
 
-<h1 id="background">Background</h1>
-<p>This post is aimed at both programmers and biologists, for this reason, I will bring the reader up to speed on a topic before going into it. Feel free to skip a sentence, paragraph or even section if you’re familiar with a topic.</p>
+<p>I expect the audience of this post to be both programmers and biologists so I’ll bring you up to speed on a topic before going into it. Feel free to skip a sentence, paragraph or even section if you’re familiar with a topic.</p>
 <h1 id="genome-sequencing">Genome sequencing</h1>
 <p>A <strong><a href="https://en.wikipedia.org/wiki/Genome">genome</a></strong> is the entire genetic code of an organism. While computational data is represented in binary form, ones, and zeros, biochemical data is represented by nitrogenous <a href="https://en.wikipedia.org/wiki/Base_(chemistry)">bases</a> that seem to stick out of a <a href="https://en.wikipedia.org/wiki/DNA">DNA</a> or <a href="https://en.wikipedia.org/wiki/RNA">RNA</a> molecule/strand abbreviated A, T, C, and G for DNA and A, G, C and U for RNA. We care about RNA because some viruses have RNA and not DNA.</p>
 <p>If this is confusing, you can think of a strand of DNA or RNA as a thread with knots where each knot is a base.</p>
@@ -77,8 +76,7 @@
 <p><a href="https://en.wikipedia.org/wiki/Graph_theory">Graph theory</a> is an area in math that can help us understand variable regions within genomes. The idea of representing genomes as graphs isn’t new, however, the low number of tools like <a href="https://github.com/vgteam/vg">vg</a> which apply graph theory to genomics and the little that we know about genomes has been a drawback.</p>
 <h1 id="graphs">Graphs</h1>
 <p>A <a href="https://en.wikipedia.org/wiki/Graph_theory">graph</a> is a series of vertices (also known as nodes) and edges. <img src="../images/Content/Graphs/all_graphs.png" alt="all graphs" /></p>
-<p>For genome graphs, we focus on directed acyclic graphs.<br />
-A <strong>walk</strong> in a directed graph is traversal from one node to another through an edge, for example, <em>a</em> to <em>b</em> to <em>d</em> or <em>a</em> to <em>c</em> to <em>d</em>. <img src="../images/Content/Graphs/directed_graph.png" alt="directed graph" /></p>
+<p>For genome graphs, we focus on directed acyclic graphs. A <strong>walk</strong> in a directed graph is traversal from one node to another through an edge, for example, <em>a</em> to <em>b</em> to <em>d</em> or <em>a</em> to <em>c</em> to <em>d</em>. <img src="../images/Content/Graphs/directed_graph.png" alt="directed graph" /></p>
 <h1 id="the-current-state-of-affairs">The current state of affairs</h1>
 <p>Once the reference genome of an organism has been determined, it is stored in <a href="https://en.wikipedia.org/wiki/FASTA_format">fasta format</a> which contains the sequence and metadata. Moving forward, anyone sequencing the same species aligns against this reference. Differences that occur in less than 1% of the reads are usually thrown out; the ones that aren’t thrown out don’t help to update the reference but are stored in <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">Variant Call Format (VCF)</a> which contains the variation data and their positions plus metadata. These VCF files are spread out amongst researchers and aid in the particular thing being researched but generally don’t contribute in and of themselves to the general genomic body of knowledge. However, every once in awhile the reference is updated but not on a fixed schedule<sup>2</sup>. It’s for this reason that the variation graph would be a good way of representing the reference. There is research that confirmed that short reads align better to the variation graph than to a linear reference<sup>3</sup>.</p>
 <h1 id="graphs-and-genomes">Graphs and genomes</h1>
