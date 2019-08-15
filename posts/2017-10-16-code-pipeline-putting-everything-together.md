@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Pipeline as Code - putting everything together
+title: Pipeline as Code—Putting Everything Together
 date:  2017-10-16 20:10:18
 tags: Devops, CI, CD
 ---

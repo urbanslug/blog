@@ -69,9 +69,9 @@ header #header-content nav a {
     margin-right: 1%;
     padding: 2%;
 }
-
 #post-title {
-    font-size: 40px;
+    font-size: 50px;
+    margin-bottom: 0;
 }
 
 h1 {
@@ -87,9 +87,9 @@ h3 {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-weight: 600;
-    margin: 2.0em 0 0 0;
+    margin: 2.0em 0 -10px 0;
 }
+
 
 div.info {
     color: #555;
@@ -124,13 +124,13 @@ p {
 }
 
 p code {
-    background: #e8edf2;
+    background: rgba(27,31,35,.06);
     color: #57484d;
     padding: 0 5px 0 5px;
 }
 
 li code {
-    background: #e8edf2;
+    background: rgba(27,31,35,.06);
     color: #57484d;
     padding: 0 5px 0 5px;
 }
@@ -154,20 +154,29 @@ article ul#post-list li.individual-post {
 }
 
 table {
+    margin: 2em auto 2em auto;
     border-collapse: collapse;
-    box-shadow: 0 2px 5px rgba(151, 151, 151, 0.58);
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
 }
 
-table, th, td {
-    padding: 15px;
-    text-align: left;
-    border: 1px solid #DFDFDF;
+thead {
+    border-bottom: 1px solid #000;
 }
+
+td, th {
+    text-align: left;
+    padding: 0 50px 0 0px;
+}
+
+/* Alternatively color rows in a table */
+tr:nth-child(even)		{ background-color:rgba(27,31,35,.05); }
+tr:nth-child(odd)		{ background-color:#fff; }
 
 img {
     max-width: 800px;
     display: block;
-    margin: auto;
+    margin: 30px auto;
 }
 
 footer {

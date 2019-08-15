@@ -5,15 +5,12 @@ date: 2019-06-22 17:57:41
 tags: biology, variation graphs, graphs, bioinformatics, genetics
 ---
 
-
-
-# Background
-This post is aimed at both programmers and biologists, for this reason,
-I will bring the reader up to speed on a topic before going into it.
+I expect the audience of this post to be both programmers and biologists so I'll
+bring you up to speed on a topic before going into it.
 Feel free to skip a sentence, paragraph or even section if you're familiar with a topic.
 
 # Genome sequencing
-A **[genome]** is the entire genetic code of an organism. While computational data 
+A **[genome]** is the entire genetic code of an organism. While computational data
 is  represented in binary form, ones, and zeros, biochemical data is represented
 by nitrogenous [bases] that seem to stick out of a [DNA] or [RNA] molecule/strand
 abbreviated A, T, C, and G for DNA and A, G, C and U for RNA.
@@ -38,24 +35,24 @@ Ignore chromosomes, haplotypes and other things you may know about DNA for now.
 
 To determine the sequence of bases in an entire genome of an organism we focus
 on only one of the alleles (a **[haplotype]**) and only one strand of the
-double helix. 
-Since 2005 we've used methods broadly categorized 
+double helix.
+Since 2005 we've used methods broadly categorized
 under **Next Generation Sequencing (NGS)** to perform genome sequencing.
 There are two main ways of performing NGS:
 
 1. Shear the DNA into small fragments, sequence those and try to build back the
    original sequence. An analogy that’s used is shredding a newspaper article
    then trying to recreate it.
-2. Run the DNA strand like a train would run through a tunnel through a pore 
+2. Run the DNA strand like a train would run through a tunnel through a pore
    and read the sequence of bases.
    There are other methods of reading entire strands of DNA but they don't matter
    in this context.
 
 As you would expect, each method has its drawbacks and advantages.
-What we get out of the machine that does the actual sequencing of DNA is called 
+What we get out of the machine that does the actual sequencing of DNA is called
 a read and reads have to be [aligned] and
 [assembled](https://en.wikipedia.org/wiki/Sequence_assembly)<sup>2</sup>.
-Alignment involves stacking reads on top of each other and assembling is the 
+Alignment involves stacking reads on top of each other and assembling is the
 greater process that involves alignment, algorithmically choosing the best
 alignment and determining what the original sequence was.
 
@@ -64,16 +61,16 @@ There are two broad categories of assembly<sup>4</sup>:
  * **De-novo assembly:** this is where we sequence a genome that has never been
    sequenced before
  * **Mapping assembly:** this is sequencing an organism’s unique code despite
-   having the general sequence for the species. What you get from services 
+   having the general sequence for the species. What you get from services
    like [23andMe].
 
 ## The reference genome
-A [reference genome] is a consensus sequence that accepted as the genome of a 
+A [reference genome] is a consensus sequence that accepted as the genome of a
 species<sup>2</sup>. It’s stored as one long sequence of characters/bases.
 You may wonder how we can have a known genome of an entire species when every
 individual has a unique genetic code or how [humans are 99% chimp].
 Well, the answer is that genetic code of most organisms
-is similar and this similarity increases as we narrow down taxonomically. 
+is similar and this similarity increases as we narrow down taxonomically.
 When we say that [a human is closer to a chimp than a monkey] what we mean is
 that we can observe greater variation between the genomes of the two, man+chimp vs monkey, than man vs chimp alone.
 
@@ -105,7 +102,7 @@ and the little that we know about genomes has been a drawback.
 A [graph] is a series of vertices (also known as nodes) and edges.
 ![all graphs]
 
-For genome graphs, we focus on directed acyclic graphs.  
+For genome graphs, we focus on directed acyclic graphs.
 A **walk** in a directed graph is traversal from one node to another through an
 edge, for example, *a* to *b* to *d* or *a* to *c* to *d*.
 ![directed graph]
@@ -147,7 +144,7 @@ We could recursively insert Variation1 at position 2 and Variation2 at position
 (generated using [graphite] and [my current fork of graph])
 
 In this case, a single walk would represent a possible genome. Compared to the
-reference, this variation information is maintained and the graph still holds 
+reference, this variation information is maintained and the graph still holds
 the data that was in reference.
 
 ## Sequence Graphs
@@ -230,7 +227,7 @@ We export the graph in dot format and visualize via [graphviz]. Serialization is
 [directed graph]: /images/Content/Graphs/directed_graph.png
 [sequence graph]: /images/Content/Graphs/example.png
 
-[Human orthopneumovirus]: https://en.wikipedia.org/wiki/Human_orthopneumovirus 
+[Human orthopneumovirus]: https://en.wikipedia.org/wiki/Human_orthopneumovirus
 [unweighted-graph/directed]: https://docs.racket-lang.org/graph/index.html#%28def._%28%28lib._graph%2Fmain..rkt%29._unweighted-graph%2Fdirected%29%29
 [racket graph library graph]: https://github.com/stchang/graph
 [reference genome]: https://en.wikipedia.org/wiki/Reference_genome

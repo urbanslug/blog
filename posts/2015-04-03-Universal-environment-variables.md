@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Universal environment variables
+title: Universal Environment Variables
 date: 2015-04-02 03:15:33
 Categories: Emacs, Shell
 ---

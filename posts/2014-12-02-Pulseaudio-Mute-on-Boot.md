@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Pulseaudio mute on boot
+title: Pulseaudio Mute on Boot
 date: 2014-12-02 04:38:32
 tags: Linux, Pulseaudio
 ---
