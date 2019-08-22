@@ -240,5 +240,5 @@ technical advice, testing graphite, reading the code or reviewing the blog posts
 [Alan Orth]: https://github.com/alanorth
 [Erik Garrison]: https://github.com/ekg
 [Kenneth Gitere]: https://github.com/hipstermojo
-[Kevin Murimi]: https://github.com/jasonrogena
+[Kevin Murimi]: https://github.com/kevthanewversi
 [Jason Rogena]: https://github.com/jasonrogena
