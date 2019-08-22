@@ -5,11 +5,11 @@ date: 2019-09-20 11:15:16
 tags: GSoC, Google Summer of Code, Variation Graphs, Bioinformatics
 ---
 
-The Google Summer of Code for 2019 is coming to a close and I've been working on
+The Google Summer of Code for 2019 is coming to a close. I've been working on
 the [Graphite] project aimed at creating a variation graph tool under the
 [Open Bioinformatics Foundation].
 
-# Genome graphs
+# Genome Graphs
 I shall give an overview of genome graphs; for a more thorough introduction, I
 advise reading  [On a reference pan-genome model] or my very own
 [An Introduction to Variation Graphs].
@@ -37,13 +37,14 @@ To demonstrate, when [a single file of variation data] is applied to it we end u
 with a graph that can be represented as below. *Take note of the bead-like
 breaks in the linear sequence.*
 ![chr20.svg]
-*generated with graphite*
+
+*generated using graphite*
 
 Not all graphs are linear like the one above. Their variation depends on a
 lot of factors such as the organism(s) and how distant the genomes we are comparing
 are---like in the case of pan-genomes.
 
-## Reference bias
+## Reference Bias
 The reference being a consensus introduces a problem known as [reference bias];
 which can be compared to a false negative during mapping, that is, claiming that
 a variation does not exist where it actually exists.
