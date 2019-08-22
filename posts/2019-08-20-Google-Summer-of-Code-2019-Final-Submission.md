@@ -5,115 +5,183 @@ date: 2019-09-20 11:15:16
 tags: GSoC, Google Summer of Code, Variation Graphs, Bioinformatics
 ---
 
-The end of Google Summer of Code 2019 is here. 
-The aim of my project, [Graphite], was to
-[Add Variant Graph (VG) support to BioD].
-This means representing the reference genome as a graph and not as a linear 
-consensus as is currently done.
+The Google Summer of Code for 2019 is coming to a close and I've been working on
+the [Graphite] project aimed at creating a variation graph tool under the
+[Open Bioinformatics Foundation].
 
-A lot has been written about why the current linear method of representing 
-genomes is far from ideal and better ways to represent them have been written 
-about such as: [On a reference pan-genome model], 
-[Untangling graphical pangenomics], and my very own 
+# Genome graphs
+I shall give an overview of genome graphs; for a more thorough introduction, I
+advise reading  [On a reference pan-genome model] or my very own
 [An Introduction to Variation Graphs].
 
+[Variation graphs] are a class of [genome graphs] that, among other things,
+maintain:
+
+ - path information—a full walk within the graph along the edges
+ - a strong mapping between nodes on the graph and their positions on the
+   reference
+
+All this with the main aim of representing genomic variation.
+
+Currently genomes are represented as a consensus; for example, here's part of
+[chromosome 20 of the human genome]:
+```
+TGGGAGAGAACTGGAACAAGAACCCAGTGCTCTTTCTGCTCTACCCACTGACCCATCCTCTCACGCATCATACACCCATA
+CTCCCATCCACCCACCTTCCCATTCATGCATTCACCCATTCACCCACCTTCCATCCATCTACCATCCACCACGTACCTAC
+ACTCCCATCTACCATCCAACCACATTTCCATTCACCCATCCTCCCATCCATCAACCCTCCAATCCACCACCCACAGACCT
+TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
+...
+```
+However, variation does exist on this chromosome between individuals.
+To demonstrate, when [a single file of variation data] is applied to it we end up
+with a graph that can be represented as below. *Take note of the bead-like
+breaks in the linear sequence.*
+![chr20.svg]
+*generated with graphite*
+
+Not all graphs are linear like the one above. Their variation depends on a
+lot of factors such as the organism(s) and how distant the genomes we are comparing
+are---like in the case of pan-genomes.
+
+## Reference bias
+The reference being a consensus introduces a problem known as [reference bias];
+which can be compared to a false negative during mapping, that is, claiming that
+a variation does not exist where it actually exists.
+Research has shown that mapping short reads to a graph instead of a consensus
+lead to [better mapping of short-read data].
+
+Currently, graphite shows that we can generate a graph from a reference and
+variation data and progressively update it; not far from what Heng Li theorizes
+in: [On a reference pan-genome model].
+We plan on supporting the generation of graphs from short and long-read data on
+its own (de novo) in [Project 1—Alignment].
 
 # Why Racket?
-You may wonder why Graphite is written in Racket yet the project name is 
+You may wonder why Graphite is written in Racket yet the project name is
 [Add Variant Graph (VG) support to BioD].
+Genome graphs have been theorized and written about for a while now but there
+are only a few tools that implement them and there has been even much less use
+by bioinformaticians.
 
-We went with utility over support. What I mean by this is we decided to build
-something people can use
-over just adding support variation graph support to [BioD]. We felt that it 
-would've taken much longer to write something people could use in D.
-But why Racket? I have a history in functional programming and LISP. Racket is 
-a language that is easy to prototype in. We also wanted something that would be 
-easy for biologists to set up, something that is quite rare in bioinformatics. 
-We feel that Racket makes it very easy compared to other functional languages
-or LISPs.
+We decided to build something people can use over just adding variation graph
+support to [BioD] believing that it would've taken me longer to write something
+people could use in D.
+But why Racket? I have experience in functional programming and particularly
+professional experience with LISPs, I could, therefore, move much faster in it.
 
-However, given what we know now and the lessons we learn from Graphite which is 
-in Racket we can always go back and re-implement it in D.
+This shouldn't make the D community feel betrayed because given what
+we know now, we can always go back and reimplement either all or part of
+Graphite in D, especially for the possible performance improvements.
 
 # Done
-For the fine detail install and set up Graphite as instructed in the [README] 
+For the fine detail install and set up Graphite as instructed in the [README]
 and run `graphite --help`.
 
+## Underlying graph representation
+We implemented the graph as an association hash table. I went into more detail
+on how it's built and the rationale behind certain choices in
+[Creating the Initial Variation Graph] and [Justifying SHA256 in Graphite].
+
 ## Construct
-Graphite allows you to build an initial graph out of a reference (or a linear 
-sequence) and a VCF file.
-In this case, we read the reference in fasta and a variation data in VCF.
+Graphite allows you to build an initial graph out of a reference in
+[FASTA format] and a [VCF] file.
+In the example below I output a serialized graph but you can output `.dot` or
+`.gfa`.
+
+```
+./bin/graphite construct \
+ -o rsv1.gra \
+ -f gra \
+ data/RSV/refererence_and_vcf_file/9465113.fa data/RSV/refererence_and_vcf_file/H_3801_22_04.freebayes.vcf
+```
 
 ## Update
-This allows the user to update an existing graph, also called a progressive 
-update.
-The construct argument earlier allows you to output a serialized version of 
-the graph which we store
-under the extension gra.
+Formally, progressive construction. Graphite lets the user update a serialized
+graph generated via `construct`.
+In the update, it takes serialized graph `.gra` and variation data in VCF.
 
-In the update, we read new variation data in VCF and the serialized graph and 
-update it where it needs updating while avoiding duplicates.
+```
+./bin/graphite update \
+ -o rsv2.dot \
+ -f dot \
+ rsv1.gra data/RSV/refererence_and_vcf_file/fake_H_3801_22_04.freebayes.vcf
+```
 
 ## View
-Graphite allows you to generate graphs in DOT for visualization via GraphViz or
-GFA for visualization with tools like bandage. 
-The view command takes a serialized graph as an argument. However one can always
-output these formats using the `--output` flag.
+Graphite allows you to generate graphs in
 
+ - **dot** for visualization via [GraphViz]
+ - **gfa** for visualization with tools like [bandage]
+ - **gra** a serialized graph, it can't be visualized.
+
+The view command takes a serialized graph `.gra`, an output format and an output
+file as arguments.
+
+```
+./bin/graphite view \
+ -o rsv1.dot \
+ -f dot \
+ rsv1.gra
+
+```
 
 # To Do
-I have been implementing these but failing on corner cases or certain kmers or
-just plainly not impressed with how I am implementing them so I prefer to 
-consider them not done but I am working on.
-You could always look at the [Graphite project boards] for further detail.
+Look at the [Graphite project boards] for further detail.
 
 ## Partial Order Alignment
-This would be a final step in the variation graph which would allow for aligning
-reads to a graph or against each other totally bypassing the reference and 
-avoiding reference bias. It has shown to have promising results for example in 
-[Variation graph toolkit improves read mapping by representing genetic variation in the reference]. 
+This would allow for aligning reads to a graph or against each other
+totally bypassing the reference.
 
-For now, graphite can only align against strings mainly because graphite only
-stores forward edges which makes it hard to just implement POA which strictly 
-depends on backward edges. The short term options are adding a pre-processing 
+For now, graphite can only align against strings (however this functionality
+isn't exposed because it's not ready yet) mainly because it only
+stores forward edges which makes it hard to implement
+Partial Order Alignment (POA) which strictly depends on backward edges.
+The short term options are adding a pre-processing
 step to generate backward edges or using Racket's FFI to call [spoa] or [gssw].
-However, long term Graphite's nodes should support backward edges which would 
+However, long term Graphite's nodes should support backward edges which would
 allow for encoding more complex mutations such as inversions.
 
 ## Search
 This involves having a kmer, the substring of a genome, and searching for its
 most likely position in the graph.
-I have multiple problems with this as of now.
+I have multiple problems with this as of now such as completely not finding
+kmers at all or having them point to the wrong location.
 
 ### Complementarity
 Graphite doesn't support complementarity (only supports the positive strands)
-therefore searching for a kmer in the negative strand wouldn't even work. 
+therefore searching for a kmer in the negative strand wouldn't even work.
 I am evaluating different ways of implementing complementarity.
 
 ### A Graph Extension of the Burrows-Wheeler Transform
 Search doesn't work for some strings and even worse the method I am using to
-build the index is not ideal. Currently, I am building it via a plain BWT which
-is in turn built from rotating the string.
-A better strategy I am considering is generating a suffix array via
-[Ukkonen's algorithm] and using it to generate the BWT, complementing it and 
-then generate the FM index. I think this is the basic idea behind 
-[A Graph Extension of the Positional Burrows-Wheeler Transform and its Applications]
+build the index is not ideal. Currently, I am building the FM index via a
+Burrows-Wheeler Transform (BWT) which is in turn built from rotating the given
+string, this is far from ideal.
+A better strategy I am considering is:
+
+ 1. generate a suffix tree via [Ukkonen's algorithm]
+ 2. traverse the suffix tree via a depth-first search to build a suffix array
+ 3. use the suffix array to generate a BWT
+
+I could then complement the BWT and then generate the FM index and therefore
+get fast queries onto the graph.
+I believe this to be the basic idea behind
+[A Graph Extension of the Positional Burrows-Wheeler Transform and its Applications].
 
 ## Adding a Metadata Field
-We could add a metadata field to the graph nodes which will allow for something
+We could add a metadata field to the nodes which will allow for something
 like inbuilt annotation support.
 
-## Other
-One feature not related to Bioinformatics but is surprisingly lacking in Racket 
-is to extend [cmdline] to have command-line options as is described in 
+## Miscellaneous
+Another feature not related to Bioinformatics but is surprisingly lacking in Racket
+is to extend [cmdline] to have command-line options as is described in
 [Multi-command-line in Racket].
 
-To reiterate, you can look at these 3 other posts regarding Graphite here:
+To reiterate, you can look at these 3 other posts regarding Graphite:
 
  - [An Introduction to Variation Graphs]
  - [Creating the Initial Variation Graph]
  - [Justifying SHA256 in Graphite]
-
 
 
 [BioD]: https://github.com/biod/biod
@@ -133,3 +201,24 @@ To reiterate, you can look at these 3 other posts regarding Graphite here:
 [On a reference pan-genome model]: https://lh3.github.io/2019/07/08/on-a-reference-pan-genome-model
 [Ukkonen's algorithm]: https://en.wikipedia.org/wiki/Ukkonen%27s_algorithm
 [README]: https://github.com/urbanslug/graphite#graphite
+[RSV]: https://en.wikipedia.org/wiki/Human_orthopneumovirus
+[genome graphs]: https://www.biorxiv.org/content/10.1101/101378v1
+[Variation graphs]: https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics
+[chr20-dot.svg]: /images/Content/Graphs/chr20-dot.svg
+[chr20.svg]: /images/Content/Graphs/chr20.svg
+[the data here]: https://github.com/vgteam/vg/tree/master/test/1mb1kgp
+[chromosome 20 of the human genome]: https://github.com/vgteam/vg/blob/master/test/1mb1kgp/z.fa
+[a single file of variation data]: https://github.com/vgteam/vg/blob/master/test/1mb1kgp/z.vcf.gz
+[reference bias]: https://www.sevenbridges.com/reference-bias-challenges-and-solutions/
+[better mapping of short-read data]:  https://www.nature.com/articles/nbt.4227
+[Project 1—Alignment]: https://github.com/urbanslug/graphite/projects/1
+[FASTA format]: https://en.wikipedia.org/wiki/FASTA_format
+[VCF]: https://en.wikipedia.org/wiki/Variant_Call_Format
+[GraphViz]: https://en.wikipedia.org/wiki/Graphviz
+[bandage]: https://rrwick.github.io/Bandage/
+[Open Bioinformatics Foundation]: https://www.open-bio.org/
+
+
+[1]: https://lh3.github.io/2019/07/08/on-a-reference-pan-genome-model
+[2]: https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics
+[3]: 2019-06-22-Introduction-to-Variation-Graphs.html
