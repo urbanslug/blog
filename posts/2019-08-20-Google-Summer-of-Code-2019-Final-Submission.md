@@ -33,23 +33,22 @@ TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
 ...
 ```
 However, variation does exist on this chromosome between individuals.
-To demonstrate, when [a single file of variation data] is applied to it we end up
-with a graph that can be represented as below. *Take note of the bead-like
-breaks in the linear sequence.*
-![chr20.svg]
+To demonstrate, when [a single file of variation data] is "applied" to it we end 
+up with a graph that can be represented as in the  below zoomed in section of
+chromosome 20. 
+![chr20]
 
-*generated using graphite*
-
-Not all graphs are linear like the one above. Their variation depends on a
-lot of factors such as the organism(s) and how distant the genomes we are comparing
-are—like in the case of pan-genomes.
+Not all graphs are linear like the one above; in fact, the kind of graphs we're 
+hoping to generate soon will have many breaks and will look pretty jumbled up.
+Their variation depends on a lot of factors such as the organism(s) and how 
+distant the genomes we are comparing are—like in the case of pan-genomes.
 
 ## Reference Bias
 The reference being a consensus introduces a problem known as [reference bias];
 which can be compared to a false negative during mapping, that is, claiming that
 a variation does not exist where it actually exists.
-Research has shown that mapping short reads to a graph instead of a consensus
-lead to [better mapping of short-read data].
+[Research] has shown that mapping short reads to a graph instead of a consensus
+leads to better mapping of short-read data.
 
 Currently, graphite shows that we can generate a graph from a reference and
 variation data and progressively update it; not far from what Heng Li theorizes
@@ -116,7 +115,9 @@ Graphite allows you to generate graphs in
  - **gfa** for visualization with tools like [bandage]
  - **gra** a serialized graph, it can't be visualized.
 
-The view command takes a serialized graph `.gra`, an output format and an output
+Using `update` and `view`, one can visualize changes introduced by different VCF
+files as of writing this.
+The view command takes a serialized graph `.gra`, an output format, and an output
 file as arguments.
 
 ```
@@ -124,7 +125,6 @@ file as arguments.
  -o rsv1.dot \
  -f dot \
  rsv1.gra
-
 ```
 
 # To Do
@@ -194,6 +194,7 @@ I'd like to acknowledge the contribution of the following people. My mentors
 and those who weren't my mentors but helped along the way by offering
 technical advice, testing graphite, reading the code or reviewing the blog posts.
 
+ - [Alan Orth]
  - [Erik Garrison]
  - [Jason Rogena]
  - [Kenneth Gitere]
@@ -220,13 +221,12 @@ technical advice, testing graphite, reading the code or reviewing the blog posts
 [RSV]: https://en.wikipedia.org/wiki/Human_orthopneumovirus
 [genome graphs]: https://www.biorxiv.org/content/10.1101/101378v1
 [Variation graphs]: https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics
-[chr20-dot.svg]: /images/Content/Graphs/chr20-dot.svg
-[chr20.svg]: /images/Content/Graphs/chr20.svg
+[chr20]: /images/Content/Graphs/chr20.png
 [the data here]: https://github.com/vgteam/vg/tree/master/test/1mb1kgp
 [chromosome 20 of the human genome]: https://github.com/vgteam/vg/blob/master/test/1mb1kgp/z.fa
 [a single file of variation data]: https://github.com/vgteam/vg/blob/master/test/1mb1kgp/z.vcf.gz
 [reference bias]: https://www.sevenbridges.com/reference-bias-challenges-and-solutions/
-[better mapping of short-read data]:  https://www.nature.com/articles/nbt.4227
+[Research]:  https://www.nature.com/articles/nbt.4227
 [the alignment project board]: https://github.com/urbanslug/graphite/projects/1
 [FASTA format]: https://en.wikipedia.org/wiki/FASTA_format
 [VCF]: https://en.wikipedia.org/wiki/Variant_Call_Format
@@ -236,6 +236,8 @@ technical advice, testing graphite, reading the code or reviewing the blog posts
 
 [George Githinji]: https://github.com/george-githinji
 [Pjotr Prins]: https://github.com/pjotrp
+
+[Alan Orth]: https://github.com/alanorth
 [Erik Garrison]: https://github.com/ekg
 [Kenneth Gitere]: https://github.com/hipstermojo
 [Kevin Murimi]: https://github.com/jasonrogena
