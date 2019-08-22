@@ -185,6 +185,20 @@ To reiterate, you can look at these 3 other posts regarding Graphite:
  - [Creating the Initial Variation Graph]
  - [Justifying SHA256 in Graphite]
 
+# Acknowledgements
+I'd like to acknowledge the contribution of the following people. My mentors
+
+ - [George Githinji]
+ - [Pjotr Prins]
+
+and those who weren't my mentors but helped along the way by offering
+technical advice, testing graphite, reading the code or reviewing the blog posts.
+
+ - [Erik Garrison]
+ - [Jason Rogena]
+ - [Kenneth Gitere]
+ - [Kevin Murimi]
+
 
 [BioD]: https://github.com/biod/biod
 [Graphite]: https://github.com/urbanslug/graphite
@@ -220,7 +234,9 @@ To reiterate, you can look at these 3 other posts regarding Graphite:
 [bandage]: https://rrwick.github.io/Bandage/
 [Open Bioinformatics Foundation]: https://www.open-bio.org/
 
-
-[1]: https://lh3.github.io/2019/07/08/on-a-reference-pan-genome-model
-[2]: https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics
-[3]: 2019-06-22-Introduction-to-Variation-Graphs.html
+[George Githinji]: https://github.com/george-githinji
+[Pjotr Prins]: https://github.com/pjotrp
+[Erik Garrison]: https://github.com/ekg
+[Kenneth Gitere]: https://github.com/hipstermojo
+[Kevin Murimi]: https://github.com/jasonrogena
+[Jason Rogena]: https://github.com/jasonrogena
