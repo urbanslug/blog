@@ -42,7 +42,7 @@ breaks in the linear sequence.*
 
 Not all graphs are linear like the one above. Their variation depends on a
 lot of factors such as the organism(s) and how distant the genomes we are comparing
-are---like in the case of pan-genomes.
+are—like in the case of pan-genomes.
 
 ## Reference Bias
 The reference being a consensus introduces a problem known as [reference bias];
@@ -55,7 +55,8 @@ Currently, graphite shows that we can generate a graph from a reference and
 variation data and progressively update it; not far from what Heng Li theorizes
 in: [On a reference pan-genome model].
 We plan on supporting the generation of graphs from short and long-read data on
-its own (de novo) in [Project 1—Alignment].
+its own (de novo), you can track its progress under
+[the alignment project board].
 
 # Why Racket?
 You may wonder why Graphite is written in Racket yet the project name is
@@ -212,7 +213,7 @@ To reiterate, you can look at these 3 other posts regarding Graphite:
 [a single file of variation data]: https://github.com/vgteam/vg/blob/master/test/1mb1kgp/z.vcf.gz
 [reference bias]: https://www.sevenbridges.com/reference-bias-challenges-and-solutions/
 [better mapping of short-read data]:  https://www.nature.com/articles/nbt.4227
-[Project 1—Alignment]: https://github.com/urbanslug/graphite/projects/1
+[the alignment project board]: https://github.com/urbanslug/graphite/projects/1
 [FASTA format]: https://en.wikipedia.org/wiki/FASTA_format
 [VCF]: https://en.wikipedia.org/wiki/Variant_Call_Format
 [GraphViz]: https://en.wikipedia.org/wiki/Graphviz
