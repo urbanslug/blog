@@ -256,7 +256,7 @@ update and search which is what I'm focused on for now.
 [bandage]: https://rrwick.github.io/Bandage/
 [add serialization support to graph]: https://github.com/stchang/graph/issues/47
 [graphite]: https://github.com/urbanslug/graphite
-[An Introduction to Variation Graphs]: posts/2019-06-22-Introduction-to-Variation-Graphs.md
+[An Introduction to Variation Graphs]: 2019-06-22-Introduction-to-Variation-Graphs.html
 [offsets]: /images/Content/Graphs/offsets.svg
 [coordinate systems]: /images/Content/Graphs/coordinate_system.png
 [as is done in BioD]: https://github.com/biod/BioD/blob/57c81f275faab5cdec4746bfc7af81e31bac0f69/bio/core/base.d#L64
