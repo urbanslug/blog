@@ -2,7 +2,7 @@
 layout: post
 title: Creating the Initial Variation Graph
 date: 2019-07-15 19:54:49
-tags: variation graphs, graphs, bioinformatics, graphite
+tags: Variation Graphs, Graphs, Bioinformatics, Graphite
 ---
 
 Variation graphs represent the reference genome as a graph.

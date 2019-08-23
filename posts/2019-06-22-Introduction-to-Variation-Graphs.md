@@ -2,7 +2,7 @@
 layout: post
 title: An Introduction to Variation Graphs
 date: 2019-06-22 17:57:41
-tags: biology, variation graphs, graphs, bioinformatics, genetics, graphite
+tags: Biology, Variation Graphs, Graphs, Bioinformatics, Genetics, Graphite
 ---
 
 I expect the audience of this post to be both programmers and biologists so I'll

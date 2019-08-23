@@ -2,7 +2,7 @@
 layout: post
 title: Jusifying SHA256 in Graphite
 date: 2019-07-21 10:12:30
-tags: probability, cryptography, variation, bioinformatics, graphite
+tags: Probability, Cryptography, Variation, Bioinformatics, Graphite
 ---
 
 [Graphite's] underlying graph implementation is an adjacency hash table, a
