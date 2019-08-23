@@ -32,23 +32,25 @@ ACTCCCATCTACCATCCAACCACATTTCCATTCACCCATCCTCCCATCCATCAACCCTCCAATCCACCACCCACAGACCT
 TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
 ...
 ```
-However, variation does exist on this chromosome between individuals.
-To demonstrate, when [a single file of variation data] is "applied" to it we end 
+However, variation **does** exist on this chromosome between individuals.
+To demonstrate, when [a single file of variation data] is "applied" to it we end
 up with a graph that can be represented as in the  below zoomed in section of
-chromosome 20. 
+chromosome 20.
 ![chr20]
 
-Not all graphs are linear like the one above; in fact, the kind of graphs we're 
+Not all graphs are linear like the one above; in fact, the kind of graphs we're
 hoping to generate soon will have many breaks and will look pretty jumbled up.
-Their variation depends on a lot of factors such as the organism(s) and how 
-distant the genomes we are comparing are—like in the case of pan-genomes.
+The amount of variation within and between genomes depends on a lot of factors
+including but not limited to the organism(s) whose genomes are studying and how
+evolutionarily distant the genomes we are comparing are (pan-genomes).
+
 
 ## Reference Bias
 The reference being a consensus introduces a problem known as [reference bias];
-which can be compared to a false negative during mapping, that is, claiming that
-a variation does not exist where it actually exists.
-[Research] has shown that mapping short reads to a graph instead of a consensus
-leads to better mapping of short-read data.
+which is analogous to a false negative during read mapping, that is, claiming
+that a variation does not exist where it actually exists.
+[Research] has shown an improvement in read mapping of short read data when
+short reads are mapped to a reference graph instead of a reference consensus.
 
 Currently, graphite shows that we can generate a graph from a reference and
 variation data and progressively update it; not far from what Heng Li theorizes
@@ -97,10 +99,10 @@ In the example below I output a serialized graph but you can output `.dot` or
 ```
 
 ## Update
-Formally, progressive construction. Graphite lets the user update a serialized
+Formally, *progressive construction*. Graphite lets the user update a serialized
 graph generated via `construct`.
 In the update, it takes serialized graph `.gra` and variation data in VCF.
-
+Example:
 ```
 ./bin/graphite update \
  -o rsv2.dot \
@@ -119,7 +121,7 @@ Using `update` and `view`, one can visualize changes introduced by different VCF
 files as of writing this.
 The view command takes a serialized graph `.gra`, an output format, and an output
 file as arguments.
-
+Example:
 ```
 ./bin/graphite view \
  -o rsv1.dot \
@@ -131,8 +133,8 @@ file as arguments.
 Look at the [Graphite project boards] for further detail.
 
 ## Partial Order Alignment
-This would allow for aligning reads to a graph or against each other
-totally bypassing the reference.
+This would allow for aligning reads to a graph or against each other bypassing
+the consensus reference.
 
 For now, graphite can only align against strings (however this functionality
 isn't exposed because it's not ready yet) mainly because it only
@@ -140,8 +142,9 @@ stores forward edges which makes it hard to implement
 Partial Order Alignment (POA) which strictly depends on backward edges.
 The short term options are adding a pre-processing
 step to generate backward edges or using Racket's FFI to call [spoa] or [gssw].
-However, long term Graphite's nodes should support backward edges which would
-allow for encoding more complex mutations such as inversions.
+In the medium to long term Graphite's nodes should support backward edges which
+would, on top of assisting with POA, allow for encoding more complex mutations
+such as inversions.
 
 ## Search
 This involves having a kmer, the substring of a genome, and searching for its
