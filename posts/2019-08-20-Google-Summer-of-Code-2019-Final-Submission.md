@@ -73,8 +73,8 @@ people could use in D.
 ## Why Racket Not Another Language or Lisp?
 I have experience in functional programming and particularly
 professional experience with LISPs, I could, therefore, move much faster in it.
-Racket is a good LISP to work in in an unfamiliar domain because it has a
-**straightforward build system**  compared to the overhead of the JVM and
+Racket is a good LISP to use when working in an unfamiliar domain because it has
+a **straightforward build system** compared to the overhead of the JVM and
 leiningen in the most popular LISP, Clojure does and has an
 **easy to use C/C++ FFI**, languages used in a lot of Bioinformatics
 applications and libraries. Being **untyped** and programming in LISP being
