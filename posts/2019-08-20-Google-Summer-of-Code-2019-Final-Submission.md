@@ -70,7 +70,7 @@ We decided to build something people can use over just adding variation graph
 support to [BioD] believing that it would've taken me longer to write something
 people could use in D.
 
-## But why Racket and not another language or LISP?
+## Why Racket Not Another Language or Lisp?
 I have experience in functional programming and particularly
 professional experience with LISPs, I could, therefore, move much faster in it.
 Racket is a good LISP to work in in an unfamiliar domain because it has a
@@ -92,7 +92,7 @@ Graphite in D, especially for the possible performance improvements.
 For the fine detail install and set up Graphite as instructed in the [README]
 and run `graphite --help`.
 
-## Underlying graph representation
+## Underlying Graph Representation
 We implemented the graph as an association hash table. I went into more detail
 on how it's built and the rationale behind certain choices in
 [Creating the Initial Variation Graph] and [Justifying SHA256 in Graphite].
