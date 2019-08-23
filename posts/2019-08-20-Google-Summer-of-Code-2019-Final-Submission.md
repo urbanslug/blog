@@ -69,8 +69,20 @@ by bioinformaticians.
 We decided to build something people can use over just adding variation graph
 support to [BioD] believing that it would've taken me longer to write something
 people could use in D.
-But why Racket? I have experience in functional programming and particularly
+
+## But why Racket and not another language or LISP?
+I have experience in functional programming and particularly
 professional experience with LISPs, I could, therefore, move much faster in it.
+Racket is a good LISP to work in in an unfamiliar domain because it has a
+**straightforward build system**  compared to the overhead of the JVM and
+leiningen in the most popular LISP, Clojure does and has an
+**easy to use C/C++ FFI**, languages used in a lot of Bioinformatics
+applications and libraries. Being **untyped** and programming in LISP being
+**REPL driven** also helps to venture into unfamiliar territory.
+Racket has **immutability** in a lot, if not all, of its data structures which
+also helps with all the data manipulation we would have to do. Finally, Racket
+also **implements core programming concepts elegantly** compared to many other
+languages for example with its hygienic macros.
 
 This shouldn't make the D community feel betrayed because given what
 we know now, we can always go back and reimplement either all or part of
