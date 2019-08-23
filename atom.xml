@@ -21,7 +21,7 @@
 </div>
 <div class="info">
     
-    Tags: <a href="/tags/GSoC.html">GSoC</a>, <a href="/tags/Google%20Summer%20of%20Code.html">Google Summer of Code</a>, <a href="/tags/Variation%20Graphs.html">Variation Graphs</a>, <a href="/tags/Bioinformatics.html">Bioinformatics</a>
+    Tags: <a href="/tags/GSoC.html">GSoC</a>, <a href="/tags/Google%20Summer%20of%20Code.html">Google Summer of Code</a>, <a href="/tags/Variation%20Graphs.html">Variation Graphs</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>, <a href="/tags/graphite.html">graphite</a>
     
 </div>
 
@@ -139,7 +139,7 @@ TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
 </div>
 <div class="info">
     
-    Tags: <a href="/tags/probability.html">probability</a>, <a href="/tags/cryptography.html">cryptography</a>, <a href="/tags/variation.html">variation</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>
+    Tags: <a href="/tags/probability.html">probability</a>, <a href="/tags/cryptography.html">cryptography</a>, <a href="/tags/variation.html">variation</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>, <a href="/tags/graphite.html">graphite</a>
     
 </div>
 
@@ -214,7 +214,6 @@ TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
 </ul>
 <p>This is the space within which we expect the variation to occur.</p>
 <p>Granted, we still don’t know just how much variation could occur, which in reality would depend on the organism, we have reduced the problem space by orders of magnitude below 2<sup>128</sup> making SHA256 look really good.</p>
-<p>Will continue this “proof” later :)</p>
 <p>I expect the biggest problem with SHA256 to come from the space cost of hashing in terms of both disk and/or memory.</p>
 
 <script src="https://carnivalapp.io/sites/413/init.js"></script>
@@ -235,7 +234,7 @@ TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
 </div>
 <div class="info">
     
-    Tags: <a href="/tags/variation%20graphs.html">variation graphs</a>, <a href="/tags/graphs.html">graphs</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>
+    Tags: <a href="/tags/variation%20graphs.html">variation graphs</a>, <a href="/tags/graphs.html">graphs</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>, <a href="/tags/graphite.html">graphite</a>
     
 </div>
 
@@ -441,7 +440,7 @@ TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
 </div>
 <div class="info">
     
-    Tags: <a href="/tags/biology.html">biology</a>, <a href="/tags/variation%20graphs.html">variation graphs</a>, <a href="/tags/graphs.html">graphs</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>, <a href="/tags/genetics.html">genetics</a>
+    Tags: <a href="/tags/biology.html">biology</a>, <a href="/tags/variation%20graphs.html">variation graphs</a>, <a href="/tags/graphs.html">graphs</a>, <a href="/tags/bioinformatics.html">bioinformatics</a>, <a href="/tags/genetics.html">genetics</a>, <a href="/tags/graphite.html">graphite</a>
     
 </div>
 
