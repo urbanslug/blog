@@ -2,7 +2,7 @@
 layout: post
 title: Jusifying SHA256 in Graphite
 date: 2019-07-21 10:12:30
-tags: probability, cryptography, variation, bioinformatics
+tags: probability, cryptography, variation, bioinformatics, graphite
 ---
 
 [Graphite's] underlying graph implementation is an adjacency hash table, a
@@ -157,8 +157,6 @@ This is the space within which we expect the variation to occur.
 Granted, we still don't know just how much variation could occur, which in
 reality would depend on the organism, we have reduced the problem space by
 orders of magnitude below 2<sup>128</sup> making SHA256 look really good.
-
-Will continue this "proof" later :)
 
 I expect the biggest problem with SHA256 to come from the space cost of
 hashing in terms of both disk and/or memory.
