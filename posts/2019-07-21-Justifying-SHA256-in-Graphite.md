@@ -158,6 +158,8 @@ Granted, we still don't know just how much variation could occur, which in
 reality would depend on the organism, we have reduced the problem space by
 orders of magnitude below 2<sup>128</sup> making SHA256 look really good.
 
+Will continue this "proof" later :)
+
 I expect the biggest problem with SHA256 to come from the space cost of
 hashing in terms of both disk and/or memory.
 
