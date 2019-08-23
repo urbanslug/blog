@@ -8,8 +8,124 @@
         <name>Njagi Mwaniki</name>
         <email>njagi@urbanslug.com</email>
     </author>
-    <updated>2019-07-21T10:12:30Z</updated>
+    <updated>2019-09-20T11:15:16Z</updated>
     <entry>
+    <title>Google Summer of Code 2019—Final Submission</title>
+    <link href="http://blog.urbanslug.com/posts/2019-08-20-Google-Summer-of-Code-2019-Final-Submission.html" />
+    <id>http://blog.urbanslug.com/posts/2019-08-20-Google-Summer-of-Code-2019-Final-Submission.html</id>
+    <published>2019-09-20T11:15:16Z</published>
+    <updated>2019-09-20T11:15:16Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    Posted on September 20, 2019
+    
+</div>
+<div class="info">
+    
+    Tags: <a href="/tags/GSoC.html">GSoC</a>, <a href="/tags/Google%20Summer%20of%20Code.html">Google Summer of Code</a>, <a href="/tags/Variation%20Graphs.html">Variation Graphs</a>, <a href="/tags/Bioinformatics.html">Bioinformatics</a>
+    
+</div>
+
+<p>The Google Summer of Code for 2019 is coming to a close. I’ve been working on the <a href="https://github.com/urbanslug/graphite">Graphite</a> project aimed at creating a variation graph tool under the <a href="https://www.open-bio.org/">Open Bioinformatics Foundation</a>.</p>
+<h1 id="genome-graphs">Genome Graphs</h1>
+<p>I shall give an overview of genome graphs; for a more thorough introduction, I advise reading <a href="https://lh3.github.io/2019/07/08/on-a-reference-pan-genome-model">On a reference pan-genome model</a> or my very own <a href="2019-06-22-Introduction-to-Variation-Graphs.html">An Introduction to Variation Graphs</a>.</p>
+<p><a href="https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics">Variation graphs</a> are a class of <a href="https://www.biorxiv.org/content/10.1101/101378v1">genome graphs</a> that, among other things, maintain:</p>
+<ul>
+<li>path information—a full walk within the graph along the edges</li>
+<li>a strong mapping between nodes on the graph and their positions on the reference</li>
+</ul>
+<p>All this with the main aim of representing genomic variation.</p>
+<p>Currently genomes are represented as a consensus; for example, here’s part of <a href="https://github.com/vgteam/vg/blob/master/test/1mb1kgp/z.fa">chromosome 20 of the human genome</a>:</p>
+<pre><code>TGGGAGAGAACTGGAACAAGAACCCAGTGCTCTTTCTGCTCTACCCACTGACCCATCCTCTCACGCATCATACACCCATA
+CTCCCATCCACCCACCTTCCCATTCATGCATTCACCCATTCACCCACCTTCCATCCATCTACCATCCACCACGTACCTAC
+ACTCCCATCTACCATCCAACCACATTTCCATTCACCCATCCTCCCATCCATCAACCCTCCAATCCACCACCCACAGACCT
+TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
+...</code></pre>
+<p>However, variation <strong>does</strong> exist on this chromosome between individuals. To demonstrate, when <a href="https://github.com/vgteam/vg/blob/master/test/1mb1kgp/z.vcf.gz">a single file of variation data</a> is “applied” to it we end up with a graph that can be represented as in the below zoomed in section of chromosome 20. <img src="/images/Content/Graphs/chr20.png" alt="chr20" /></p>
+<p>Not all graphs are linear like the one above; in fact, the kind of graphs we’re hoping to generate soon will have many breaks and will look pretty jumbled up. The amount of variation within and between genomes depends on a lot of factors including but not limited to the organism(s) whose genomes are studying and how evolutionarily distant the genomes we are comparing are (pan-genomes).</p>
+<h2 id="reference-bias">Reference Bias</h2>
+<p>The reference being a consensus introduces a problem known as <a href="https://www.sevenbridges.com/reference-bias-challenges-and-solutions/">reference bias</a>; which is analogous to a false negative during read mapping, that is, claiming that a variation does not exist where it actually exists. <a href="https://www.nature.com/articles/nbt.4227">Research</a> has shown an improvement in read mapping of short read data when short reads are mapped to a reference graph instead of a reference consensus.</p>
+<p>Currently, graphite shows that we can generate a graph from a reference and variation data and progressively update it; not far from what Heng Li theorizes in: <a href="https://lh3.github.io/2019/07/08/on-a-reference-pan-genome-model">On a reference pan-genome model</a>. We plan on supporting the generation of graphs from short and long-read data on its own (de novo), you can track its progress under <a href="https://github.com/urbanslug/graphite/projects/1">the alignment project board</a>.</p>
+<h1 id="why-racket">Why Racket?</h1>
+<p>You may wonder why Graphite is written in Racket yet the project name is <a href="https://summerofcode.withgoogle.com/projects/#4733198808907776">Add Variant Graph (VG) support to BioD</a>. Genome graphs have been theorized and written about for a while now but there are only a few tools that implement them and there has been even much less use by bioinformaticians.</p>
+<p>We decided to build something people can use over just adding variation graph support to <a href="https://github.com/biod/biod">BioD</a> believing that it would’ve taken me longer to write something people could use in D. But why Racket? I have experience in functional programming and particularly professional experience with LISPs, I could, therefore, move much faster in it.</p>
+<p>This shouldn’t make the D community feel betrayed because given what we know now, we can always go back and reimplement either all or part of Graphite in D, especially for the possible performance improvements.</p>
+<h1 id="done">Done</h1>
+<p>For the fine detail install and set up Graphite as instructed in the <a href="https://github.com/urbanslug/graphite#graphite">README</a> and run <code>graphite --help</code>.</p>
+<h2 id="underlying-graph-representation">Underlying graph representation</h2>
+<p>We implemented the graph as an association hash table. I went into more detail on how it’s built and the rationale behind certain choices in <a href="2019-07-15-Creating-the-Initial-Variation-Graph.html">Creating the Initial Variation Graph</a> and <a href="2019-07-21-Justifying-SHA256-in-Graphite.html">Justifying SHA256 in Graphite</a>.</p>
+<h2 id="construct">Construct</h2>
+<p>Graphite allows you to build an initial graph out of a reference in <a href="https://en.wikipedia.org/wiki/FASTA_format">FASTA format</a> and a <a href="https://en.wikipedia.org/wiki/Variant_Call_Format">VCF</a> file. In the example below I output a serialized graph but you can output <code>.dot</code> or <code>.gfa</code>.</p>
+<pre><code>./bin/graphite construct \
+ -o rsv1.gra \
+ -f gra \
+ data/RSV/refererence_and_vcf_file/9465113.fa data/RSV/refererence_and_vcf_file/H_3801_22_04.freebayes.vcf</code></pre>
+<h2 id="update">Update</h2>
+<p>Formally, <em>progressive construction</em>. Graphite lets the user update a serialized graph generated via <code>construct</code>. In the update, it takes serialized graph <code>.gra</code> and variation data in VCF. Example:</p>
+<pre><code>./bin/graphite update \
+ -o rsv2.dot \
+ -f dot \
+ rsv1.gra data/RSV/refererence_and_vcf_file/fake_H_3801_22_04.freebayes.vcf</code></pre>
+<h2 id="view">View</h2>
+<p>Graphite allows you to generate graphs in</p>
+<ul>
+<li><strong>dot</strong> for visualization via <a href="https://en.wikipedia.org/wiki/Graphviz">GraphViz</a></li>
+<li><strong>gfa</strong> for visualization with tools like <a href="https://rrwick.github.io/Bandage/">bandage</a></li>
+<li><strong>gra</strong> a serialized graph, it can’t be visualized.</li>
+</ul>
+<p>Using <code>update</code> and <code>view</code>, one can visualize changes introduced by different VCF files as of writing this. The view command takes a serialized graph <code>.gra</code>, an output format, and an output file as arguments. Example:</p>
+<pre><code>./bin/graphite view \
+ -o rsv1.dot \
+ -f dot \
+ rsv1.gra</code></pre>
+<h1 id="to-do">To Do</h1>
+<p>Look at the <a href="https://github.com/urbanslug/graphite/projects">Graphite project boards</a> for further detail.</p>
+<h2 id="partial-order-alignment">Partial Order Alignment</h2>
+<p>This would allow for aligning reads to a graph or against each other bypassing the consensus reference.</p>
+<p>For now, graphite can only align against strings (however this functionality isn’t exposed because it’s not ready yet) mainly because it only stores forward edges which makes it hard to implement Partial Order Alignment (POA) which strictly depends on backward edges. The short term options are adding a pre-processing step to generate backward edges or using Racket’s FFI to call <a href="https://github.com/rvaser/spoa">spoa</a> or <a href="https://github.com/vgteam/gssw">gssw</a>. In the medium to long term Graphite’s nodes should support backward edges which would, on top of assisting with POA, allow for encoding more complex mutations such as inversions.</p>
+<h2 id="search">Search</h2>
+<p>This involves having a kmer, the substring of a genome, and searching for its most likely position in the graph. I have multiple problems with this as of now such as completely not finding kmers at all or having them point to the wrong location.</p>
+<h3 id="complementarity">Complementarity</h3>
+<p>Graphite doesn’t support complementarity (only supports the positive strands) therefore searching for a kmer in the negative strand wouldn’t even work. I am evaluating different ways of implementing complementarity.</p>
+<h3 id="a-graph-extension-of-the-burrows-wheeler-transform">A Graph Extension of the Burrows-Wheeler Transform</h3>
+<p>Search doesn’t work for some strings and even worse the method I am using to build the index is not ideal. Currently, I am building the FM index via a Burrows-Wheeler Transform (BWT) which is in turn built from rotating the given string, this is far from ideal. A better strategy I am considering is:</p>
+<ol style="list-style-type: decimal">
+<li>generate a suffix tree via <a href="https://en.wikipedia.org/wiki/Ukkonen%27s_algorithm">Ukkonen’s algorithm</a></li>
+<li>traverse the suffix tree via a depth-first search to build a suffix array</li>
+<li>use the suffix array to generate a BWT</li>
+</ol>
+<p>I could then complement the BWT and then generate the FM index and therefore get fast queries onto the graph. I believe this to be the basic idea behind <a href="https://www.biorxiv.org/content/10.1101/051409v1">A Graph Extension of the Positional Burrows-Wheeler Transform and its Applications</a>.</p>
+<h2 id="adding-a-metadata-field">Adding a Metadata Field</h2>
+<p>We could add a metadata field to the nodes which will allow for something like inbuilt annotation support.</p>
+<h2 id="miscellaneous">Miscellaneous</h2>
+<p>Another feature not related to Bioinformatics but is surprisingly lacking in Racket is to extend <a href="https://github.com/racket/racket/blob/master/racket/collects/racket/cmdline.rkt">cmdline</a> to have command-line options as is described in <a href="https://pavpanchekha.com/blog/multi-command-line.html">Multi-command-line in Racket</a>.</p>
+<p>To reiterate, you can look at these 3 other posts regarding Graphite:</p>
+<ul>
+<li><a href="2019-06-22-Introduction-to-Variation-Graphs.html">An Introduction to Variation Graphs</a></li>
+<li><a href="2019-07-15-Creating-the-Initial-Variation-Graph.html">Creating the Initial Variation Graph</a></li>
+<li><a href="2019-07-21-Justifying-SHA256-in-Graphite.html">Justifying SHA256 in Graphite</a></li>
+</ul>
+<h1 id="acknowledgements">Acknowledgements</h1>
+<p>I’d like to acknowledge the contribution of the following people. My mentors</p>
+<ul>
+<li><a href="https://github.com/george-githinji">George Githinji</a></li>
+<li><a href="https://github.com/pjotrp">Pjotr Prins</a></li>
+</ul>
+<p>and those who weren’t my mentors but helped along the way by offering technical advice, testing graphite, reading the code or reviewing the blog posts.</p>
+<ul>
+<li><a href="https://github.com/alanorth">Alan Orth</a></li>
+<li><a href="https://github.com/ekg">Erik Garrison</a></li>
+<li><a href="https://github.com/jasonrogena">Jason Rogena</a></li>
+<li><a href="https://github.com/hipstermojo">Kenneth Gitere</a></li>
+<li><a href="https://github.com/kevthanewversi">Kevin Murimi</a></li>
+</ul>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
+]]></summary>
+</entry>
+<entry>
     <title>Jusifying SHA256 in Graphite</title>
     <link href="http://blog.urbanslug.com/posts/2019-07-21-Justifying-SHA256-in-Graphite.html" />
     <id>http://blog.urbanslug.com/posts/2019-07-21-Justifying-SHA256-in-Graphite.html</id>
@@ -96,6 +212,7 @@
 </ul>
 <p>This is the space within which we expect the variation to occur.</p>
 <p>Granted, we still don’t know just how much variation could occur, which in reality would depend on the organism, we have reduced the problem space by orders of magnitude below 2<sup>128</sup> making SHA256 look really good.</p>
+<p>Will continue this “proof” later :)</p>
 <p>I expect the biggest problem with SHA256 to come from the space cost of hashing in terms of both disk and/or memory.</p>
 
 <script src="https://carnivalapp.io/sites/413/init.js"></script>
@@ -120,7 +237,7 @@
     
 </div>
 
-<p>Variation graphs represent the reference genome as a graph. For an introduction, read my previous post <a href="posts/2019-06-22-Introduction-to-Variation-Graphs.md">An Introduction to Variation Graphs</a> or <a href="https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics">Untangling graphical pangenomics</a> by Erik Garrison.</p>
+<p>Variation graphs represent the reference genome as a graph. For an introduction, read my previous post <a href="2019-06-22-Introduction-to-Variation-Graphs.html">An Introduction to Variation Graphs</a> or <a href="https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics">Untangling graphical pangenomics</a> by Erik Garrison.</p>
 <p>Core to variation graphs is the maintenance of a tight mapping between the reference and the graph. To maintain this mapping we establish a <em>coordinate system</em> — a way to reliably associate a node in the graph, with a position in the reference and vice versa. <img src="/images/Content/Graphs/coordinate_system.png" alt="coordinate systems" /></p>
 <h1 id="a-coordinate-system">A Coordinate System</h1>
 <p>We use the concepts <strong>offset</strong> and <strong>ref</strong> to maintain a coordinate system.</p>
@@ -1107,168 +1224,6 @@ Incidentally, it also happens to be an example of <strong>functional programming
 <p><a href="https://github.com/urbanslug/WaterInfrastructure">WaterInfrastructure</a> is the other project I wrote following the above guidelines. This was as an interview question (this is a form of attribution :D).</p>
 <p><em>Question: I have a problem, do python projects have to have .pyc files in the same directory as the source file?</em></p>
 <p>There really isn’t much to say here you can learn more by browsing through the code.</p>
-
-<script src="https://carnivalapp.io/sites/413/init.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", Carnival.init);
-</script>
-]]></summary>
-</entry>
-<entry>
-    <title>Emacs Cheatsheet</title>
-    <link href="http://blog.urbanslug.com/posts/2015-09-11-Emacs-cheatsheet.html" />
-    <id>http://blog.urbanslug.com/posts/2015-09-11-Emacs-cheatsheet.html</id>
-    <published>2015-09-11T01:33:45Z</published>
-    <updated>2015-09-11T01:33:45Z</updated>
-    <summary type="html"><![CDATA[<div class="info">
-    Posted on September 11, 2015
-    
-</div>
-<div class="info">
-    
-    Tags: <a href="/tags/Emacs.html">Emacs</a>
-    
-</div>
-
-<p>These bindings should work for emacs from 24 upwards.<br />
-My emacs config is in my <a href="https://github.com/urbanslug/dotfiles/blob/master/.emacs">dotfiles</a>.</p>
-<table>
-<thead>
-<tr class="header">
-<th align="center">Key binding</th>
-<th align="center">Name</th>
-<th align="center">Purpose</th>
-<th align="center">Package</th>
-<th align="center">From emacs version</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="center">C-x SPC</td>
-<td align="center">(rectangle-mark-mode)</td>
-<td align="center">Select a rectangular region.</td>
-<td align="center">None</td>
-<td align="center">24.4</td>
-</tr>
-<tr class="even">
-<td align="center">C-c SPC</td>
-<td align="center">(ace-jump mode)</td>
-<td align="center">Jump to a letter at start of a word.</td>
-<td align="center">ace-jump</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="odd">
-<td align="center">C-s C-w</td>
-<td align="center">(write-file)</td>
-<td align="center">Save current file as a different file</td>
-<td align="center">None</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="even">
-<td align="center">C-g C-/</td>
-<td align="center">Redo</td>
-<td align="center">Redo something you’ve undone.</td>
-<td align="center">None</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="odd">
-<td align="center">C-/</td>
-<td align="center">Undo</td>
-<td align="center">Undo something you’ve done.</td>
-<td align="center">None</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="even">
-<td align="center">C-x k</td>
-<td align="center">(kill-buffer)</td>
-<td align="center">Close the current buffer.</td>
-<td align="center">None</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="odd">
-<td align="center">C-x C-f</td>
-<td align="center">(find-file)</td>
-<td align="center">Visit a file</td>
-<td align="center">None</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="even">
-<td align="center">C-x C-v</td>
-<td align="center">(find-alternate-file)</td>
-<td align="center">Visit a different file</td>
-<td align="center">None</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="odd">
-<td align="center">C-x C-r</td>
-<td align="center">(find-file-read-only)</td>
-<td align="center">Visit a file as read-only</td>
-<td align="center">None</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="even">
-<td align="center">C-x 4 f</td>
-<td align="center">(find-file-other-window)</td>
-<td align="center">Visit a file in another window/buffer</td>
-<td align="center">None</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="odd">
-<td align="center">C-x 5 f</td>
-<td align="center">(find-file-other-frame)</td>
-<td align="center">Visit a file in a new frame</td>
-<td align="center">None</td>
-<td align="center">unknown</td>
-</tr>
-<tr class="even">
-<td align="center">C-a</td>
-<td align="center">Jump to start of line</td>
-<td align="center">Not emacs specific but IBM home</td>
-<td align="center">None</td>
-<td align="center">all</td>
-</tr>
-<tr class="odd">
-<td align="center">C-e</td>
-<td align="center">Jump to end of line</td>
-<td align="center">Not emacs specific but IBM end</td>
-<td align="center">None</td>
-<td align="center">all</td>
-</tr>
-<tr class="even">
-<td align="center">C-s M-%</td>
-<td align="center"></td>
-<td align="center">Queried search and replace</td>
-<td align="center">None</td>
-<td align="center">all</td>
-</tr>
-</tbody>
-</table>
-<h3 id="handy-information">Handy information</h3>
-<ul>
-<li>For redo keep repeating C-/ to keep redoing, C-g isn’t repeated.</li>
-<li>If you “visit” a file that is actually a directory, Emacs invokes Dired, the Emacs directory browser. See <a href="http://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html#Dired">Dired</a>. You can disable this behavior by setting the variable find-file-run-dired to nil; in that case, it is an error to try to visit a directory.</li>
-<li>When the emacs version is unknown it will most likely work for your version of emacs.</li>
-<li>Here’s an awesome <a href="http://www.gnu.org/software/emacs/manual/html_node/emacs/index.html#SEC_Content">emacs manual</a></li>
-<li>Update emacs packages with M-x package-list-packages RET U x then follow the prompts as you wish.</li>
-</ul>
-<h4 id="to-learn">To learn</h4>
-<ul>
-<li>General indentation</li>
-<li>Indenting blocks.</li>
-</ul>
-<h4 id="handy-emacs-packages-i-like">Handy emacs packages I like</h4>
-<ul>
-<li>ace-jump</li>
-<li>auto-complete</li>
-</ul>
-<h4 id="extra">Extra</h4>
-<ul>
-<li><strong>Updating emacs packages</strong>: <code>M-x package-list-packages U x</code> then follow the prompts</li>
-<li><strong>emacs-nox</strong>: In the arch repos there’s emacs-nox described as “The extensible, customizable, self-documenting real-time display editor, without X11 support” Good for SSH.</li>
-<li>My <a href="https://github.com/urbanslug/dotfiles/blob/master/.emacs">emacs config</a></li>
-<li><strong>Installing packages</strong>: “i” mark for install. “x” to install</li>
-<li><code>M-x</code> to run any command. e.g <code>M-x erc</code> to IRC from emacs.</li>
-</ul>
 
 <script src="https://carnivalapp.io/sites/413/init.js"></script>
 <script>
