@@ -201,13 +201,20 @@ To reiterate, you can look at these 3 other posts regarding Graphite:
  - [Justifying SHA256 in Graphite]
 
 # Acknowledgements
-I'd like to acknowledge the contribution of the following people. My mentors
+I'd like to acknowledge the contribution of the following organizations and people.
+
+Sponsors:
+
+ - [Google Summer of Code]
+ - [Open Bioinformatics Foundation]
+
+my mentors:
 
  - [George Githinji]
  - [Pjotr Prins]
 
 and those who weren't my mentors but helped along the way by offering
-technical advice, testing graphite, reading the code or reviewing the blog posts.
+technical advice, testing graphite, reading the code or reviewing the blog posts:
 
  - [Alan Orth]
  - [Erik Garrison]
@@ -247,7 +254,9 @@ technical advice, testing graphite, reading the code or reviewing the blog posts
 [VCF]: https://en.wikipedia.org/wiki/Variant_Call_Format
 [GraphViz]: https://en.wikipedia.org/wiki/Graphviz
 [bandage]: https://rrwick.github.io/Bandage/
-[Open Bioinformatics Foundation]: https://www.open-bio.org/
+
+[Open Bioinformatics Foundation]: https://www.open-bio.org
+[Google Summer of Code]: https://summerofcode.withgoogle.com
 
 [George Githinji]: https://github.com/george-githinji
 [Pjotr Prins]: https://github.com/pjotrp
