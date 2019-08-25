@@ -25,7 +25,7 @@
     
 </div>
 
-<p>The Google Summer of Code for 2019 is coming to a close. I’ve been working on the <a href="https://github.com/urbanslug/graphite">Graphite</a> project aimed at creating a variation graph tool under the <a href="https://www.open-bio.org/">Open Bioinformatics Foundation</a>.</p>
+<p>The Google Summer of Code for 2019 is coming to a close. I’ve been working on the <a href="https://github.com/urbanslug/graphite">Graphite</a> project aimed at creating a variation graph tool under the <a href="https://www.open-bio.org">Open Bioinformatics Foundation</a>.</p>
 <h1 id="genome-graphs">Genome Graphs</h1>
 <p>I shall give an overview of genome graphs; for a more thorough introduction, I advise reading <a href="https://lh3.github.io/2019/07/08/on-a-reference-pan-genome-model">On a reference pan-genome model</a> or my very own <a href="2019-06-22-Introduction-to-Variation-Graphs.html">An Introduction to Variation Graphs</a>.</p>
 <p><a href="https://ekg.github.io/2019/07/09/Untangling-graphical-pangenomics">Variation graphs</a> are a class of <a href="https://www.biorxiv.org/content/10.1101/101378v1">genome graphs</a> that, among other things, maintain:</p>
@@ -107,12 +107,18 @@ TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
 <li><a href="2019-07-21-Justifying-SHA256-in-Graphite.html">Justifying SHA256 in Graphite</a></li>
 </ul>
 <h1 id="acknowledgements">Acknowledgements</h1>
-<p>I’d like to acknowledge the contribution of the following people. My mentors</p>
+<p>I’d like to acknowledge the contribution of the following organizations and people.</p>
+<p>Sponsors:</p>
+<ul>
+<li><a href="https://summerofcode.withgoogle.com">Google Summer of Code</a></li>
+<li><a href="https://www.open-bio.org">Open Bioinformatics Foundation</a></li>
+</ul>
+<p>my mentors:</p>
 <ul>
 <li><a href="https://github.com/george-githinji">George Githinji</a></li>
 <li><a href="https://github.com/pjotrp">Pjotr Prins</a></li>
 </ul>
-<p>and those who weren’t my mentors but helped along the way by offering technical advice, testing graphite, reading the code or reviewing the blog posts.</p>
+<p>and those who weren’t my mentors but helped along the way by offering technical advice, testing graphite, reading the code or reviewing the blog posts:</p>
 <ul>
 <li><a href="https://github.com/alanorth">Alan Orth</a></li>
 <li><a href="https://github.com/ekg">Erik Garrison</a></li>
