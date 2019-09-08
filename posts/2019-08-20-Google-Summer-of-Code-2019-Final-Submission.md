@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Google Summer of Code 2019—Final Submission
-date: 2019-09-20 11:15:16
+date: 2019-08-20 11:15:16
 tags: GSoC, Google Summer of Code, Variation Graphs, Bioinformatics, Graphite
 ---
 
