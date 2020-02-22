@@ -69,7 +69,7 @@ mount /dev/mapper/flashy /run/mount/flashy
 
 10. Verify the the mapper is properly mounted using the df command:
 ```
-df -h /USBDrive/
+df -h /run/mount/flashy
 ```
 
 # Accessing your flash drive later on.
