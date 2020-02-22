@@ -21,7 +21,7 @@
         <meta name="theme-color" content="#ffffff">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <link rel="stylesheet" type="text/css" href="../css/default.css" />
-        <title>Posts tagged "javascript" urbanslug</title>
+        <title>Encrypting and decypting a flash drive urbanslug</title>
     </head>
     <body>
       <div id="wrapper">
@@ -37,15 +37,73 @@
           </div><!--header-content-->
         </header>
         <article>
-          <h1 id="post-title">Posts tagged "javascript"</h1>
-          <ul id="post-list">
+          <h1 id="post-title">Encrypting and decypting a flash drive</h1>
+          <div class="info">
+    Posted on February 22, 2020
     
-        <li class="individual-post">
-            <a href="../notes/2018-06-29-react.html">Flux, React and Redux</a> - June 29, 2018
-        </li>
+</div>
+<div class="info">
     
-</ul>
+    Tags: <a href="../tags/Encryption.html">Encryption</a>, <a href="../tags/Decryption.html">Decryption</a>
+    
+</div>
 
+<p>Note:</p>
+<ul>
+<li>You need root for most of these commands</li>
+<li>Replace X with the target drive letter</li>
+</ul>
+<h1 id="encrypting-a-flash-drive-that-was-previously-unencrypted">Encrypting a flash drive that was previously unencrypted</h1>
+<ol style="list-style-type: decimal">
+<li><p>Install cryptsetup</p>
+<pre><code>pacman -S cryptsetup</code></pre></li>
+<li><p>List your USB devices with either</p>
+<pre><code>lsblk</code></pre>
+<p>or</p>
+<pre><code>fdisk -l</code></pre></li>
+<li><p>Write random data to disk</p>
+<pre><code>shred -v -n 1 /dev/sdX</code></pre>
+<p>or</p>
+<pre><code>dd if=/dev/urandom of=/dev/sdX bs=1M</code></pre></li>
+<li><p>Set up a new dm-crypt device in LUKS encryption mode</p>
+<pre><code>cryptsetup luksFormat /dev/sdX</code></pre></li>
+<li><p>Set up mapping</p>
+<pre><code>cryptsetup luksOpen /dev/sdX flashy</code></pre></li>
+<li><p>Verify the new virtual block device mapper</p>
+<pre><code>ls -arlt /dev/mapper | tail</code></pre></li>
+<li><p>Format the disk with ext4</p>
+<pre><code>mkfs -t ext4 /dev/mapper/flashy</code></pre></li>
+<li><p>Create a mount location</p>
+<pre><code>mkdir /run/mount/flashy</code></pre></li>
+<li><p>Mount the device your filesystem:</p>
+<pre><code>mount /dev/mapper/flashy /run/mount/flashy</code></pre></li>
+<li><p>Verify the the mapper is properly mounted using the df command:</p>
+<pre><code>df -h /USBDrive/</code></pre></li>
+</ol>
+<h1 id="accessing-your-flash-drive-later-on.">Accessing your flash drive later on.</h1>
+<ol style="list-style-type: decimal">
+<li><p>Decrypt the flash drive</p>
+<pre><code>cryptsetup luksOpen /dev/sdX flashy </code></pre>
+<p>Look it up</p>
+<pre><code>ls -arlt /dev/mapper | tail</code></pre></li>
+<li><p>Create a mount location</p>
+<pre><code>mkdir /run/mount/flashy</code></pre></li>
+<li><p>Mount the flash drive</p>
+<pre><code>mount /dev/mapper/flashy /run/mount/flashy</code></pre></li>
+<li><p>Access your files</p>
+<pre><code>cd /run/mount/flashy</code></pre></li>
+<li><p>Unmount the flash drive</p>
+<pre><code>umount /run/mount/flashy</code></pre></li>
+<li><p>Cleaup</p>
+<pre><code>rm -r /run/mount/flashy</code></pre></li>
+<li><p>Close your flash drive</p>
+<pre><code>cryptsetup luksClose flashy</code></pre></li>
+</ol>
+
+<script src="https://carnivalapp.io/sites/413/init.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", Carnival.init);
+</script>
 
         </article>
 
