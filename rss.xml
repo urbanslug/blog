@@ -332,17 +332,17 @@ TCCCATCCATTCATTTACCCATCCACATATTCACCCACCCTCCCATCCATCCATCTACTGTCTATCACCTACTCATTTTC
 <p>The graph is built out of an adjacency map of <code>id</code>, key, to <code>node</code>, value.</p>
 <p>Using a <code>hash table</code> and not a <code>list</code> has the following pros:</p>
 <ul>
-<li>No duplicates</li>
-<li>Constant-time lookups if we have a <code>segment</code> and its <code>offset</code></li>
+<li>no duplicates</li>
+<li>constant-time lookups if we have a <code>segment</code> and its <code>offset</code></li>
 </ul>
 <p>and cons:</p>
 <ul>
-<li>Lacks ordering despite linear offsets which would come in handy for updates</li>
+<li>lacks ordering despite linear offsets which would come in handy for updates</li>
 </ul>
 <h1 id="construction">Construction</h1>
 <p>The general idea is:</p>
 <ol style="list-style-type: decimal">
-<li>Given a <code>list</code> of variation <code>structures</code> <strong>sorted</strong> by <code>offset</code> and a linear reference (<code>string</code>)</li>
+<li>Given a <code>list</code> of variation <code>structures</code> <strong>sorted</strong> by <code>offset</code> and a linear reference (<code>string</code>).</li>
 <li>Loop through each variation and insert an alternative segment into the reference at the position specified in the variation.</li>
 </ol>
 <p>In the case of graphite, we recursively split the reference into a <em>list</em> of <em>pairs</em> that imply directionality. For example, the pair <code>(a b)</code> would translate to an edge from <em>node a</em> to <em>node b</em>.</p>
