@@ -77,7 +77,7 @@ For SHA 256 the halfway probability of a hash collision occurs at a point above
 
 *This may be hard to interpret because exponential functions grow very quickly.*
 
-Here's the Racket code I used to generate these plots
+Here's the Racket code I used to generate these plots:
 ```
 #lang racket
 
