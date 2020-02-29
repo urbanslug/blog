@@ -113,18 +113,18 @@ The graph is built out of an adjacency map of `id`, key, to `node`, value.
 
 Using a `hash table` and not a `list` has the following pros:
 
- - No duplicates
- - Constant-time lookups if we have a `segment` and its `offset`
+ - no duplicates
+ - constant-time lookups if we have a `segment` and its `offset`
 
 and cons:
 
- - Lacks ordering despite linear offsets which would come in handy for updates
+ - lacks ordering despite linear offsets which would come in handy for updates
 
 # Construction
 The general idea is:
 
  1. Given a `list` of variation `structures` **sorted** by `offset` and a
-    linear reference (`string`)
+    linear reference (`string`).
  2. Loop through each variation and insert an alternative segment into the
     reference at the position specified in the variation.
 

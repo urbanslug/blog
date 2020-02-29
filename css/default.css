@@ -152,8 +152,6 @@ article ul#post-list li.individual-post {
 table {
     margin: 2em auto 2em auto;
     border-collapse: collapse;
-    border-top: 1px solid #000;
-    border-bottom: 1px solid #000;
 }
 
 thead {
