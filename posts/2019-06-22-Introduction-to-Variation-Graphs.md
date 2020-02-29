@@ -34,7 +34,7 @@ In practice, however, we can't work with a single cell due to its size.
 Ignore chromosomes, haplotypes and other things you may know about DNA for now.
 
 To determine the sequence of bases in an entire genome of an organism we focus
-on only one of the alleles (a **[haplotype]**) and only one strand of the
+on only one of the alleles (a [haplotype]) and only one strand of the
 double helix.
 Since 2005 we've used methods broadly categorized
 under **Next Generation Sequencing (NGS)** to perform genome sequencing.
